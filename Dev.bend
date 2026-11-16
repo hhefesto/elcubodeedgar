@@ -208,11 +208,24 @@ def dv.undo(s: String) -> String:
 # six photos, one a line (Photo.bend's form, in ph.order's order), as
 # sticker letters, for the visitor to check and fix by painting
 def dv.photo(s: String) -> String:
-  Gd.gd.letters(Ph.ph.classify(Ph.ph.meds(Ph.ph.cells.all(String.split(s, '\n')))))
+  Gd.gd.letters(Ph.ph.classify(Ph.ph.meds(Ph.ph.cells.all(Ph.ph.lines(s)))))
 
 # how to hold the cube for photo k (0 .. 5)
 def dv.hold(+k: U32) -> String:
   Ph.ph.hold(k)
+
+# the faces seen in photo k, as letters: in front, on top, at the right
+def dv.pose(+k: U32) -> String:
+  Gd.gd.letters(Ph.ph.pose(k))
+
+# photos, one a line: which before the last shows the last one's face again
+# (its centre's colour), or 6 if none
+def dv.twin(s: String) -> U32:
+  Ph.ph.twin(Ph.ph.lines(s))
+
+# a photo's 9 stickers as the camera sees them: r g b of each, 27 numbers
+def dv.seen(s: String) -> String:
+  Ph.ph.seen.cells(s)
 
 # The canonical sequences of n moves (Search.bend's rules: never a face
 # twice in a row, a face and the one across in one order), last first in ms

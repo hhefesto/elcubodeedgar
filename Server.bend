@@ -51,7 +51,7 @@ def hs.type.pick(html: Bool, js: Bool, css: Bool, svg: Bool, woff: Bool, png: Bo
       "application/octet-stream"
 
 def hs.type(+name: String) -> String:
-  hs.type.pick(String.ends_with(name, ".html"), String.ends_with(name, ".js"), String.ends_with(name, ".css"),
+  hs.type.pick(String.ends_with(name, ".html"), Bool.or(String.ends_with(name, ".js"), String.ends_with(name, ".mjs")), String.ends_with(name, ".css"),
                String.ends_with(name, ".svg"), String.ends_with(name, ".woff2"), String.ends_with(name, ".png"))
 
 def hs.head(+status: String, +ctype: String, +len: Nat, +cache: String) -> String:

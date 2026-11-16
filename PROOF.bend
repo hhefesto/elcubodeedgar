@@ -9,6 +9,7 @@ import ./Cube.bend as C
 import ./Search.bend as S
 import ./Group.bend as G
 import ./Guard.bend as Gd
+import ./Photo.bend as Ph
 import ./LAWS.bend as Laws
 
 def Laws.quarter_turn_order(f):
@@ -892,3 +893,345 @@ def Laws.fst_home_mask():
 
 def Laws.fst_home():
   {==}
+
+def Laws.photo_lines(a, b):
+  match a b:
+    case G.FU{} G.FU{}:
+      {==}
+    case G.FU{} G.FR{}:
+      {==}
+    case G.FU{} G.FF{}:
+      {==}
+    case G.FU{} G.FD{}:
+      {==}
+    case G.FU{} G.FL{}:
+      {==}
+    case G.FU{} G.FB{}:
+      {==}
+    case G.FR{} G.FU{}:
+      {==}
+    case G.FR{} G.FR{}:
+      {==}
+    case G.FR{} G.FF{}:
+      {==}
+    case G.FR{} G.FD{}:
+      {==}
+    case G.FR{} G.FL{}:
+      {==}
+    case G.FR{} G.FB{}:
+      {==}
+    case G.FF{} G.FU{}:
+      {==}
+    case G.FF{} G.FR{}:
+      {==}
+    case G.FF{} G.FF{}:
+      {==}
+    case G.FF{} G.FD{}:
+      {==}
+    case G.FF{} G.FL{}:
+      {==}
+    case G.FF{} G.FB{}:
+      {==}
+    case G.FD{} G.FU{}:
+      {==}
+    case G.FD{} G.FR{}:
+      {==}
+    case G.FD{} G.FF{}:
+      {==}
+    case G.FD{} G.FD{}:
+      {==}
+    case G.FD{} G.FL{}:
+      {==}
+    case G.FD{} G.FB{}:
+      {==}
+    case G.FL{} G.FU{}:
+      {==}
+    case G.FL{} G.FR{}:
+      {==}
+    case G.FL{} G.FF{}:
+      {==}
+    case G.FL{} G.FD{}:
+      {==}
+    case G.FL{} G.FL{}:
+      {==}
+    case G.FL{} G.FB{}:
+      {==}
+    case G.FB{} G.FU{}:
+      {==}
+    case G.FB{} G.FR{}:
+      {==}
+    case G.FB{} G.FF{}:
+      {==}
+    case G.FB{} G.FD{}:
+      {==}
+    case G.FB{} G.FL{}:
+      {==}
+    case G.FB{} G.FB{}:
+      {==}
+
+def Laws.photo_lines_empty():
+  {==}
+
+def Laws.photo_pose_front(f):
+  match f:
+    case G.FU{}:
+      {==}
+    case G.FR{}:
+      {==}
+    case G.FF{}:
+      {==}
+    case G.FD{}:
+      {==}
+    case G.FL{}:
+      {==}
+    case G.FB{}:
+      {==}
+
+def Laws.photo_pose_top(f):
+  match f:
+    case G.FU{}:
+      {==}
+    case G.FR{}:
+      {==}
+    case G.FF{}:
+      {==}
+    case G.FD{}:
+      {==}
+    case G.FL{}:
+      {==}
+    case G.FB{}:
+      {==}
+
+def Laws.photo_pose_corner(f):
+  match f:
+    case G.FU{}:
+      {==}
+    case G.FR{}:
+      {==}
+    case G.FF{}:
+      {==}
+    case G.FD{}:
+      {==}
+    case G.FL{}:
+      {==}
+    case G.FB{}:
+      {==}
+
+def Laws.photo_same_face(a, b, l):
+  match a b l:
+    case G.FU{} G.FU{} Ph.Day{}:
+      {==}
+    case G.FU{} G.FU{} Ph.Lamp{}:
+      {==}
+    case G.FU{} G.FU{} Ph.Shade{}:
+      {==}
+    case G.FU{} G.FR{} Ph.Day{}:
+      {==}
+    case G.FU{} G.FR{} Ph.Lamp{}:
+      {==}
+    case G.FU{} G.FR{} Ph.Shade{}:
+      {==}
+    case G.FU{} G.FF{} Ph.Day{}:
+      {==}
+    case G.FU{} G.FF{} Ph.Lamp{}:
+      {==}
+    case G.FU{} G.FF{} Ph.Shade{}:
+      {==}
+    case G.FU{} G.FD{} Ph.Day{}:
+      {==}
+    case G.FU{} G.FD{} Ph.Lamp{}:
+      {==}
+    case G.FU{} G.FD{} Ph.Shade{}:
+      {==}
+    case G.FU{} G.FL{} Ph.Day{}:
+      {==}
+    case G.FU{} G.FL{} Ph.Lamp{}:
+      {==}
+    case G.FU{} G.FL{} Ph.Shade{}:
+      {==}
+    case G.FU{} G.FB{} Ph.Day{}:
+      {==}
+    case G.FU{} G.FB{} Ph.Lamp{}:
+      {==}
+    case G.FU{} G.FB{} Ph.Shade{}:
+      {==}
+    case G.FR{} G.FU{} Ph.Day{}:
+      {==}
+    case G.FR{} G.FU{} Ph.Lamp{}:
+      {==}
+    case G.FR{} G.FU{} Ph.Shade{}:
+      {==}
+    case G.FR{} G.FR{} Ph.Day{}:
+      {==}
+    case G.FR{} G.FR{} Ph.Lamp{}:
+      {==}
+    case G.FR{} G.FR{} Ph.Shade{}:
+      {==}
+    case G.FR{} G.FF{} Ph.Day{}:
+      {==}
+    case G.FR{} G.FF{} Ph.Lamp{}:
+      {==}
+    case G.FR{} G.FF{} Ph.Shade{}:
+      {==}
+    case G.FR{} G.FD{} Ph.Day{}:
+      {==}
+    case G.FR{} G.FD{} Ph.Lamp{}:
+      {==}
+    case G.FR{} G.FD{} Ph.Shade{}:
+      {==}
+    case G.FR{} G.FL{} Ph.Day{}:
+      {==}
+    case G.FR{} G.FL{} Ph.Lamp{}:
+      {==}
+    case G.FR{} G.FL{} Ph.Shade{}:
+      {==}
+    case G.FR{} G.FB{} Ph.Day{}:
+      {==}
+    case G.FR{} G.FB{} Ph.Lamp{}:
+      {==}
+    case G.FR{} G.FB{} Ph.Shade{}:
+      {==}
+    case G.FF{} G.FU{} Ph.Day{}:
+      {==}
+    case G.FF{} G.FU{} Ph.Lamp{}:
+      {==}
+    case G.FF{} G.FU{} Ph.Shade{}:
+      {==}
+    case G.FF{} G.FR{} Ph.Day{}:
+      {==}
+    case G.FF{} G.FR{} Ph.Lamp{}:
+      {==}
+    case G.FF{} G.FR{} Ph.Shade{}:
+      {==}
+    case G.FF{} G.FF{} Ph.Day{}:
+      {==}
+    case G.FF{} G.FF{} Ph.Lamp{}:
+      {==}
+    case G.FF{} G.FF{} Ph.Shade{}:
+      {==}
+    case G.FF{} G.FD{} Ph.Day{}:
+      {==}
+    case G.FF{} G.FD{} Ph.Lamp{}:
+      {==}
+    case G.FF{} G.FD{} Ph.Shade{}:
+      {==}
+    case G.FF{} G.FL{} Ph.Day{}:
+      {==}
+    case G.FF{} G.FL{} Ph.Lamp{}:
+      {==}
+    case G.FF{} G.FL{} Ph.Shade{}:
+      {==}
+    case G.FF{} G.FB{} Ph.Day{}:
+      {==}
+    case G.FF{} G.FB{} Ph.Lamp{}:
+      {==}
+    case G.FF{} G.FB{} Ph.Shade{}:
+      {==}
+    case G.FD{} G.FU{} Ph.Day{}:
+      {==}
+    case G.FD{} G.FU{} Ph.Lamp{}:
+      {==}
+    case G.FD{} G.FU{} Ph.Shade{}:
+      {==}
+    case G.FD{} G.FR{} Ph.Day{}:
+      {==}
+    case G.FD{} G.FR{} Ph.Lamp{}:
+      {==}
+    case G.FD{} G.FR{} Ph.Shade{}:
+      {==}
+    case G.FD{} G.FF{} Ph.Day{}:
+      {==}
+    case G.FD{} G.FF{} Ph.Lamp{}:
+      {==}
+    case G.FD{} G.FF{} Ph.Shade{}:
+      {==}
+    case G.FD{} G.FD{} Ph.Day{}:
+      {==}
+    case G.FD{} G.FD{} Ph.Lamp{}:
+      {==}
+    case G.FD{} G.FD{} Ph.Shade{}:
+      {==}
+    case G.FD{} G.FL{} Ph.Day{}:
+      {==}
+    case G.FD{} G.FL{} Ph.Lamp{}:
+      {==}
+    case G.FD{} G.FL{} Ph.Shade{}:
+      {==}
+    case G.FD{} G.FB{} Ph.Day{}:
+      {==}
+    case G.FD{} G.FB{} Ph.Lamp{}:
+      {==}
+    case G.FD{} G.FB{} Ph.Shade{}:
+      {==}
+    case G.FL{} G.FU{} Ph.Day{}:
+      {==}
+    case G.FL{} G.FU{} Ph.Lamp{}:
+      {==}
+    case G.FL{} G.FU{} Ph.Shade{}:
+      {==}
+    case G.FL{} G.FR{} Ph.Day{}:
+      {==}
+    case G.FL{} G.FR{} Ph.Lamp{}:
+      {==}
+    case G.FL{} G.FR{} Ph.Shade{}:
+      {==}
+    case G.FL{} G.FF{} Ph.Day{}:
+      {==}
+    case G.FL{} G.FF{} Ph.Lamp{}:
+      {==}
+    case G.FL{} G.FF{} Ph.Shade{}:
+      {==}
+    case G.FL{} G.FD{} Ph.Day{}:
+      {==}
+    case G.FL{} G.FD{} Ph.Lamp{}:
+      {==}
+    case G.FL{} G.FD{} Ph.Shade{}:
+      {==}
+    case G.FL{} G.FL{} Ph.Day{}:
+      {==}
+    case G.FL{} G.FL{} Ph.Lamp{}:
+      {==}
+    case G.FL{} G.FL{} Ph.Shade{}:
+      {==}
+    case G.FL{} G.FB{} Ph.Day{}:
+      {==}
+    case G.FL{} G.FB{} Ph.Lamp{}:
+      {==}
+    case G.FL{} G.FB{} Ph.Shade{}:
+      {==}
+    case G.FB{} G.FU{} Ph.Day{}:
+      {==}
+    case G.FB{} G.FU{} Ph.Lamp{}:
+      {==}
+    case G.FB{} G.FU{} Ph.Shade{}:
+      {==}
+    case G.FB{} G.FR{} Ph.Day{}:
+      {==}
+    case G.FB{} G.FR{} Ph.Lamp{}:
+      {==}
+    case G.FB{} G.FR{} Ph.Shade{}:
+      {==}
+    case G.FB{} G.FF{} Ph.Day{}:
+      {==}
+    case G.FB{} G.FF{} Ph.Lamp{}:
+      {==}
+    case G.FB{} G.FF{} Ph.Shade{}:
+      {==}
+    case G.FB{} G.FD{} Ph.Day{}:
+      {==}
+    case G.FB{} G.FD{} Ph.Lamp{}:
+      {==}
+    case G.FB{} G.FD{} Ph.Shade{}:
+      {==}
+    case G.FB{} G.FL{} Ph.Day{}:
+      {==}
+    case G.FB{} G.FL{} Ph.Lamp{}:
+      {==}
+    case G.FB{} G.FL{} Ph.Shade{}:
+      {==}
+    case G.FB{} G.FB{} Ph.Day{}:
+      {==}
+    case G.FB{} G.FB{} Ph.Lamp{}:
+      {==}
+    case G.FB{} G.FB{} Ph.Shade{}:
+      {==}

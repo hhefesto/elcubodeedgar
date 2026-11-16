@@ -51,6 +51,63 @@ def ph.hold(+k: U32) -> String:
      "The yellow centre facing you, the green centre on top (green facing you again, then tip the bottom toward you)."],
     U32.to_nat(k)), "")
 
+# The faces seen in photo k: in front, on top, at the right (U R F D L B are
+# 0..5), for the page's picture of how to hold the cube
+def ph.pose(+k: U32) -> List<&2, U32>:
+  Maybe.default(&2, List<&2, U32>, List.get(&2, List<&2, U32>,
+    [[2, 0, 1], [1, 0, 5], [5, 0, 4], [4, 0, 2], [0, 5, 1], [3, 2, 1]], U32.to_nat(k)), [])
+
+# the face Cube.bend's layout has on top of face f in a photo: B over U, F
+# over D, U over the rest
+def ph.up(+f: U32) -> U32:
+  Bool.pick(U32, U32.is_eq(f, 0), 5, Bool.pick(U32, U32.is_eq(f, 3), 2, 0))
+
+# the corner piece (0..7) a pose sees at its top right front, its faces read
+# clockwise from its U or D face as Cube.bend lists them; 8 if no piece (a
+# pose no cube can be held in: a mirror image, or faces not side by side)
+def ph.pose.corner(+p: List<&2, U32>) -> U32:
+  +t = Gd.gd.get(p, 1)
+  +r = Gd.gd.get(p, 2)
+  +f = Gd.gd.get(p, 0)
+  +ud = U32.add(Gd.gd.ud(t), U32.add(Gd.gd.ud(r), Gd.gd.ud(f)))
+  +o = Bool.pick(U32, U32.is_eq(Gd.gd.ud(t), 1), 0, Bool.pick(U32, U32.is_eq(Gd.gd.ud(r), 1), 1, 2))
+  +j = Gd.gd.cfind(8n, C.cube.corner.colors(), Gd.gd.slot(o, t, r, f),
+    Gd.gd.slot(U32.mod(U32.add(o, 1), 3), t, r, f), Gd.gd.slot(U32.mod(U32.add(o, 2), 3), t, r, f), 0)
+  Bool.pick(U32, U32.is_eq(ud, 1), j, 8)
+
+# The photos, one a line
+# ----------------------
+
+# chars cs (the last first) before acc
+def ph.str(cs: List<&2, Char>, acc: String) -> String:
+  match cs:
+    case Nil{}:
+      acc
+    case Con{c, t}:
+      ph.str(t, SCon{c, acc})
+
+# s's lines, after char c (nl: whether it is a line break) and the chars of
+# the line so far in cur (the last first). A loop: String.split recurses once
+# a char, and compiled to JS that ran past a browser's stack on six photos
+# (23,333 chars), so the page read nothing and said nothing
+def ph.lines.go(s: String, nl: Bool, +c: Char, cur: List<&2, Char>, acc: List<&2, String>) -> List<&2, String>:
+  match s nl:
+    case SNil{} True{}:
+      List.reverse(&2, String, SNil{} <> ph.str(cur, SNil{}) <> acc)
+    case SCon{+d, t} True{}:
+      ph.lines.go(t, Char.is_eq(d, '\n'), d, Nil{}, ph.str(cur, SNil{}) <> acc)
+    case SNil{} False{}:
+      List.reverse(&2, String, ph.str(c <> cur, SNil{}) <> acc)
+    case SCon{+d, t} False{}:
+      ph.lines.go(t, Char.is_eq(d, '\n'), d, c <> cur, acc)
+
+def ph.lines(s: String) -> List<&2, String>:
+  match s:
+    case SNil{}:
+      [""]
+    case SCon{+c, t}:
+      ph.lines.go(t, Char.is_eq(c, '\n'), c, Nil{}, Nil{})
+
 # Reading a photo
 # ---------------
 
@@ -209,6 +266,68 @@ def ph.cells.all(photos: List<&2, String>) -> List<&2, List<&2, U32>>:
 def ph.read(+photos: List<&2, String>) -> Gd.Read:
   Gd.gd.check(ph.classify(ph.meds(ph.cells.all(photos))))
 
+# A face photographed twice
+# -------------------------
+
+# How unlike two colours may be and still be one: a sticker in two photos in
+# one light is far closer (noise, a little shade), two colours in one light
+# far farther (the closest, a phone's red and orange under a lamp: 28,134)
+def ph.near() -> U32:
+  8000
+
+def ph.same(+p: Px, +q: Px) -> Bool:
+  U32.is_lt(ph.dist(p, q), ph.near())
+
+def ph.first(+ps: List<&2, Px>) -> Px:
+  match ps:
+    case Con{+p, t}:
+      p
+    case Nil{}:
+      Px{0, 0, 0}
+
+# a photo's centre sticker, as photographed
+def ph.centre(s: String) -> Px:
+  ph.first(ph.pxs(List.drop(&2, U32, ph.cells(s), 12n)))
+
+def ph.centres.of(photos: List<&2, String>) -> List<&2, Px>:
+  match photos:
+    case Nil{}:
+      Nil{}
+    case Con{p, t}:
+      ph.centre(p) <> ph.centres.of(t)
+
+# the first of ps (from i) the colour x is, or 6
+def ph.find(ps: List<&2, Px>, +x: Px, +i: U32) -> U32:
+  match ps:
+    case Nil{}:
+      6
+    case Con{+p, t}:
+      Bool.pick(U32, ph.same(p, x), i, ph.find(t, x, U32.add(i, 1)))
+
+# Which of the photos before the last has a centre the colour of the last
+# one's (the same face again: the cube was not turned), or 6 if none
+def ph.twin.of(cs: List<&2, Px>) -> U32:
+  match cs:
+    case Nil{}:
+      6
+    case Con{+last, rest}:
+      ph.find(List.reverse(&2, Px, rest), last, 0)
+
+def ph.twin(photos: List<&2, String>) -> U32:
+  ph.twin.of(List.reverse(&2, Px, ph.centres.of(photos)))
+
+# A photo's 9 stickers as photographed: 27 numbers, r g b of each (cells
+# row by row from the top left), for the page to show what the camera sees
+def ph.shows(xs: List<&2, U32>) -> List<&2, String>:
+  match xs:
+    case Nil{}:
+      Nil{}
+    case Con{+x, t}:
+      U32.show(x) <> ph.shows(t)
+
+def ph.seen.cells(s: String) -> String:
+  String.join(ph.shows(ph.cells(s)), " ")
+
 # Photos made up, for the tests and the laws
 # ------------------------------------------
 
@@ -235,6 +354,20 @@ def ph.light.lamp() -> List<&2, U32>:
 
 def ph.light.shade() -> List<&2, U32>:
   [150, 160, 176]
+
+type Light is Data:
+  Day{}
+  Lamp{}
+  Shade{}
+
+def ph.light(l: Light) -> List<&2, U32>:
+  match l:
+    case Day{}:
+      ph.light.day()
+    case Lamp{}:
+      ph.light.lamp()
+    case Shade{}:
+      ph.light.shade()
 
 # channel ch of the pixel at x, y of a photo of a face with colours cols, the
 # cube sx, sy pixels down and right of where it should be, less 3 (0..6)
@@ -301,3 +434,7 @@ def ph.look(cols: List<&2, U32>, +pal: List<&2, U32>, +lt: List<&2, U32>) -> Lis
         <> U32.min(U32.div(U32.mul(Gd.gd.get(pal, U32.add(i, 1)), Gd.gd.get(lt, 1)), 256), 255)
         <> U32.min(U32.div(U32.mul(Gd.gd.get(pal, U32.add(i, 2)), Gd.gd.get(lt, 2)), 256), 255)
         <> ph.look(t, pal, lt)
+
+# colour k of palette pal as a camera sees it in light lt
+def ph.seen(+pal: List<&2, U32>, +lt: List<&2, U32>, +k: U32) -> Px:
+  ph.first(ph.pxs(ph.look([k], pal, lt)))

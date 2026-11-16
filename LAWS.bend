@@ -6,6 +6,7 @@ import ./Guard.bend as Gd
 import ./Lite.bend as L
 import ./Kd.bend as D
 import ./Coord.bend as K
+import ./Photo.bend as Ph
 
 # The group theory the solver stands on, as laws. PROOF.bend proves each one;
 # `bend PROOF.bend` prints ALL PROOFS CHECK only when every law holds.
@@ -243,3 +244,46 @@ law fst_home_mask:
 
 law fst_home:
   {D.kd.home() == 494 : U32}
+
+# Reading your cube from photos (Photo.bend)
+# ------------------------------------------
+
+# the page hands over the six photos one a line, and they come apart there
+# again (ph.lines, a loop: String.split's recursion ran past the browser's
+# stack, and the page read nothing)
+law photo_lines:
+  for a: G.Face
+  for b: G.Face
+  {Ph.ph.lines(Gd.gd.name(G.gr.face(a)) ++ "\n" ++ Gd.gd.name(G.gr.face(b)))
+     == [Gd.gd.name(G.gr.face(a)), Gd.gd.name(G.gr.face(b))] : List<&2, String>}
+
+law photo_lines_empty:
+  {Ph.ph.lines("\nU\n\nR\n") == ["", "U", "", "R", ""] : List<&2, String>}
+
+# the picture of how to hold the cube for a face's photo has that face in
+# front, and on top the face Photo.bend's layout reads above it (B over U, F
+# over D, U over the rest)
+law photo_pose_front:
+  for f: G.Face
+  {Gd.gd.get(Ph.ph.pose(Ph.ph.shot.of(G.gr.face(f))), 0) == G.gr.face(f) : U32}
+
+law photo_pose_top:
+  for f: G.Face
+  {Gd.gd.get(Ph.ph.pose(Ph.ph.shot.of(G.gr.face(f))), 1) == Ph.ph.up(G.gr.face(f)) : U32}
+
+# and a cube can be held that way: its front, top and right faces meet at a
+# corner piece, in the corner's own order (not a mirror image)
+law photo_pose_corner:
+  for f: G.Face
+  {U32.is_lt(Ph.ph.pose.corner(Ph.ph.pose(Ph.ph.shot.of(G.gr.face(f)))), 8) == True{} : Bool}
+
+# a face photographed twice is caught, and two faces never pass for one: in
+# each light, each of a real cube's colours as a phone saw them (ph.pal.phone)
+# is the same as itself and as no other (red and orange under a lamp too)
+law photo_same_face:
+  for a: G.Face
+  for b: G.Face
+  for l: Ph.Light
+  {Ph.ph.same(Ph.ph.seen(Ph.ph.pal.phone(), Ph.ph.light(l), G.gr.face(a)),
+              Ph.ph.seen(Ph.ph.pal.phone(), Ph.ph.light(l), G.gr.face(b)))
+     == U32.is_eq(G.gr.face(a), G.gr.face(b)) : Bool}
