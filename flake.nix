@@ -1,5 +1,5 @@
 {
-  description = "Edgar's Rubik's cube: an optimal solver in Bend, its laws, and a bend-frp page with a three.js cube";
+  description = "El cubo de Edgar, a Rubik's cube: an optimal solver in Bend, its laws, and a bend-frp page with a three.js cube";
 
   # bend-frp brings the pinned Bend (2.0.39, with BendTT for --verdict) and
   # the web layer the page is written in
@@ -42,7 +42,7 @@
       # (web/App.bend imports ../bend-frp/Web.bend) and bend on PATH
       inSource =
         pkgs: name: inputs: script:
-        pkgs.runCommandCC "edgarsrubicscube-${name}"
+        pkgs.runCommandCC "elcubodeedgar-${name}"
           { nativeBuildInputs = [ bend-frp.packages.${pkgs.stdenv.hostPlatform.system}.bend ] ++ inputs; }
           ''
             export HOME=$TMPDIR BEND_NO_TELEMETRY=1
@@ -68,10 +68,10 @@
             tar xzf ${threeFor pkgs} -O package/build/three.module.min.js > web/three.module.min.js
             bend web/index.html -o $out
           '';
-          # both: `edgarsrubicscube [PORT]` serves the page and the solver on
+          # both: `elcubodeedgar [PORT]` serves the page and the solver on
           # 127.0.0.1:PORT (8093)
           default = pkgs.writeShellApplication {
-            name = "edgarsrubicscube";
+            name = "elcubodeedgar";
             text = ''
               exec ${server}/bin/cube-server ${www} "''${1:-8093}"
             '';

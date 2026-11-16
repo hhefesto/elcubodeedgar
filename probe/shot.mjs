@@ -3,7 +3,7 @@
 // a step is click:SELECTOR, wait:MS, shot:FILE.png or eval:EXPRESSION. The page's
 // console errors and exceptions are printed.
 import { spawn } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { writeFileSync, mkdtempSync } from "node:fs";
 
 const [url, size, ...steps] = process.argv.slice(2);
 const [width, height] = size.split("x").map(Number);
@@ -14,7 +14,7 @@ const chrome = spawn(
   [
     "--headless=new",
     `--remote-debugging-port=${port}`,
-    "--user-data-dir=/tmp/cube/chrome-profile",
+    `--user-data-dir=${mkdtempSync("/tmp/cube-chrome-")}`,
     `--window-size=${width},${height}`,
     "--use-angle=swiftshader",
     "--enable-unsafe-swiftshader",

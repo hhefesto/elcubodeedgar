@@ -161,3 +161,11 @@ def gr.sexy() -> C.Cube:
 # R U
 def gr.ru() -> C.Cube:
   C.cube.mul(C.cube.R(), C.cube.U())
+
+# s, then c n times over (C.cube.pow(c, n) is gr.iter(n, c, solved): PROOF.bend)
+def gr.iter(n: Nat, +c: C.Cube, +s: C.Cube) -> C.Cube:
+  match n:
+    case 0n:
+      s
+    case 1n+p:
+      gr.iter(p, c, C.cube.mul(s, c))

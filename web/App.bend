@@ -3,7 +3,7 @@ import ../bend-frp/Frp.bend as F
 import ../bend-frp/Web.bend as W
 import ../Cube.bend as C
 
-# Edgar's Rubik's cube: the page. A bend-frp app (Web.bend): every state is a
+# El cubo de Edgar: the page. A bend-frp app (Web.bend): every state is a
 # fold of the page's inputs, and the view a function of the state.
 #
 # The cube itself lives here, as Cube.bend's group element: a turn is shown by

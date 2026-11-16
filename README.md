@@ -1,7 +1,7 @@
-# Edgar's Rubik's cube
+# El cubo de Edgar
 
-https://edgarsrubicscube.hhefesto.dev: scramble a cube in 3D, and step through
-its optimal solution, one animated turn at a time.
+Edgar's Rubik's cube, https://elcubodeedgar.hhefesto.dev: scramble a cube in
+3D, and step through its optimal solution, one animated turn at a time.
 
 Everything that thinks is Bend:
 
@@ -19,7 +19,7 @@ Everything that thinks is Bend:
   on, as laws, each proven (`bend PROOF.bend`).
 
 ```
-nix build                 # the server with the page: result/bin/edgarsrubicscube [PORT]
+nix build                 # the server with the page: result/bin/elcubodeedgar [PORT]
 nix flake check           # the proofs (and BendTT's verdict), every module, the 3D turns
 ```
 
