@@ -174,9 +174,18 @@ def dv.pre.go(+n: Nat, k: Nat, ok: Bool, +ms: List<&2, U32>, +lf: U32, +m: U32) 
       +mn = U32.add(m, 1)
       dv.pre.go(n, kq, S.sr.allowed(mn, lf), ms, lf, mn)
 
+# xs joined by spaces after acc (a loop: String.join recurses once a word,
+# 3,240 deep here, past what a phone's Web Worker allows)
+def dv.join(xs: List<&2, String>, +acc: String) -> String:
+  match xs:
+    case Nil{}:
+      acc
+    case Con{+x, rest}:
+      dv.join(rest, Bool.pick(String, String.is_empty(acc), x, acc ++ " " ++ x))
+
 # the prefixes a bound's search is split by, joined by spaces
 def dv.prefixes(+n: Nat) -> String:
-  String.join(dv.pre.go(n, 18n, True{}, Nil{}, 6, 0), " ")
+  dv.join(dv.pre.go(n, 18n, True{}, Nil{}, 6, 0), "")
 
 # A short way at once (Lite.bend's two-phase)
 # -------------------------------------------
