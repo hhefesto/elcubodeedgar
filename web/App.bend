@@ -10,8 +10,8 @@ import ../Cube.bend as C
 # handing the 3D view (cube3d.js, the host's "turn") the move to animate and
 # the 54 stickers the cube has after it; the view draws nothing of its own.
 #
-#   Scramble    a random scramble from solved, animated; at once the server
-#               is asked for a shortest solution (GET /api/solve)
+#   Scramble    a random scramble from solved, animated; at once this
+#               device (web/solver.js) is asked for a shortest solution
 #   U .. B'     a turn of a face by hand: the cube keeps the position
 #   Solve       a shortest solution of the position the cube is in
 #   Next step   the solution's next move, animated
@@ -196,8 +196,8 @@ def show.fx(+c: C.Cube) -> W.Effect:
 
 # ask the solver about the position, as request g
 # (who: the page's name, so the solver knows a page's asks from another's)
-# (the solver on this device, web/solver.js, which falls back on the site's: it
-# is told the cube's stickers, the moves that make it, and the page's name,
+# (the solver on this device, web/solver.js; where it cannot run, a quick
+# two-phase way on this device, marked "quick", never a server: it is told the cube's stickers, the moves that make it, and the page's name,
 # and tells each answer as the search goes, so it is asked once; and the
 # position's own moves undone, a way back already known: so an answer is never
 # longer, and the search proves the shortest once no shorter way is left)
@@ -410,6 +410,7 @@ type Ak is Data:
   AQueued{}
   ADown{}
   ALate{}
+  AQuick{}
   AWord{}
 
 def ak.of(+w: String) -> Ak:
@@ -418,13 +419,14 @@ def ak.of(+w: String) -> Ak:
   Bool.pick(Ak, String.eq(w, "queued"), AQueued{},
   Bool.pick(Ak, String.eq(w, "down"), ADown{},
   Bool.pick(Ak, String.eq(w, "late"), ALate{},
-  Bool.pick(Ak, Bool.or(Bool.or(String.eq(w, "busy"), String.eq(w, "cancelled")), Bool.or(String.eq(w, "none"), String.eq(w, "nodevice"))), AWord{}, ABest{}))))))
+  Bool.pick(Ak, String.eq(w, "quick"), AQuick{},
+  Bool.pick(Ak, Bool.or(Bool.or(String.eq(w, "busy"), String.eq(w, "cancelled")), Bool.or(String.eq(w, "none"), String.eq(w, "nodevice"))), AWord{}, ABest{})))))))
 
 # an answer without moves, said plainly
 def word.say(+w: String) -> String:
   Bool.pick(String, String.eq(w, "busy"), "The solver is busy with other visitors' cubes. Press Solve again in a minute.",
   Bool.pick(String, String.eq(w, "cancelled"), "A newer solve from this page took this one's place.",
-  Bool.pick(String, String.eq(w, "nodevice"), "This browser cannot run the solver here (it needs shared memory between its workers), and the site has no solver of its own to ask.",
+  Bool.pick(String, String.eq(w, "nodevice"), "This browser cannot run the solver here (it needs shared memory between its workers), and it could not work out a quick way either.",
     "The solver found no solution within 20 moves, which cannot happen. Please say so.")))
 
 # how far the shortest search got (0: its tables are still on their way)
@@ -463,9 +465,22 @@ def queued.go(+s: S) -> S & List<&2, W.Effect>:
     case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
       (S{cube, queue, busy, auto, pos, sol, step, True{}, "queued", False{}, opt, gen, wait, who}, [])
 
-# where an answer was found: the device's line, or the site's solver
+# where an answer was found: the device's line
 def found.at(+w: String) -> String:
-  Bool.pick(String, String.is_empty(w), "on the site's solver", w)
+  Bool.pick(String, String.is_empty(w), "on this device", w)
+
+# "quick": this browser cannot run the shortest search (no shared memory
+# between workers), so a two-phase way was worked out on this device alone:
+# the lines are the word, 0, the milliseconds, "ok", 0, the moves. Checked
+# here too, by Cube.bend; never called the shortest
+def quick.go(m: Maybe<&2, List<&2, U32>>, good: Bool, +s: S, +ms: U32) -> S & List<&2, W.Effect>:
+  match m good s:
+    case Some{+xs} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+      (S{cube, queue, busy, auto, pos, Some{xs}, 0, False{},
+         "A quick way, worked out on this device in " ++ took(ms) ++ ". It may not be the shortest: this browser cannot run the shortest search (it needs shared memory between its workers).",
+         False{}, False{}, gen, wait, who}, [])
+    case _ _ S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, "The quick way did not check out.", True{}, True{}, gen, wait, who}, [])
 
 def answer.go(k: Ak, +s: S, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
   match k s:
@@ -483,6 +498,9 @@ def answer.go(k: Ak, +s: S, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
       down.go(U32.is_lt(wait, 150), s)
     case ALate{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
       late.go(checks(Some{C.cube.inv(pos)}, pos), s, num(line(ls, 4n)), took(num(line(ls, 2n))))
+    case AQuick{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+      +m = C.cube.read(line(ls, 5n))
+      quick.go(m, Bool.and(String.eq(line(ls, 3n), "ok"), checks(m, pos)), s, num(line(ls, 2n)))
     case AWord{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
       (S{cube, queue, busy, auto, pos, None{}, 0, False{}, word.say(line(ls, 0n)), True{}, True{}, gen, wait, who}, [])
 
@@ -703,7 +721,7 @@ def facts(+s: S) -> W.Html:
         [fact("position", plural(U32.from_nat(List.length(&2, U32, pos)), "move", "moves")),
          fact(Bool.pick(String, opt, "shortest solution", "a solution"), Bool.pick(String, has, plural(n, "move", "moves"), "-")),
          fact("done", U32.show(Bool.pick(U32, U32.is_lt(step, n), step, n)) ++ " / " ++ U32.show(n)),
-         fact("search", Bool.pick(String, has, Bool.pick(String, opt, info, Bool.pick(String, asked, "still searching", "stopped at " ++ U32.show(lim()) ++ " s")), "-"))])
+         fact("search", Bool.pick(String, has, Bool.pick(String, opt, info, Bool.pick(String, asked, "still searching", Bool.pick(String, String.starts_with(info, "A quick way"), "quick way only", "stopped at " ++ U32.show(lim()) ++ " s"))), "-"))])
 
 def next.name(m: Maybe<&2, U32>) -> String:
   match m:

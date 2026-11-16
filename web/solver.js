@@ -8,8 +8,11 @@
 // subtrees spread over every core), and passes Sched's answers to the page.
 //
 // A device that cannot (no SharedArrayBuffer: the page is not cross-origin
-// isolated, or a worker failed) asks the site's own solver instead
-// (/api/solve), where there is one.
+// isolated, or a worker failed) gets a quick way instead: Lite.bend's
+// two-phase alone, on one worker with its own copy of the small tables (or on
+// the page itself, if no worker starts). It is not proven the shortest, and
+// the answer says so ("quick"). Nothing is ever asked of a server: the site
+// only serves files.
 import S from "./sched.mjs";
 
 const CACHE = "elcubo-tables";
@@ -170,7 +173,7 @@ export function makeSolver(opts = {}) {
   // array. Downloaded: the .br file, sent with Content-Encoding br so the
   // browser undoes it; if what comes is not the table's size (something on
   // the way would not pass brotli), the .gz one, undone here.
-  const load = async (name, f, keep) => {
+  const load = async (name, f, keep, into = sab) => {
     const t0 = performance.now();
     const size = f.words * 4;
     const url = new URL(f.br, document.baseURI).href;
@@ -194,7 +197,7 @@ export function makeSolver(opts = {}) {
       if (buf.length !== size) throw new Error(`${name} tables: ${buf.length} bytes, not ${size}`);
       if (cache) await cache.put(url, new Response(buf)).catch(() => {});
     }
-    new Uint32Array(sab).set(new Uint32Array(buf.buffer, buf.byteOffset, f.words), f.at);
+    new Uint32Array(into).set(new Uint32Array(buf.buffer, buf.byteOffset, f.words), f.at);
     loads[name] = 1;
     loads.ms[name] = Math.round(performance.now() - t0);
     keep.push(url);
@@ -233,21 +236,55 @@ export function makeSolver(opts = {}) {
     return booting;
   };
 
-  // No solver here: the site's, if it has one, asked again while its answer
-  // is not final (as the page used to)
-  const fallback = (arg, d, tries = 0) => {
+  // No shared memory, or a worker failed: a quick way, Lite.bend's two-phase
+  // on the three axes, the shortest of the three. Its tables in an array of
+  // this page's own (only the corners' move tables, made here, and Lite's,
+  // downloaded, are used): handed to one worker, or, if no worker starts,
+  // used on the page itself (it stops for a second or two). Answered as
+  // "quick": the word, 0 nodes, the milliseconds, "ok", 0, the moves.
+  let quickT = null; // the page's own tables, once made (no worker)
+  const quickOn = async (fl, man) => {
+    const buf = new ArrayBuffer(man.words * 4);
+    await load("lite", man.lite, [], buf);
+    const one = (w, job) =>
+      new Promise((ok, no) => {
+        w.onmessage = ({ data }) => ok(data.out);
+        w.onerror = (x) => no(new Error("the quick worker failed: " + (x.message || "")));
+        w.postMessage(job, job.sab ? [job.sab] : []);
+      });
+    let outs = [];
+    try {
+      const w = new Worker(new URL("solver-worker.js", document.baseURI), { type: "module" });
+      await one(w, { sab: buf, id: 0 });
+      await one(w, { op: "cptw", id: 1 });
+      for (const a of [0, 1, 2]) outs.push(await one(w, { op: "two", s: fl, a, id: 2 + a }));
+      w.terminate();
+    } catch (x) {
+      if (buf.byteLength === 0) throw x; // handed over, and then lost
+      const D = (await import("./dev.mjs")).default;
+      if (!quickT) {
+        quickT = new Uint32Array(buf);
+        D["dv.build.cptw"](quickT);
+      } else new Uint32Array(quickT.buffer).set(new Uint32Array(buf, man.lite.at * 4, man.lite.words), man.lite.at);
+      outs = [0, 1, 2].map((a) => D["dv.two"](quickT, D["dv.root"](fl), a).snd);
+    }
+    const ways = outs.map((o) => o.split("\n")).filter((l) => l[0] === "ok");
+    if (!ways.length) throw new Error(outs.join(" ").slice(0, 200));
+    return ways.reduce((a, b) => (Number(b[2]) < Number(a[2]) ? b : a))[1];
+  };
+  const fallback = (arg, d) => {
     if (arg !== lastAsk) return;
-    const [, moves, who] = arg.split(" ");
-    fetch(`/api/solve?m=${moves || ""}&v=${who || ""}`)
-      .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
+    const t0 = now();
+    const [fl, , , inv] = arg.split(" ");
+    // the position's own moves undone, if shorter, are the quick way too
+    const len = (m) => (m ? m.split(".").length : Infinity);
+    fetch(new URL("tables.json", document.baseURI), { cache: "no-cache" })
+      .then((r) => r.json())
+      .then((man) => quickOn(fl, man))
+      .then((m) => (inv && len(inv) < len(m) ? inv : m))
       .then(
-        (body) => {
-          const w = body.split("\n")[0];
-          d(body);
-          // (a "down" the page itself asks again for)
-          if ((w === "working" || w === "queued") && tries < 80) setTimeout(() => fallback(arg, d, tries + 1), 300);
-        },
-        () => d(`nodevice\n0\n0\nok\n0\n${failed || ""}\n`),
+        (moves) => d(`quick\n0\n${now() - t0}\nok\n0\n${moves}\n`),
+        (x) => d(`nodevice\n0\n0\nok\n0\n${failed || ""}; ${String(x && x.message ? x.message : x)}\n`),
       );
   };
 
@@ -266,7 +303,8 @@ export function makeSolver(opts = {}) {
     loads,
     failed: () => failed,
     // arg: "FACELETS MOVES WHO INVERSE" (the cube's stickers; the moves that
-    // make it, for the site's solver; the page's name; those moves undone).
+    // make it, or "x" if none are known; the page's name; those moves
+    // undone, or nothing).
     // d: told each answer
     solve(arg, d) {
       lastAsk = arg;

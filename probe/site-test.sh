@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # The site as xty serves it (enc's elcubodeedgar.hhefesto.dev vhost: static
 # files, the COOP/COEP headers SharedArrayBuffer needs, the tables sent as
-# brotli, /api/ to the solver on delfos), on 127.0.0.1:PORT, with a user's
+# brotli; no /api/: the site asks no server), on 127.0.0.1:PORT, with a user's
 # nginx, for tests. A thin shim: writes the config, runs nginx in the
 # foreground.
 #
-#   probe/site-test.sh WWW PORT [API]      (API: 127.0.0.1:8093, delfos's page server)
+#   probe/site-test.sh WWW PORT
+#   NOISO=1 probe/site-test.sh WWW PORT   (no COOP/COEP: a browser without
+#                                         shared memory, so the quick way)
 set -eu
 WWW=$1
 PORT=$2
-API=${3:-127.0.0.1:8093}
 D=$(mktemp -d /tmp/elcubo-nginx.XXXXXX)
 NGINX=${NGINX:-$(nix build --no-link --print-out-paths nixpkgs#nginx)}
 # the MIME types xty has (mailcap's: .mjs is text/javascript)
@@ -60,9 +61,12 @@ http {
         add_header X-Content-Type-Options nosniff always;
       }
     }
-    location /api/ { proxy_pass http://$API; proxy_read_timeout 300s; }
   }
 }
 EOF
+# NOISO=1: no COOP/COEP, as a browser without shared memory sees it
+if [ "${NOISO:-}" = 1 ]; then
+  sed -i -e '/Cross-Origin-Opener-Policy/d' -e '/Cross-Origin-Embedder-Policy/d' "$D/nginx.conf"
+fi
 echo "nginx: $NGINX, config: $D/nginx.conf"
 exec "$NGINX/bin/nginx" -p "$D" -c "$D/nginx.conf"

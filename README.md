@@ -43,8 +43,9 @@ On the visitor's device:
 - `web/solver.js`, `web/solver-worker.js`: the thin JS around it: the
   workers, the tables in one SharedArrayBuffer they all read (so the page
   must be cross-origin isolated: xty sends COOP and COEP), jobs to free
-  workers. A browser that cannot asks the site's own solver (`/api/solve`, on
-  delfos, below), if it is there.
+  workers. A browser that cannot gets a quick way instead: Lite.bend's
+  two-phase alone, on one worker (or on the page), marked "quick", not proven
+  the shortest. Nothing is ever asked of a server: the site only serves files.
 - `web/App.bend`: the page, a bend-frp app; it holds the cube and tells the 3D
   view (`web/cube3d.js`, three.js) which turn to animate and what the stickers
   are after it. Random scrambles (12 to 16 moves), turns by hand (the 18
@@ -54,7 +55,9 @@ On the visitor's device:
   position in the fragment, never sent to a server) to open the same cube on
   a bigger one.
 
-On delfos, an optional extra nothing depends on (the site's `/api/solve`):
+Not used by the site (it asks no server; the user, 11-16: "I don't want
+Edgar's site to use delfos at all"): the first, server-side solver, kept as
+code:
 
 - `Coord.bend`, `Sym.bend`, `Kc.bend`, `Build.bend`: the big tables. The
   corners' exact distances, and, as in Kociemba's optimal solver, the exact
@@ -77,10 +80,8 @@ nix build .#solver        # delfos's solver and its tables: elcubodeedgar-solver
 nix flake check           # the proofs (and BendTT's verdict), every module, the 3D turns
 ```
 
-On delfos the extra runs as systemd user units (`elcubodeedgar.service`,
-`elcubodeedgar-solver.service`, `elcubodeedgar-watchdog.timer`, and
-`elcubodeedgar-tunnel.service`, the reverse tunnel xty's `/api/` goes
-through); copies are in `deploy/`.
+It used to run on delfos as systemd user units (copies in `deploy/`); they
+are stopped and disabled, and xty has no `/api/` any more.
 
 `probe/site-test.sh WWW PORT` serves the site as xty does (nginx, the same
 headers); `probe/bench.html` and `probe/bench.sh` time the device's solver in
@@ -88,4 +89,4 @@ headless Chrome with 1, 2, 4, 8 workers, each answer checked by
 `probe/Check.bend`; `probe/shot.mjs` takes screenshots (`DPR=3 node
 probe/shot.mjs URL 390x844 ...` for a phone); `probe/turns.mjs` checks that the
 3D view's turns move the stickers as `Cube.bend` does; `probe/solve-tests.sh`
-asks delfos's solver as a visitor would.
+asks the old server-side solver (not used by the site).
