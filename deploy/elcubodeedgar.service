@@ -1,0 +1,17 @@
+# El cubo de Edgar (~/src/elcubodeedgar, Server.bend): the page's files and
+# the way to the solver (elcubodeedgar-solver.service, 127.0.0.1:8095) on
+# 127.0.0.1:8093, from the repo's `nix build` (result). It solves nothing
+# itself, so it answers at once. xty serves it as
+# https://elcubodeedgar.hhefesto.dev through elcubodeedgar-tunnel. No resource
+# limits: the user, 11-15, "use the whole of delfos, do not add limits".
+[Unit]
+Description=El cubo de Edgar: the page, and the way to the solver, on 127.0.0.1:8093
+After=network.target
+
+[Service]
+ExecStart=%h/src/elcubodeedgar/result/bin/elcubodeedgar 8093
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target

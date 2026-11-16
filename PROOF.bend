@@ -640,3 +640,42 @@ def Laws.search_one_order(f, t):
     case G.FB{} G.TI{}:
       {==}
 
+
+def Laws.search_first(f, t):
+  match f t:
+    case G.FU{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{}:
+      {==}

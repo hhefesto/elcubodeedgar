@@ -1,0 +1,18 @@
+# El cubo de Edgar's solver (~/src/elcubodeedgar, Worker.bend) on
+# 127.0.0.1:8095: the page's server (elcubodeedgar.service) hands it the
+# cubes. It reads its tables (3.6 GB) at start, about 40 s; it answers
+# /health at once. The server kills it (systemctl restart) if it ever holds
+# an answer past 95 s, and elcubodeedgar-watchdog.timer if /health stops
+# answering. No resource limits: the user, 11-15, "use the whole of delfos,
+# do not add limits".
+[Unit]
+Description=El cubo de Edgar: the solver on 127.0.0.1:8095
+After=network.target
+
+[Service]
+ExecStart=%h/src/elcubodeedgar/result-solver/bin/elcubodeedgar-solver 8095
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

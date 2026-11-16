@@ -39,10 +39,13 @@ def sr.win(+r: Res, +path: List<&2, U32>) -> Res:
 def sr.face(+m: U32) -> U32:
   U32.shrn(U32.mul(m, 11), 5n)
 
-# whether m may follow a turn of face lf (6: no turn yet)
+# whether m may follow a turn of face lf (6: no turn yet): not the same face,
+# and U, R, F (0..2) not right after the face across (3..5). (Once "f + 3 is
+# not lf" for every face, which made 6 bar D, face 3: no search began with D
+# until 11-15; LAWS.bend: search_first.)
 def sr.allowed(+m: U32, +lf: U32) -> Bool:
   +f = sr.face(m)
-  Bool.and(U32.is_ne(f, lf), U32.is_ne(U32.add(f, 3), lf))
+  Bool.and(U32.is_ne(f, lf), Bool.or(U32.is_ge(f, 3), U32.is_ne(U32.add(f, 3), lf)))
 
 def sr.max3(+a: U32, +b: U32, +c: U32) -> U32:
   U32.max(a, U32.max(b, c))

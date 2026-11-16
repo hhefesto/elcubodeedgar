@@ -1,22 +1,32 @@
 import Base
 import ./Cube.bend as C
-import ./Par.bend as P
-import ./Solve.bend as V
 
-# The cube's web server: the page's files, and the solver.
+# The cube's web server: the page's files, and the way to the solver.
 #
 #   cube-server <www> <port>
 #
-# builds the tables (about a minute), then answers on 127.0.0.1:<port>, one
-# request at a time, each connection closed after its answer:
+# answers on 127.0.0.1:<port>, each connection in a computation of its own,
+# closed after its answer:
 #   GET /api/solve?m=3.10.17   a shortest solution of the cube those moves
 #                              make from solved (moves numbered as Cube.bend's)
+#   GET /health                "ok"
 #   GET /<name>                the file <www>/<name> (/ is index.html)
 #
-# The solve's answer is four lines: the moves ("" for none, "none" if no
-# solution within 20), the nodes searched, the milliseconds, and "ok" when
-# the scramble then the solution leaves the cube solved (checked here, by
-# Cube.bend, on every answer).
+# It solves nothing itself: the solver is a process of its own (Worker.bend,
+# cube-solver, on 127.0.0.1:8095, elcubodeedgar-solver.service), so the page
+# and its files answer at once whatever the solver is doing. A solve is
+# handed to it with the visitor's address (Cloudflare's CF-Connecting-IP),
+# so a visitor's new cube cancels their old one. The solver answers within
+# its own wait (wk.wait, 85 s); if it does not within hs.wait(), its event
+# loop is stuck, and this server kills it (systemd starts it again) and
+# says the solve ran out of time. While the solver is replaced, a standby
+# on 127.0.0.1:8096 answers: a cube goes to the main one, else the standby,
+# else the answer is "down" (and the page asks again in a few seconds).
+#
+# The solve's answer is the solver's: four lines (the moves, or one word:
+# late, busy, cancelled, none, or "down" while the solver is starting; the
+# nodes searched; the milliseconds; "ok" when the scramble then the solution
+# leaves the cube solved), and for a word, a fifth: the bound reached.
 #
 # Every def is prefixed `hs.`.
 
@@ -149,97 +159,221 @@ def hs.count(ms: List<&2, U32>) -> U32:
     case Con{m, t}:
       U32.add(hs.count(t), 1)
 
-# The solver
-# ----------
 
-def hs.api.say(s: Socket, +ms: List<&2, U32>, ans: V.Ans, +ms_taken: Nat) -> IO(Unit):
-  match ans:
-    case V.Ans{Some{+sol}, k, b}:
-      +ok = C.cube.is_solved(C.cube.apply(sol, C.cube.apply(ms, C.cube.solved())))
-      +body = C.cube.nums(sol) ++ "\n" ++ U32.show(k) ++ "\n" ++ Nat.show(ms_taken) ++ "\n" ++ Bool.pick(String, ok, "ok", "WRONG") ++ "\n"
-      do IO<Unit>:
-        IO.print("solve " ++ C.cube.show(ms) ++ " -> " ++ C.cube.show(sol) ++ " (" ++ U32.show(hs.count(sol)) ++ " moves, " ++ U32.show(k) ++ " nodes, " ++ Nat.show(ms_taken) ++ " ms)")
-        hs.text(s, "200 OK", body)
-    case V.Ans{None{}, k, b}:
-      do IO<Unit>:
-        IO.print("solve " ++ C.cube.show(ms) ++ " -> none within 20")
-        hs.text(s, "200 OK", "none\n" ++ U32.show(k) ++ "\n" ++ Nat.show(ms_taken) ++ "\nok\n")
+# The way to the solver
+# ---------------------
 
-def hs.api.timed(s: Socket, r: P.Ts & V.Ans, +ms: List<&2, U32>, +t0: Nat) -> IO(P.Ts):
-  (ts, ans) = r
-  match ans:
-    case V.Ans{f, +k, +b}:
-      do IO<P.Ts>:
-        t1 : Nat <- IO.now()
-        hs.api.say(s, ms, V.Ans{f, k, b}, Nat.sub(t1, t0))
-        return ts
+# how long a solve may take, the queue's wait included, before the solver
+# counts as stuck (it answers within 85 s; Cloudflare cuts at 100 s)
+def hs.wait() -> U32:
+  95000
 
-# at most 14 moves in a scramble: its solution is then at most 14, which the
-# search finds in seconds (15 can take minutes; a public server must not be held)
-def hs.api.go(short: Bool, s: Socket, ts: P.Ts, +ms: List<&2, U32>) -> IO(P.Ts):
-  match short:
+def hs.solver.port() -> U32:
+  8095
+
+# the longest scramble taken (a cube is at most 20 moves from solved; a
+# scramble, or a hand's turns, may be longer)
+def hs.most() -> U32:
+  400
+
+# the lines after the headers' blank one
+def hs.after.blank(ls: List<&2, String>) -> List<&2, String>:
+  match ls:
+    case Nil{}:
+      Nil{}
+    case Con{+l, +rest}:
+      Bool.pick(List<&2, String>, Bool.or(String.is_empty(l), String.eq(l, "\r")), rest, hs.after.blank(rest))
+
+def hs.body.of(+r: String) -> String:
+  String.join(hs.after.blank(String.split(r, '\n')), "\n")
+
+# the solver's answer read to its end (k reads at most)
+def hs.got(k: Nat, rd: Socket & Poll<&1, &1, Result<&1, &1, U32 & String, Maybe<&1, String>>, Unit>, +acc: String) -> IO(String):
+  match k:
+    case 0n:
+      (sock, p) = rd
+      do IO<String>:
+        Socket.close(sock)
+        return hs.body.of(acc)
+    case 1n+q:
+      (sock, p) = rd
+      match p:
+        case Ready{Done{Some{+part}}}:
+          do IO<String>:
+            rd2 : Socket & Poll<&1, &1, Result<&1, &1, U32 & String, Maybe<&1, String>>, Unit> <- TCP.try_recv(sock, 16384, hs.wait())
+            hs.got(q, rd2, acc ++ part)
+        case _:
+          do IO<String>:
+            Socket.close(sock)
+            return hs.body.of(acc)
+
+def hs.down() -> String:
+  "down\n0\n0\nok\n0\n"
+
+# whether a solver's answer is whole, and not "down" (cut short, or the
+# solver going away, or still reading its tables)
+def hs.line(+ls: List<&2, String>, +i: Nat) -> String:
+  Maybe.default(&2, String, List.get(&2, String, ls, i), "")
+
+def hs.whole(+b: String) -> Bool:
+  +ls = String.split(b, '\n')
+  Bool.and(String.eq(hs.line(ls, 3n), "ok"), Bool.not(String.eq(hs.line(ls, 0n), "down")))
+
+def hs.request(+q: String) -> String:
+  "GET /solve?" ++ q ++ " HTTP/1.0\r\nHost: solver\r\n\r\n"
+
+def hs.read(m: Socket & Result<&1, &1, (U32 & String) & List<&2, U32>, Unit>) -> IO(String):
+  (sock, r) = m
+  do IO<String>:
+    rd : Socket & Poll<&1, &1, Result<&1, &1, U32 & String, Maybe<&1, String>>, Unit> <- TCP.try_recv(sock, 16384, hs.wait())
+    hs.got(16n, rd, "")
+
+# The standby solver (127.0.0.1:8096, only while the main one is replaced)
+def hs.b.conn(c: Result<&1, &1, U32 & String, Socket>, +q: String) -> IO(String):
+  match c:
+    case Done{sock}:
+      do IO<String>:
+        m : Socket & Result<&1, &1, (U32 & String) & List<&2, U32>, Unit> <- TCP.send(sock, hs.request(q))
+        hs.read(m)
+    case Fail{e}:
+      IO.pure(String, hs.down())
+
+def hs.b.ask(+q: String) -> IO(String):
+  do IO<String>:
+    c : Result<&1, &1, U32 & String, Socket> <- TCP.connect("127.0.0.1", U32.add(hs.solver.port(), 1))
+    hs.b.conn(c, q)
+
+# The main solver (127.0.0.1:8095); if it is not there, or does not answer
+# whole, the standby
+def hs.a.check.go(whole: Bool, +b: String, +q: String) -> IO(String):
+  match whole:
     case True{}:
-      do IO<P.Ts>:
-        t0 : Nat <- IO.now()
-        hs.api.timed(s, V.sv.solve(ts, ms), ms, t0)
+      IO.pure(String, b)
     case False{}:
-      do IO<P.Ts>:
-        hs.text(s, "400 Bad Request", "at most 14 moves\n")
-        return ts
+      hs.b.ask(q)
 
-def hs.api(s: Socket, ts: P.Ts, m: Maybe<&2, List<&2, U32>>) -> IO(P.Ts):
+def hs.a.check(+b: String, +q: String) -> IO(String):
+  hs.a.check.go(hs.whole(b), b, q)
+
+def hs.a.conn(c: Result<&1, &1, U32 & String, Socket>, +q: String) -> IO(String):
+  match c:
+    case Done{sock}:
+      do IO<String>:
+        m : Socket & Result<&1, &1, (U32 & String) & List<&2, U32>, Unit> <- TCP.send(sock, hs.request(q))
+        +b : String <- hs.read(m)
+        hs.a.check(b, q)
+    case Fail{e}:
+      hs.b.ask(q)
+
+# the solver's answer to the query q ("v=..&m=.."): the main one's, or the
+# standby's, or "down" if neither is there
+def hs.ask(+q: String) -> IO(String):
+  do IO<String>:
+    c : Result<&1, &1, U32 & String, Socket> <- TCP.connect("127.0.0.1", hs.solver.port())
+    hs.a.conn(c, q)
+
+def hs.kill.done(r: Result<&1, &1, U32 & String, U32 & (String & String)>) -> IO(Unit):
+  IO.pure(Unit, Unit{})
+
+# the solver did not answer in time: its event loop is stuck; kill it
+def hs.kill() -> IO(Unit):
+  do IO<Unit>:
+    IO.print("the solver did not answer in time: restarting it")
+    r : Result<&1, &1, U32 & String, U32 & (String & String)> <- Process.run("/run/current-system/sw/bin/systemctl", ["--user", "restart", "elcubodeedgar-solver.service"], "", 4096, 20000)
+    hs.kill.done(r)
+
+def hs.relay(s: Socket, m: Maybe<&1, String>) -> IO(Unit):
+  match m:
+    case Some{+body}:
+      hs.text(s, "200 OK", body)
+    case None{}:
+      do IO<Unit>:
+        hs.text(s, "200 OK", "late\n0\n" ++ U32.show(hs.wait()) ++ "\nok\n0\n")
+        hs.kill()
+
+# a header's value ("" if none), its name in lower case
+def hs.header(ls: List<&2, String>, +k: String) -> String:
+  match ls:
+    case Nil{}:
+      ""
+    case Con{+l, +rest}:
+      Bool.pick(String, String.starts_with(String.to_lower(l), k ++ ":"),
+        String.trim(String.drop(l, Nat.add(String.length(k), 1n))), hs.header(rest, k))
+
+# who asks: Cloudflare's word for the visitor's address, else none
+def hs.visitor(+req: String) -> String:
+  hs.header(String.split(req, '\n'), "cf-connecting-ip")
+
+# what comes before the first '&'
+def hs.before.amp(s: String) -> String:
+  match s:
+    case SNil{}:
+      SNil{}
+    case SCon{+c, t}:
+      Bool.pick(String, Char.is_eq(c, '&'), SNil{}, SCon{c, hs.before.amp(t)})
+
+def hs.api.ok(ok: Bool, s: Socket, +vis: String, +ms: List<&2, U32>) -> IO(Unit):
+  match ok:
+    case True{}:
+      do IO<Unit>:
+        r : Maybe<&1, String> <- IO.within(String, hs.wait(), hs.ask("v=" ++ vis ++ "&m=" ++ C.cube.nums(ms)))
+        hs.relay(s, r)
+    case False{}:
+      hs.text(s, "400 Bad Request", "at most " ++ U32.show(hs.most()) ++ " moves\n")
+
+def hs.api.go(m: Maybe<&2, List<&2, U32>>, s: Socket, +vis: String) -> IO(Unit):
   match m:
     case Some{+ms}:
-      hs.api.go(U32.is_le(hs.count(ms), 14), s, ts, ms)
+      hs.api.ok(U32.is_le(hs.count(ms), hs.most()), s, vis, ms)
     case None{}:
-      do IO<P.Ts>:
-        hs.text(s, "400 Bad Request", "m: moves 0..17 joined by '.'\n")
-        return ts
+      hs.text(s, "400 Bad Request", "m: moves 0..17 joined by '.'\n")
 
-def hs.route.go(api: Bool, s: Socket, ts: P.Ts, +www: String, +path: String) -> IO(P.Ts):
-  match api:
-    case True{}:
-      hs.api(s, ts, C.cube.read(String.drop(path, 13n)))
-    case False{}:
-      do IO<P.Ts>:
-        hs.file(s, www, hs.before(path))
-        return ts
+def hs.api(s: Socket, +path: String, +vis: String) -> IO(Unit):
+  hs.api.go(C.cube.read(hs.before.amp(String.drop(path, 13n))), s, vis)
 
-def hs.route(s: Socket, ts: P.Ts, +www: String, +path: String) -> IO(P.Ts):
-  hs.route.go(String.starts_with(path, "/api/solve?m="), s, ts, www, path)
+def hs.route.go(api: Bool, health: Bool, s: Socket, +www: String, +path: String, +vis: String) -> IO(Unit):
+  match api health:
+    case True{} _:
+      hs.api(s, path, vis)
+    case False{} True{}:
+      hs.text(s, "200 OK", "ok\n")
+    case False{} False{}:
+      hs.file(s, www, hs.before(path))
 
 # Connections
 # -----------
 
-def hs.answer(rd: Socket & Poll<&1, &1, Result<&1, &1, U32 & String, Maybe<&1, String>>, Unit>, ts: P.Ts, +www: String) -> IO(P.Ts):
+def hs.answer(rd: Socket & Poll<&1, &1, Result<&1, &1, U32 & String, Maybe<&1, String>>, Unit>, +www: String) -> IO(Unit):
   (s, p) = rd
   match p:
-    case Ready{Done{Some{req}}}:
-      hs.route(s, ts, www, hs.target(req))
+    case Ready{Done{Some{+req}}}:
+      +path = hs.target(req)
+      hs.route.go(String.starts_with(path, "/api/solve?m="), String.eq(path, "/health"), s, www, path, hs.visitor(req))
     case _:
-      do IO<P.Ts>:
-        Socket.close(s)
-        return ts
+      Socket.close(s)
 
-def hs.conn(m: Listener & Result<&1, &1, U32 & String, Socket>, ts: P.Ts, +www: String) -> IO(Listener & P.Ts):
+def hs.handle(s: Socket, +www: String) -> IO(Unit):
+  do IO<Unit>:
+    rd : Socket & Poll<&1, &1, Result<&1, &1, U32 & String, Maybe<&1, String>>, Unit> <- TCP.try_recv(s, 16384, 5000)
+    hs.answer(rd, www)
+
+def hs.conn(m: Listener & Result<&1, &1, U32 & String, Socket>, +www: String) -> IO(Listener):
   (l, res) = m
   match res:
     case Done{s}:
-      do IO<Listener & P.Ts>:
-        rd : Socket & Poll<&1, &1, Result<&1, &1, U32 & String, Maybe<&1, String>>, Unit> <- TCP.try_recv(s, 16384, 5000)
-        ts2 : P.Ts <- hs.answer(rd, ts, www)
-        return (l, ts2)
+      do IO<Listener>:
+        IO.spawn(Unit, hs.handle(s, www))
+        return l
     case Fail{e}:
-      IO.pure(Listener & P.Ts, (l, ts))
+      IO.pure(Listener, l)
 
-# one connection after another, until killed
+# one connection after another, each in its own computation, until killed
 @unsafe
-def hs.serve(r: Listener & P.Ts, +www: String) -> IO(Unit):
-  (l, ts) = r
+def hs.serve(l: Listener, +www: String) -> IO(Unit):
   do IO<Unit>:
     m : Listener & Result<&1, &1, U32 & String, Socket> <- TCP.accept(l)
-    r2 : Listener & P.Ts <- hs.conn(m, ts, www)
-    hs.serve(r2, www)
+    l2 : Listener <- hs.conn(m, www)
+    hs.serve(l2, www)
 
 def hs.args(xs: List<String>) -> String & String:
   match xs:
@@ -248,20 +382,16 @@ def hs.args(xs: List<String>) -> String & String:
     case _:
       ("www", "8093")
 
-def hs.start(+www: String, +port: U32, ts: P.Ts, +t0: Nat) -> IO(Unit):
-  do IO<Unit>:
-    +t1 : Nat <- IO.now()
-    IO.print("tables built in " ++ Nat.show(Nat.sub(t1, t0)) ++ " ms")
-    l : Listener <- IO.try(Listener, TCP.listen("127.0.0.1", port))
-    IO.print("serving " ++ www ++ " on http://127.0.0.1:" ++ U32.show(port))
-    hs.serve((l, ts), www)
-
-def hs.main(p: String & String, ts: P.Ts, +t0: Nat) -> IO(Unit):
+@unsafe
+def hs.main(p: String & String) -> IO(Unit):
   (+www, +port) = p
-  hs.start(www, Maybe.default(&2, U32, U32.read(port), 8093), ts, t0)
+  do IO<Unit>:
+    l : Listener <- IO.try(Listener, TCP.listen("127.0.0.1", Maybe.default(&2, U32, U32.read(port), 8093)))
+    IO.print("serving " ++ www ++ " on http://127.0.0.1:" ++ port ++ ", solving on 127.0.0.1:" ++ U32.show(hs.solver.port()))
+    hs.serve(l, www)
 
+@unsafe
 def main() -> IO(Unit):
   do IO<Unit>:
     args : List<String> <- IO.args()
-    t0 : Nat <- IO.now()
-    hs.main(hs.args(args), V.sv.lanes(), t0)
+    hs.main(hs.args(args))

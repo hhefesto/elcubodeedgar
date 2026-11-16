@@ -1,0 +1,8 @@
+# El cubo de Edgar's watchdog: restarts the server (8093) or the solver (8095)
+# if its /health does not answer twice, 5 s apart (flake: packages.watchdog)
+[Unit]
+Description=El cubo de Edgar: restart the server or the solver if it stops answering
+
+[Service]
+Type=oneshot
+ExecStart=%h/src/elcubodeedgar/result-watchdog/bin/elcubodeedgar-watchdog

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>El cubo de Edgar: the shortest way back</title>
 <meta name="description" content="Scramble a Rubik's cube in 3D and step through its optimal solution, found by an exhaustive search written in Bend.">
 <meta name="theme-color" content="#efe7d6">
@@ -25,6 +25,7 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -137,6 +138,26 @@ kbd { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px 2px; border:
 .scr { margin: 0 0 8px; font-family: var(--mono); font-size: 13px; color: var(--ink-2); word-spacing: 0.25em; min-height: 1.5em; }
 .scr-k { font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute); word-spacing: 0; margin-right: 6px; }
 
+/* the hand's turns: a column for each face, a row for each kind of turn */
+.pad { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 0 0 24px; }
+.turn {
+  --c: var(--U);
+  position: relative; min-height: 48px; padding: 12px 0 6px; overflow: hidden;
+  font-family: var(--mono); font-size: 16px; font-weight: 600; color: var(--ink);
+  background: var(--paper-3); border: 2px solid var(--ink); border-radius: 9px;
+  cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: transform 0.06s ease, background 0.15s;
+}
+.turn::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7px; background: var(--c); border-bottom: 1.5px solid var(--ink); }
+.turn[data-face="U"] { --c: var(--U); } .turn[data-face="R"] { --c: var(--R); } .turn[data-face="F"] { --c: var(--F); }
+.turn[data-face="D"] { --c: var(--D); } .turn[data-face="L"] { --c: var(--L); } .turn[data-face="B"] { --c: var(--B); }
+.turn:active { transform: translateY(2px); background: var(--paper-2); }
+.turn:focus-visible { outline: 3px solid var(--B); outline-offset: 2px; }
+.turn:disabled { opacity: 0.38; cursor: default; }
+.btn.solve { background: var(--F); color: var(--paper-3); }
+button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.strip.rough .tile { border-style: dashed; }
+
 /* the laws */
 .laws { margin-top: 44px; padding-top: 22px; border-top: 2px solid var(--ink); }
 .laws h2 { margin: 0 0 10px; font-size: 30px; font-weight: 420; font-style: italic; letter-spacing: -0.01em; font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 1; }
@@ -154,12 +175,15 @@ footer a { color: inherit; }
 @media (max-width: 920px) {
   .layout { grid-template-columns: 1fr; }
   /* the cube stays in view while the page scrolls under it */
-  .stage-wrap { position: sticky; top: 0; z-index: 5; height: 46vh; min-height: 300px; padding: 0; grid-template-rows: 1fr auto; background: var(--paper); border-bottom: 1px solid var(--rule); box-shadow: 0 10px 18px -16px rgba(40, 28, 16, 0.5); }
+  .stage-wrap { position: sticky; top: 0; z-index: 5; height: calc(38vh + env(safe-area-inset-top)); height: calc(38svh + env(safe-area-inset-top)); min-height: 240px; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); grid-template-rows: 1fr auto; background: var(--paper); border-bottom: 1px solid var(--rule); box-shadow: 0 10px 18px -16px rgba(40, 28, 16, 0.5); }
   .mast { display: none; }
   .hint { padding: 0 0 8px 16px; font-size: 10.5px; }
   .hint .keys { display: none; }
   #stage { margin: 0; }
-  .side { display: flex; flex-direction: column; border-left: none; padding: 18px 18px 34px; }
+  .side { display: flex; flex-direction: column; border-left: none; padding: 16px max(16px, env(safe-area-inset-right)) calc(34px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  .pad { gap: 6px; margin-bottom: 18px; }
+  .turn { min-height: 46px; font-size: 15px; }
+  .controls .btn { flex: 1 1 auto; justify-content: center; }
   .title { order: 0; margin-bottom: 10px; }
   #panel { order: 1; }
   .lede { order: 2; margin: 22px 0 0; font-size: 16px; }
@@ -174,6 +198,12 @@ footer a { color: inherit; }
   .tile { width: 46px; height: 56px; }
   .tile-m { font-size: 17px; }
 }
+/* a phone on its side: the cube on the left, the rest beside it */
+@media (max-width: 920px) and (orientation: landscape) and (max-height: 520px) {
+  .layout { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); }
+  .stage-wrap { height: 100vh; height: 100dvh; min-height: 0; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left); border-bottom: none; border-right: 1px solid var(--rule); box-shadow: none; }
+  .side { padding-left: 16px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .tile { animation: none; }
   .searching .status::after { animation: none; }
@@ -185,11 +215,11 @@ footer a { color: inherit; }
   <section class="stage-wrap">
     <div class="mast"><span><span class="dot"></span>No. 1 &middot; optimal</span><span>3 &times; 3 &times; 3</span></div>
     <div id="stage" role="img" aria-label="The cube in 3D. Drag to look around it."></div>
-    <p class="hint">drag to look around<span class="keys"> &middot; <kbd>s</kbd> scramble &middot; <kbd>space</kbd> next step &middot; <kbd>p</kbd> play</span></p>
+    <p class="hint">drag to look around<span class="keys"> &middot; <kbd>s</kbd> scramble &middot; <kbd>u</kbd><kbd>r</kbd><kbd>f</kbd><kbd>d</kbd><kbd>l</kbd><kbd>b</kbd> turn (<kbd>shift</kbd> back) &middot; <kbd>enter</kbd> solve &middot; <kbd>space</kbd> next step &middot; <kbd>p</kbd> play</span></p>
   </section>
   <section class="side">
     <h1 class="title"><span class="t1">El cubo de</span><span class="t2">Edgar</span></h1>
-    <p class="lede">Scramble it. The solver tries every sequence of moves, the short ones first, until one solves it: so the way back it shows you is <em>the shortest there is</em>. Then take it one turn at a time.</p>
+    <p class="lede">Scramble it, or turn its faces yourself. The solver tries every sequence of moves, the short ones first, until one solves it: so the way back it shows you is <em>the shortest there is</em>. Then take it one turn at a time.</p>
     <div id="panel"></div>
     <section class="laws">
       <h2>The group theory under it</h2>
@@ -202,8 +232,9 @@ footer a { color: inherit; }
         <li><b>Other faces do not.</b> <code>R U &ne; U R</code>: the group is not commutative.<span class="proof">proved</span></li>
         <li><b>What a move keeps.</b> Every move twists the corners by 0 in all (mod 3), flips the edges by 0 in all (mod 2), and moves corners and edges with the same parity.<span class="proof">proved</span></li>
         <li><b>Famous orders.</b> <code>(R U R&#8242; U&#8242;)&#8310; = 1</code> and <code>(R U)&#185;&#8304;&#8309; = 1</code>.<span class="proof">proved</span></li>
+        <li><b>Any first move.</b> The search may begin with every one of the 18 moves, and after a face it skips only that face and, for U, R and F, the face across.<span class="proof">proved</span></li>
       </ol>
-      <p class="fine">Why the first solution found is a shortest one: the search is Korf's (1997), IDA* over tables of exact distances. Each bound on the length is searched in full, and a branch is cut only when a table proves it cannot finish in time: one table for the corners (88 million positions) and one each for two sets of six edges (43 million each). Every cube is at most 20 moves from solved.</p>
+      <p class="fine">Why the first solution found is a shortest one: the search is Korf's (1997) IDA*. Each bound on the length is searched in full, and a branch is cut only when a table proves it cannot finish in time. The tables hold exact distances of parts of the cube: the corners (88 million positions) and, as in Kociemba's optimal solver, the edges' flips, the four middle-layer edges' places and the corners' twists (6.7 billion positions, kept as 3,044,504 classes under the cube's symmetries), looked up for the cube as it is and turned onto its two other axes. Every cube is at most 20 moves from solved. A search that does not finish in 75 s says so, and how far it got.</p>
     </section>
     <footer>written in <a href="https://github.com/HigherOrderCO/Bend">Bend</a> &middot; page by bend-frp &middot; 3D by three.js &middot; solved on delfos, 8 cores</footer>
   </section>
@@ -230,6 +261,11 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "s" || e.key === "S") press("scramble");
   else if (e.key === " " || e.key === "ArrowRight" || e.key === "n") { e.preventDefault(); press("next"); }
   else if (e.key === "p" || e.key === "P") press("play");
+  else if (e.key === "Enter" && !e.target.closest?.("button")) { e.preventDefault(); press("solve"); }
+  else if ("urfdlb".includes(e.key.toLowerCase()) && e.key.length === 1) {
+    // a face's letter turns it clockwise; with shift, back
+    press("t" + ("urfdlb".indexOf(e.key.toLowerCase()) * 3 + (e.shiftKey ? 2 : 0)));
+  }
 });
 </script>
 </body>

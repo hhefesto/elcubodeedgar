@@ -1,7 +1,8 @@
 // Screenshots of the page in headless Chrome, driven over the DevTools protocol:
 //   node probe/shot.mjs URL WIDTHxHEIGHT STEPS...
 // a step is click:SELECTOR, wait:MS, shot:FILE.png or eval:EXPRESSION. The page's
-// console errors and exceptions are printed.
+// console errors and exceptions are printed. DPR=3 sets the pixel ratio; a size
+// under 700 on its short side is a phone (touch, an iPhone's user agent).
 import { spawn } from "node:child_process";
 import { writeFileSync, mkdtempSync } from "node:fs";
 
@@ -59,7 +60,14 @@ try {
   await send("Page.enable");
   await send("Runtime.enable");
   await send("Log.enable");
-  await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: width < 700 });
+  // a phone: its pixel ratio (DPR, e.g. 3), touch, and an iPhone's Safari as the user agent
+  const dpr = Number(process.env.DPR || 1);
+  const phone = Math.min(width, height) < 700;
+  await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: dpr, mobile: phone });
+  if (phone) {
+    await send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
+    await send("Emulation.setUserAgentOverride", { userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1" });
+  }
   await send("Page.navigate", { url });
   await sleep(2500);
   for (const s of steps) {

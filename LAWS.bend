@@ -104,3 +104,10 @@ law search_one_order:
   for f: G.Face
   for t: G.Turn
   {S.sr.allowed(G.gr.m(f, t), G.gr.face(G.gr.opp(f))) == Bool.not(G.gr.first(f)) : Bool}
+
+# and before any move (6: no turn yet) it may begin with any move (until
+# 11-15 it could not begin with D: 6 is D + 3)
+law search_first:
+  for f: G.Face
+  for t: G.Turn
+  {S.sr.allowed(G.gr.m(f, t), 6) == True{} : Bool}
