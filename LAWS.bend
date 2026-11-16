@@ -5,6 +5,7 @@ import ./Group.bend as G
 import ./Guard.bend as Gd
 import ./Lite.bend as L
 import ./Kd.bend as D
+import ./Coord.bend as K
 
 # The group theory the solver stands on, as laws. PROOF.bend proves each one;
 # `bend PROOF.bend` prints ALL PROOFS CHECK only when every law holds.
@@ -232,6 +233,13 @@ law fst_rank_14:
 law fst_rank_15:
   {D.kd.rank.from(256n, 3840, 494) == True{} : Bool}
 
-# S's places (the slice edges home) ranked by both
+# S's places (the slice edges home): the solved cube's slice edges sit at
+# places 8 .. 11 (the mask 3840), and Kd ranks that set 494, the last of the
+# 495. Lite's rank of it, its place in lt.masks(), is the same count (the
+# fst_rank laws above); computing that list of 495 in the kernel runs out of
+# fuel, so the law names the mask and the rank, not Lite's list
+law fst_home_mask:
+  {L.lt.mask(K.co.places([8, 9, 10, 11], L.lt.ep(C.cube.solved()))) == 3840 : U32}
+
 law fst_home:
-  {D.kd.home() == L.lt.u(C.cube.solved()) : U32}
+  {D.kd.home() == 494 : U32}

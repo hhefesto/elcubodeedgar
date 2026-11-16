@@ -887,5 +887,8 @@ def Laws.fst_rank_14():
 def Laws.fst_rank_15():
   {==}
 
+def Laws.fst_home_mask():
+  {==}
+
 def Laws.fst_home():
   {==}
