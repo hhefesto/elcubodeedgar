@@ -28,11 +28,11 @@ Everything that thinks is Bend:
   has no solution, the short way is a shortest one.
 - `Worker.bend`: the solver as a process of its own (`cube-solver`, on
   127.0.0.1:8095): one cube at a time; the same cube asked again from the same
-  page joins its search (its 75 s count from the first ask), another cube
+  page joins its search (its 120 s count from the first ask), another cube
   from that page cancels it; at most 6 wait. Every ask is answered within
   20 s: the answer, or "working" (how far the search got, and the short way
   so far), or "queued"; the page asks again, so no request is near Safari's
-  60 s or Cloudflare's 100 s. Past 75 s the answer is the short way, marked
+  60 s or Cloudflare's 100 s. Past 120 s the answer is the short way, marked
   as not proven the shortest, with what the search ruled out. Answers are
   kept a while, so asking again for a cube just answered is instant.
 - `Server.bend`: the web server (127.0.0.1:8093): the page's files, and

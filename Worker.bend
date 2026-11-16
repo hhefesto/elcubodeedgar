@@ -49,7 +49,7 @@ import ./Sym.bend as Y
 # Every def is prefixed `wk.`.
 
 def wk.limit() -> Nat:
-  75000n
+  120000n
 
 # how long an asker waits for a word from the solver: then "queued" (its
 # cube waits behind others'), and the page asks again; under Safari's 60 s

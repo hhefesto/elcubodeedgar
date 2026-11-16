@@ -351,6 +351,10 @@ def checks(m: Maybe<&2, List<&2, U32>>, +pos: List<&2, U32>) -> Bool:
     case None{}:
       False{}
 
+# the solver's time limit for one cube, in seconds (Worker.bend's wk.limit)
+def lim() -> U32:
+  120
+
 def plural(+n: U32, +one: String, +many: String) -> String:
   U32.show(n) ++ " " ++ Bool.pick(String, U32.is_eq(n, 1), one, many)
 
@@ -609,7 +613,7 @@ def pad(+ok: Bool) -> W.Html:
 # the headline: where things stand
 def status.solved(+n: U32, +step: U32, +opt: Bool, +asked: Bool, +info: String, +wait: U32) -> String:
   Bool.pick(String, asked,
-    "A short way back: " ++ plural(n, "move", "moves") ++ " so far. Still looking for the shortest... " ++ U32.show(wait) ++ " s of 75 s. " ++ info,
+    "A short way back: " ++ plural(n, "move", "moves") ++ " so far. Still looking for the shortest... " ++ U32.show(wait) ++ " s of " ++ U32.show(lim()) ++ " s. " ++ info,
   Bool.pick(String, U32.is_zero(n), "That position was solved already.",
     Bool.pick(String, U32.is_ge(step, n), Bool.pick(String, opt, "Solved, in " ++ plural(n, "move", "moves") ++ ". No shorter way exists.", "Solved, in " ++ plural(n, "move", "moves") ++ "."),
       Bool.pick(String, opt, "Optimal: " ++ plural(n, "move", "moves") ++ ". Every shorter sequence was ruled out.",
@@ -624,7 +628,7 @@ def status.asked(+busy: Bool, +warming: Bool, +queued: Bool, +wait: U32) -> Stri
   Bool.pick(String, queued, "Waiting: the solver is on other visitors' cubes first... " ++ U32.show(wait) ++ " s",
   Bool.pick(String, warming, "The solver is starting up (it reads its tables, about a minute); asking again... " ++ U32.show(wait) ++ " s",
     Bool.pick(String, busy, "Scrambling... and already searching.",
-      "Searching every sequence, shortest first... " ++ U32.show(wait) ++ " s (75 s at most)")))
+      "Searching every sequence, shortest first... " ++ U32.show(wait) ++ " s (" ++ U32.show(lim()) ++ " s at most)")))
 
 def status(+s: S) -> String:
   match s:
@@ -647,7 +651,7 @@ def facts(+s: S) -> W.Html:
         [fact("position", plural(U32.from_nat(List.length(&2, U32, pos)), "move", "moves")),
          fact(Bool.pick(String, opt, "shortest solution", "a solution"), Bool.pick(String, has, plural(n, "move", "moves"), "-")),
          fact("done", U32.show(Bool.pick(U32, U32.is_lt(step, n), step, n)) ++ " / " ++ U32.show(n)),
-         fact("search", Bool.pick(String, has, Bool.pick(String, opt, info, Bool.pick(String, asked, "still searching", "stopped at 75 s")), "-"))])
+         fact("search", Bool.pick(String, has, Bool.pick(String, opt, info, Bool.pick(String, asked, "still searching", "stopped at " ++ U32.show(lim()) ++ " s")), "-"))])
 
 def next.name(m: Maybe<&2, U32>) -> String:
   match m:
