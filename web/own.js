@@ -8,14 +8,17 @@
 // (dv.hold, dv.pose), what the camera sees (dv.seen), a face taken twice
 // (dv.twin), and, from a short solution the device's solver finds, the moves
 // that make the cube (dv.undo); the page then shows that position (#m=) and
-// solves it as any other.
+// solves it as any other. What it says names faces by the visitor's cube's
+// colours (web/colours.js, Scheme.bend's sc.say); after four photos, Dev.bend
+// also says if the cube's colours are another layout than the page's (dv.fit:
+// the Japanese one, say), and the panel offers it.
 const FACES = "URFDLB";
 const SOLVED = [...FACES].map((f) => f.repeat(9)).join("");
 // where face f's sticker i sits on the net (12 x 9 cells): U above F, then
 // L F R B, then D (Cube.bend's facelet layout)
 const AT = { U: [0, 3], L: [3, 0], F: [3, 3], R: [3, 6], B: [3, 9], D: [6, 3] };
 
-export function ownCube({ solver, go }) {
+export function ownCube({ solver, go, colours }) {
   const dlg = document.getElementById("own-dlg");
   const net = document.getElementById("own-net");
   const msg = document.getElementById("own-msg");
@@ -66,6 +69,7 @@ export function ownCube({ solver, go }) {
     stickers = [...SOLVED];
     shots = Array(6).fill(null);
     seen = Array(6).fill(null);
+    kept.clear();
     draw();
     say("");
   });
@@ -76,8 +80,15 @@ export function ownCube({ solver, go }) {
   // colour on each), whether a photo is a face already taken (dv.twin: the
   // cube was not turned), and the cube the six make (dv.photo). Photos are
   // kept if the camera is stopped, until the six are read.
-  const NAME = { U: "white", R: "red", F: "green", D: "yellow", L: "orange", B: "blue" };
-  const LETTER = Object.fromEntries(Object.entries(NAME).map(([f, n]) => [n, f]));
+  const NAME = new Proxy({}, { get: (_, f) => colours.name(f) });
+  const said = (t) => colours.say(t);
+  const fitBox = document.getElementById("own-fit");
+  const fitText = document.getElementById("own-fit-t");
+  const fitYes = document.getElementById("own-fit-yes");
+  const fitNo = document.getElementById("own-fit-no");
+  // the schemes the visitor kept when offered another (asked once each)
+  const kept = new Set();
+  let fitThen = null;
   const view = document.getElementById("own-view");
   const guide = document.getElementById("own-guide");
   const steps = document.getElementById("own-steps");
@@ -103,6 +114,9 @@ export function ownCube({ solver, go }) {
     video.srcObject = null;
     held = null;
     keepBtn.hidden = true;
+    fitBox.hidden = true;
+    fitThen = null;
+    shotBtn.disabled = false;
     cam.hidden = true;
     dlg.classList.remove("cam");
   };
@@ -183,13 +197,14 @@ export function ownCube({ solver, go }) {
   const sayHold = (t) => {
     const m = t.match(/^(.*?)\s*\((.*)\)\.?$/);
     const main = m ? m[1].replace(/[,.]?$/, ".") : t;
+    const names = colours.now().names;
     holdText.replaceChildren(
-      ...main.split(/\b(white|red|green|yellow|orange|blue)\b/).map((w, i) => {
+      ...main.split(new RegExp(`\\b(${names.join("|")})\\b`)).map((w, i) => {
         if (i % 2 === 0) return document.createTextNode(w);
         const b = document.createElement("b");
         const c = document.createElement("span");
         c.className = "own-chip";
-        c.style.setProperty("--c", `var(--${LETTER[w]})`);
+        c.style.setProperty("--c", `var(--${"URFDLB"[names.indexOf(w)]})`);
         b.append(c, w);
         return b;
       }),
@@ -208,11 +223,12 @@ export function ownCube({ solver, go }) {
 
   const ask = async (k) => {
     const d = await dev();
+    await colours.ready();
     at = k;
     held = null;
     keepBtn.hidden = true;
     kText.textContent = `Photo ${k + 1} of 6 · the ${NAME[poses[k][0]]} face`;
-    sayHold(d["dv.hold"](k));
+    sayHold(said(d["dv.hold"](k)));
     drawPose(k);
     dots[4].style.setProperty("--ring", `var(--${poses[k][0]})`);
     shotBtn.textContent = shots[k] ? `Take photo ${k + 1} again` : `Take photo ${k + 1}`;
@@ -298,7 +314,7 @@ export function ownCube({ solver, go }) {
     void net.offsetWidth;
     net.classList.add("fresh");
     net.scrollIntoView({ block: "center", behavior: "smooth" });
-    const why = d["dv.check"](stickers.join(""));
+    const why = said(d["dv.check"](stickers.join("")));
     say(
       why
         ? "Read from your six photos, but it is not a cube yet: " + why + " Tap the stickers it got wrong to fix them, or take the photos again."
@@ -318,12 +334,74 @@ export function ownCube({ solver, go }) {
     void view.offsetWidth;
     view.classList.add("snap");
     const next = [1, 2, 3, 4, 5].map((i) => (at + i) % 6).find((k) => !shots[k]);
+    const p = await fit();
+    if (p !== null) return offer(p, next);
+    onward(next);
+  };
+  const onward = (next) => {
     if (next === undefined) {
       drawSteps();
       return readAll();
     }
     ask(next);
   };
+
+  // the cube's colours, from four photos on: another layout of the page's
+  // (Dev.bend's dv.fit), or null
+  const fit = async () => {
+    const ks = [0, 1, 2, 3, 4, 5].filter((k) => shots[k]);
+    const key = colours.now().key;
+    if (ks.length < 4 || kept.has(key)) return null;
+    const d = await dev();
+    let p = 5;
+    try {
+      p = d["dv.fit"](ks.join(""), ks.map((k) => shots[k]).join("\n"), key);
+    } catch (x) {
+      console.error(x);
+    }
+    return p < 5 ? p : null;
+  };
+  // offered: that scheme, or the page's kept; the photos stay either way
+  const offer = async (p, next) => {
+    const s = await colours.ready();
+    const now = colours.now().name;
+    const name = s["sc.name.of"](String(p));
+    fitText.replaceChildren(
+      Object.assign(document.createElement("b"), { textContent: `Your cube looks like it has the ${name} colours, not the ${now} ones. ` }),
+      document.createTextNode(s["sc.about.of"](String(p)) + " Your photos stay as they are."),
+    );
+    fitYes.textContent = `Use the ${name} colours`;
+    fitNo.textContent = `Keep ${now}`;
+    fitYes.dataset.p = String(p);
+    fitThen = next ?? -1;
+    fitBox.hidden = false;
+    shotBtn.disabled = true;
+    shotBtn.textContent = "First, your cube's colours";
+    drawSteps();
+    say("");
+    fitYes.focus({ preventScroll: true });
+    fitBox.scrollIntoView({ block: "center", behavior: "smooth" });
+  };
+  let answering = false;
+  const answered = async (use) => {
+    if (fitThen === null || answering) return;
+    answering = true;
+    const next = fitThen < 0 ? undefined : fitThen;
+    fitBox.hidden = true;
+    shotBtn.disabled = false;
+    // (fitThen still set: the scheme's hook leaves the panel to onward)
+    if (use) await colours.use(fitYes.dataset.p);
+    else kept.add(colours.now().key);
+    fitThen = null;
+    answering = false;
+    onward(next);
+  };
+  fitYes.addEventListener("click", () => answered(true));
+  fitNo.addEventListener("click", () => answered(false));
+  // another scheme (picked, or offered): the panel says it in its colours
+  colours.on(() => {
+    if (stream && poses && fitThen === null) ask(at);
+  });
   shotBtn.addEventListener("click", async () => {
     if (!stream) return;
     if (!video.videoWidth) return say("The camera is still starting: a moment, then take it.");
@@ -366,7 +444,7 @@ export function ownCube({ solver, go }) {
   document.getElementById("own-go").addEventListener("click", async () => {
     const fl = stickers.join("");
     const d = await dev();
-    const why = d["dv.check"](fl);
+    const why = said(d["dv.check"](fl));
     if (why) return say("This cannot be a real cube: " + why, true);
     if (fl === SOLVED) return say("That is the solved cube: paint the stickers as your cube has them.", true);
     say("Checked: a real cube. Finding it a way back...");

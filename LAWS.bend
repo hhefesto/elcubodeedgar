@@ -7,6 +7,7 @@ import ./Lite.bend as L
 import ./Kd.bend as D
 import ./Coord.bend as K
 import ./Photo.bend as Ph
+import ./Scheme.bend as Sc
 
 # The group theory the solver stands on, as laws. PROOF.bend proves each one;
 # `bend PROOF.bend` prints ALL PROOFS CHECK only when every law holds.
@@ -287,3 +288,61 @@ law photo_same_face:
   {Ph.ph.same(Ph.ph.seen(Ph.ph.pal.phone(), Ph.ph.light(l), G.gr.face(a)),
               Ph.ph.seen(Ph.ph.pal.phone(), Ph.ph.light(l), G.gr.face(b)))
      == U32.is_eq(G.gr.face(a), G.gr.face(b)) : Bool}
+
+# Your cube's colours (Scheme.bend)
+# ---------------------------------
+
+# every preset gives the six faces six different colours
+law scheme_six:
+  for p: Sc.Preset
+  {Sc.sc.why.faces(Sc.sc.faces(Sc.sc.preset(p))) == "" : String}
+
+# a preset's number names it (the page keeps the number)
+law scheme_key:
+  for p: Sc.Preset
+  {Sc.sc.at(Sc.sc.index(p)) == p : Sc.Preset}
+
+# and six digits are a scheme of the visitor's own, two faces of one colour
+# caught
+law scheme_own:
+  {Sc.sc.why("022135") == "Two faces are red: each face needs a colour of its own." : String}
+
+# the Japanese scheme is the standard one with yellow and blue swapped (down
+# and back), the mirrored one with red and orange (right and left)
+law scheme_japanese:
+  {Sc.sc.faces(Sc.sc.preset(Sc.Japanese{}))
+     == List.set(&2, U32, List.set(&2, U32, Sc.sc.faces(Sc.sc.preset(Sc.Standard{})), 3n, 5), 5n, 1) : List<&2, U32>}
+
+law scheme_mirrored:
+  {Sc.sc.faces(Sc.sc.preset(Sc.Mirrored{}))
+     == List.set(&2, U32, List.set(&2, U32, Sc.sc.faces(Sc.sc.preset(Sc.Standard{})), 1n, 3), 4n, 2) : List<&2, U32>}
+
+# the page's messages name faces by the standard scheme's colours: in the
+# standard scheme they are said as they are
+law scheme_say_standard:
+  for a: G.Face
+  for b: G.Face
+  {Sc.sc.say("0", "The " ++ Gd.gd.name(G.gr.face(a)) ++ "-" ++ Gd.gd.name(G.gr.face(b)) ++ " edge (white 8).")
+     == "The " ++ Gd.gd.name(G.gr.face(a)) ++ "-" ++ Gd.gd.name(G.gr.face(b)) ++ " edge (white 8)." : String}
+
+# and in every preset, a face's standard name is said as its colour there
+law scheme_say_face:
+  for p: Sc.Preset
+  for f: G.Face
+  {Sc.sc.say.in(Sc.sc.preset(p), "the " ++ Gd.gd.name(G.gr.face(f)) ++ " centre")
+     == "the " ++ Sc.sc.col.name(Sc.sc.get(Sc.sc.faces(Sc.sc.preset(p)), G.gr.face(f))) ++ " centre" : String}
+
+# a face's colour picked (the picker's "None of these?"): a colour another
+# face has swaps with it, so from every preset, whichever face is given
+# whichever of the standard six, the six stay six different colours
+law scheme_pick_six:
+  for p: Sc.Preset
+  for f: G.Face
+  for g: G.Face
+  {Sc.sc.why(Sc.sc.pick(U32.show(Sc.sc.index(p)), G.gr.face(f), Sc.sc.get(Sc.sc.faces(Sc.sc.preset(Sc.Standard{})), G.gr.face(g)))) == "" : String}
+
+# and six that are a preset's are that preset: the standard one's bottom
+# made blue is the Japanese one, its right made orange the mirrored one, and
+# the Japanese one's bottom made yellow the standard one again
+law scheme_pick_presets:
+  {[Sc.sc.pick("0", 3, 5), Sc.sc.pick("0", 1, 3), Sc.sc.pick("2", 3, 1)] == ["2", "3", "0"] : List<&2, String>}

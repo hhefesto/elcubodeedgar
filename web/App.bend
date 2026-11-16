@@ -41,6 +41,7 @@ type Msg is Data:
   MStart{+seed: U32}
   MHow{}
   MOwn{}
+  MCol{}
   MRoute{+v: String}
   MCopy{}
   MScramble{+seed: U32}
@@ -90,6 +91,7 @@ def msg.of(+t: F.Time, +tag: String, +v: String) -> Msg:
   Bool.pick(Msg, String.eq(tag, "start"), MStart{seed.of(t)},
   Bool.pick(Msg, String.eq(tag, "howto"), MHow{},
   Bool.pick(Msg, String.eq(tag, "own"), MOwn{},
+  Bool.pick(Msg, String.eq(tag, "colours"), MCol{},
   Bool.pick(Msg, String.eq(tag, "route"), MRoute{v},
   Bool.pick(Msg, String.eq(tag, "copy"), MCopy{},
   Bool.pick(Msg, String.eq(tag, "scramble"), MScramble{seed.of(t)},
@@ -102,7 +104,7 @@ def msg.of(+t: F.Time, +tag: String, +v: String) -> Msg:
   Bool.pick(Msg, String.starts_with(tag, "tick"), MTick{num(String.drop(tag, 4n))},
   Bool.pick(Msg, String.starts_with(tag, "again"), MAgain{num(String.drop(tag, 5n))},
   Bool.pick(Msg, Bool.and(String.starts_with(tag, "t"), msg.move(String.drop(tag, 1n))), MTurn{num(String.drop(tag, 1n))},
-    MOther{})))))))))))))))
+    MOther{}))))))))))))))))
 
 # Positions
 # ---------
@@ -605,6 +607,8 @@ def apply(+s: S, m: Msg) -> S & List<&2, W.Effect>:
       (s, [W.Host{"howto:shown", "howto", ""}])
     case MOwn{}:
       (s, [W.Host{"own:shown", "own", ""}])
+    case MCol{}:
+      (s, [W.Host{"colours:shown", "colours", ""}])
     case MScramble{seed}:
       on.scramble(s, seed)
     case MTurn{+t}:
@@ -767,6 +771,22 @@ def own.cta() -> W.Html:
         W.el("span", [W.cls("own-cta-s")], [W.text("Paint its colours or use the camera, and get its shortest way back.")])]),
      W.el("span", [W.cls("own-cta-go"), W.Prop{"aria-hidden", "true"}], [])])
 
+# "Your cube's colours": a row under it, for a cube whose colours are not the
+# page's (web/colours.js's picker; Scheme.bend's presets): the six centres
+# on a net, in the colours the page now has, and the scheme's name (index.html
+# puts it in, from --sch-name)
+def col.f(+f: String) -> W.Html:
+  W.el("i", [W.Prop{"data-f", f}], [])
+
+def col.row() -> W.Html:
+  W.el("button", [W.Prop{"id", "colours"}, W.cls("sch-row"), W.Prop{"type", "button"}, W.On{"click", "colours"}],
+    [W.el("span", [W.cls("sch-net sch-live"), W.Prop{"aria-hidden", "true"}],
+       [col.f("U"), col.f("R"), col.f("F"), col.f("D"), col.f("L"), col.f("B")]),
+     W.el("span", [W.cls("sch-txt")],
+       [W.el("span", [W.cls("sch-k")], [W.text("Your cube's colours")]),
+        W.el("span", [W.cls("sch-name")], [])]),
+     W.el("span", [W.cls("sch-go")], [W.text("Not these? Change")])])
+
 def view.go(+s: S) -> W.Html:
   match s:
     case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
@@ -784,6 +804,7 @@ def view.go(+s: S) -> W.Html:
             W.el("button", [W.Prop{"id", "reset"}, W.cls("btn ghost"), prop.on("disabled", Bool.or(busy, Bool.and(List.is_empty(&2, U32, now), Bool.not(asked)))), W.On{"click", "reset"}],
               [W.text("Reset")])]),
          own.cta(),
+         col.row(),
          pad(True{}),
          W.el("p", [W.cls("pad-help")], [W.el("button", [W.Prop{"id", "howto"}, W.cls("howto"), W.On{"click", "howto"}], [W.text("What do these buttons mean?")])]),
          strip(sol, step, opt),

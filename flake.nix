@@ -57,7 +57,9 @@
             ./web/solver.js
             ./web/solver-worker.js
             ./web/own.js
+            ./web/colours.js
             ./Photo.bend
+            ./Scheme.bend
             ./Opt.bend
             ./Fast.bend
             ./TwoPhase.bend
@@ -66,6 +68,7 @@
             ./Group.bend
             ./LAWS.bend
             ./PROOF.bend
+            ./FIT.bend
             ./web/App.bend
             ./web/index.html
             ./web/cube3d.js
@@ -162,6 +165,7 @@
             bend web/Sched.bend -o web/sched.mjs
             bend web/index.html -o $out
             bend Dev.bend -o $out/dev.mjs
+            bend Scheme.bend -o $out/scheme.mjs
             cp web/solver-worker.js web/solver.js web/own.js web/sched.mjs $out/
             cp -r ${dev-tables}/t ${dev-tables}/tables.json $out/
           '';
@@ -213,11 +217,17 @@
             bend PROOF.bend --verdict 2>&1 | tee $out
             grep -q 'ALL PROOFS CHECK' $out
           '';
+          # the colour-scheme laws of the camera (FIT.bend): Bend's checker
+          # only, as BendTT's kernel runs out of fuel on them
+          fit = inSource pkgs "fit" [ ] ''
+            bend FIT.bend --check-only 2>&1 | tee $out
+            grep -q 'ALL PROOFS CHECK' $out
+          '';
           # the modules check (the servers and the table builder lean on IO
           # loops and shared arrays, @unsafe, so they are built, not checked:
           # packages.server, solver-bin, tables)
           modules = inSource pkgs "modules" [ ] ''
-            for f in Cube.bend Coord.bend Search.bend Par.bend Solve.bend Sym.bend Kc.bend Opt.bend TwoPhase.bend Group.bend Guard.bend Lite.bend Kd.bend Dev.bend web/Sched.bend web/App.bend; do
+            for f in Cube.bend Coord.bend Search.bend Par.bend Solve.bend Sym.bend Kc.bend Opt.bend TwoPhase.bend Group.bend Guard.bend Lite.bend Kd.bend Scheme.bend Photo.bend Dev.bend web/Sched.bend web/App.bend; do
               echo "== $f"
               bend $f --check-only 2>&1 | tee log
               grep -q 'ALL PROOFS CHECK' log

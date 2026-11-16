@@ -10,6 +10,7 @@ import ./Search.bend as S
 import ./Group.bend as G
 import ./Guard.bend as Gd
 import ./Photo.bend as Ph
+import ./Scheme.bend as Sc
 import ./LAWS.bend as Laws
 
 def Laws.quarter_turn_order(f):
@@ -1235,3 +1236,542 @@ def Laws.photo_same_face(a, b, l):
       {==}
     case G.FB{} G.FB{} Ph.Shade{}:
       {==}
+
+def Laws.scheme_six(p):
+  match p:
+    case Sc.Standard{}:
+      {==}
+    case Sc.Stickerless{}:
+      {==}
+    case Sc.Japanese{}:
+      {==}
+    case Sc.Mirrored{}:
+      {==}
+    case Sc.Pastel{}:
+      {==}
+
+def Laws.scheme_key(p):
+  match p:
+    case Sc.Standard{}:
+      {==}
+    case Sc.Stickerless{}:
+      {==}
+    case Sc.Japanese{}:
+      {==}
+    case Sc.Mirrored{}:
+      {==}
+    case Sc.Pastel{}:
+      {==}
+
+def Laws.scheme_own():
+  {==}
+
+def Laws.scheme_japanese():
+  {==}
+
+def Laws.scheme_mirrored():
+  {==}
+
+def Laws.scheme_say_standard(a, b):
+  match a b:
+    case G.FU{} G.FU{}:
+      {==}
+    case G.FU{} G.FR{}:
+      {==}
+    case G.FU{} G.FF{}:
+      {==}
+    case G.FU{} G.FD{}:
+      {==}
+    case G.FU{} G.FL{}:
+      {==}
+    case G.FU{} G.FB{}:
+      {==}
+    case G.FR{} G.FU{}:
+      {==}
+    case G.FR{} G.FR{}:
+      {==}
+    case G.FR{} G.FF{}:
+      {==}
+    case G.FR{} G.FD{}:
+      {==}
+    case G.FR{} G.FL{}:
+      {==}
+    case G.FR{} G.FB{}:
+      {==}
+    case G.FF{} G.FU{}:
+      {==}
+    case G.FF{} G.FR{}:
+      {==}
+    case G.FF{} G.FF{}:
+      {==}
+    case G.FF{} G.FD{}:
+      {==}
+    case G.FF{} G.FL{}:
+      {==}
+    case G.FF{} G.FB{}:
+      {==}
+    case G.FD{} G.FU{}:
+      {==}
+    case G.FD{} G.FR{}:
+      {==}
+    case G.FD{} G.FF{}:
+      {==}
+    case G.FD{} G.FD{}:
+      {==}
+    case G.FD{} G.FL{}:
+      {==}
+    case G.FD{} G.FB{}:
+      {==}
+    case G.FL{} G.FU{}:
+      {==}
+    case G.FL{} G.FR{}:
+      {==}
+    case G.FL{} G.FF{}:
+      {==}
+    case G.FL{} G.FD{}:
+      {==}
+    case G.FL{} G.FL{}:
+      {==}
+    case G.FL{} G.FB{}:
+      {==}
+    case G.FB{} G.FU{}:
+      {==}
+    case G.FB{} G.FR{}:
+      {==}
+    case G.FB{} G.FF{}:
+      {==}
+    case G.FB{} G.FD{}:
+      {==}
+    case G.FB{} G.FL{}:
+      {==}
+    case G.FB{} G.FB{}:
+      {==}
+
+def Laws.scheme_say_face(p, f):
+  match p f:
+    case Sc.Standard{} G.FU{}:
+      {==}
+    case Sc.Standard{} G.FR{}:
+      {==}
+    case Sc.Standard{} G.FF{}:
+      {==}
+    case Sc.Standard{} G.FD{}:
+      {==}
+    case Sc.Standard{} G.FL{}:
+      {==}
+    case Sc.Standard{} G.FB{}:
+      {==}
+    case Sc.Stickerless{} G.FU{}:
+      {==}
+    case Sc.Stickerless{} G.FR{}:
+      {==}
+    case Sc.Stickerless{} G.FF{}:
+      {==}
+    case Sc.Stickerless{} G.FD{}:
+      {==}
+    case Sc.Stickerless{} G.FL{}:
+      {==}
+    case Sc.Stickerless{} G.FB{}:
+      {==}
+    case Sc.Japanese{} G.FU{}:
+      {==}
+    case Sc.Japanese{} G.FR{}:
+      {==}
+    case Sc.Japanese{} G.FF{}:
+      {==}
+    case Sc.Japanese{} G.FD{}:
+      {==}
+    case Sc.Japanese{} G.FL{}:
+      {==}
+    case Sc.Japanese{} G.FB{}:
+      {==}
+    case Sc.Mirrored{} G.FU{}:
+      {==}
+    case Sc.Mirrored{} G.FR{}:
+      {==}
+    case Sc.Mirrored{} G.FF{}:
+      {==}
+    case Sc.Mirrored{} G.FD{}:
+      {==}
+    case Sc.Mirrored{} G.FL{}:
+      {==}
+    case Sc.Mirrored{} G.FB{}:
+      {==}
+    case Sc.Pastel{} G.FU{}:
+      {==}
+    case Sc.Pastel{} G.FR{}:
+      {==}
+    case Sc.Pastel{} G.FF{}:
+      {==}
+    case Sc.Pastel{} G.FD{}:
+      {==}
+    case Sc.Pastel{} G.FL{}:
+      {==}
+    case Sc.Pastel{} G.FB{}:
+      {==}
+
+def Laws.scheme_pick_six(p, f, g):
+  match p f g:
+    case Sc.Standard{} G.FU{} G.FU{}:
+      {==}
+    case Sc.Standard{} G.FU{} G.FR{}:
+      {==}
+    case Sc.Standard{} G.FU{} G.FF{}:
+      {==}
+    case Sc.Standard{} G.FU{} G.FD{}:
+      {==}
+    case Sc.Standard{} G.FU{} G.FL{}:
+      {==}
+    case Sc.Standard{} G.FU{} G.FB{}:
+      {==}
+    case Sc.Standard{} G.FR{} G.FU{}:
+      {==}
+    case Sc.Standard{} G.FR{} G.FR{}:
+      {==}
+    case Sc.Standard{} G.FR{} G.FF{}:
+      {==}
+    case Sc.Standard{} G.FR{} G.FD{}:
+      {==}
+    case Sc.Standard{} G.FR{} G.FL{}:
+      {==}
+    case Sc.Standard{} G.FR{} G.FB{}:
+      {==}
+    case Sc.Standard{} G.FF{} G.FU{}:
+      {==}
+    case Sc.Standard{} G.FF{} G.FR{}:
+      {==}
+    case Sc.Standard{} G.FF{} G.FF{}:
+      {==}
+    case Sc.Standard{} G.FF{} G.FD{}:
+      {==}
+    case Sc.Standard{} G.FF{} G.FL{}:
+      {==}
+    case Sc.Standard{} G.FF{} G.FB{}:
+      {==}
+    case Sc.Standard{} G.FD{} G.FU{}:
+      {==}
+    case Sc.Standard{} G.FD{} G.FR{}:
+      {==}
+    case Sc.Standard{} G.FD{} G.FF{}:
+      {==}
+    case Sc.Standard{} G.FD{} G.FD{}:
+      {==}
+    case Sc.Standard{} G.FD{} G.FL{}:
+      {==}
+    case Sc.Standard{} G.FD{} G.FB{}:
+      {==}
+    case Sc.Standard{} G.FL{} G.FU{}:
+      {==}
+    case Sc.Standard{} G.FL{} G.FR{}:
+      {==}
+    case Sc.Standard{} G.FL{} G.FF{}:
+      {==}
+    case Sc.Standard{} G.FL{} G.FD{}:
+      {==}
+    case Sc.Standard{} G.FL{} G.FL{}:
+      {==}
+    case Sc.Standard{} G.FL{} G.FB{}:
+      {==}
+    case Sc.Standard{} G.FB{} G.FU{}:
+      {==}
+    case Sc.Standard{} G.FB{} G.FR{}:
+      {==}
+    case Sc.Standard{} G.FB{} G.FF{}:
+      {==}
+    case Sc.Standard{} G.FB{} G.FD{}:
+      {==}
+    case Sc.Standard{} G.FB{} G.FL{}:
+      {==}
+    case Sc.Standard{} G.FB{} G.FB{}:
+      {==}
+    case Sc.Stickerless{} G.FU{} G.FU{}:
+      {==}
+    case Sc.Stickerless{} G.FU{} G.FR{}:
+      {==}
+    case Sc.Stickerless{} G.FU{} G.FF{}:
+      {==}
+    case Sc.Stickerless{} G.FU{} G.FD{}:
+      {==}
+    case Sc.Stickerless{} G.FU{} G.FL{}:
+      {==}
+    case Sc.Stickerless{} G.FU{} G.FB{}:
+      {==}
+    case Sc.Stickerless{} G.FR{} G.FU{}:
+      {==}
+    case Sc.Stickerless{} G.FR{} G.FR{}:
+      {==}
+    case Sc.Stickerless{} G.FR{} G.FF{}:
+      {==}
+    case Sc.Stickerless{} G.FR{} G.FD{}:
+      {==}
+    case Sc.Stickerless{} G.FR{} G.FL{}:
+      {==}
+    case Sc.Stickerless{} G.FR{} G.FB{}:
+      {==}
+    case Sc.Stickerless{} G.FF{} G.FU{}:
+      {==}
+    case Sc.Stickerless{} G.FF{} G.FR{}:
+      {==}
+    case Sc.Stickerless{} G.FF{} G.FF{}:
+      {==}
+    case Sc.Stickerless{} G.FF{} G.FD{}:
+      {==}
+    case Sc.Stickerless{} G.FF{} G.FL{}:
+      {==}
+    case Sc.Stickerless{} G.FF{} G.FB{}:
+      {==}
+    case Sc.Stickerless{} G.FD{} G.FU{}:
+      {==}
+    case Sc.Stickerless{} G.FD{} G.FR{}:
+      {==}
+    case Sc.Stickerless{} G.FD{} G.FF{}:
+      {==}
+    case Sc.Stickerless{} G.FD{} G.FD{}:
+      {==}
+    case Sc.Stickerless{} G.FD{} G.FL{}:
+      {==}
+    case Sc.Stickerless{} G.FD{} G.FB{}:
+      {==}
+    case Sc.Stickerless{} G.FL{} G.FU{}:
+      {==}
+    case Sc.Stickerless{} G.FL{} G.FR{}:
+      {==}
+    case Sc.Stickerless{} G.FL{} G.FF{}:
+      {==}
+    case Sc.Stickerless{} G.FL{} G.FD{}:
+      {==}
+    case Sc.Stickerless{} G.FL{} G.FL{}:
+      {==}
+    case Sc.Stickerless{} G.FL{} G.FB{}:
+      {==}
+    case Sc.Stickerless{} G.FB{} G.FU{}:
+      {==}
+    case Sc.Stickerless{} G.FB{} G.FR{}:
+      {==}
+    case Sc.Stickerless{} G.FB{} G.FF{}:
+      {==}
+    case Sc.Stickerless{} G.FB{} G.FD{}:
+      {==}
+    case Sc.Stickerless{} G.FB{} G.FL{}:
+      {==}
+    case Sc.Stickerless{} G.FB{} G.FB{}:
+      {==}
+    case Sc.Japanese{} G.FU{} G.FU{}:
+      {==}
+    case Sc.Japanese{} G.FU{} G.FR{}:
+      {==}
+    case Sc.Japanese{} G.FU{} G.FF{}:
+      {==}
+    case Sc.Japanese{} G.FU{} G.FD{}:
+      {==}
+    case Sc.Japanese{} G.FU{} G.FL{}:
+      {==}
+    case Sc.Japanese{} G.FU{} G.FB{}:
+      {==}
+    case Sc.Japanese{} G.FR{} G.FU{}:
+      {==}
+    case Sc.Japanese{} G.FR{} G.FR{}:
+      {==}
+    case Sc.Japanese{} G.FR{} G.FF{}:
+      {==}
+    case Sc.Japanese{} G.FR{} G.FD{}:
+      {==}
+    case Sc.Japanese{} G.FR{} G.FL{}:
+      {==}
+    case Sc.Japanese{} G.FR{} G.FB{}:
+      {==}
+    case Sc.Japanese{} G.FF{} G.FU{}:
+      {==}
+    case Sc.Japanese{} G.FF{} G.FR{}:
+      {==}
+    case Sc.Japanese{} G.FF{} G.FF{}:
+      {==}
+    case Sc.Japanese{} G.FF{} G.FD{}:
+      {==}
+    case Sc.Japanese{} G.FF{} G.FL{}:
+      {==}
+    case Sc.Japanese{} G.FF{} G.FB{}:
+      {==}
+    case Sc.Japanese{} G.FD{} G.FU{}:
+      {==}
+    case Sc.Japanese{} G.FD{} G.FR{}:
+      {==}
+    case Sc.Japanese{} G.FD{} G.FF{}:
+      {==}
+    case Sc.Japanese{} G.FD{} G.FD{}:
+      {==}
+    case Sc.Japanese{} G.FD{} G.FL{}:
+      {==}
+    case Sc.Japanese{} G.FD{} G.FB{}:
+      {==}
+    case Sc.Japanese{} G.FL{} G.FU{}:
+      {==}
+    case Sc.Japanese{} G.FL{} G.FR{}:
+      {==}
+    case Sc.Japanese{} G.FL{} G.FF{}:
+      {==}
+    case Sc.Japanese{} G.FL{} G.FD{}:
+      {==}
+    case Sc.Japanese{} G.FL{} G.FL{}:
+      {==}
+    case Sc.Japanese{} G.FL{} G.FB{}:
+      {==}
+    case Sc.Japanese{} G.FB{} G.FU{}:
+      {==}
+    case Sc.Japanese{} G.FB{} G.FR{}:
+      {==}
+    case Sc.Japanese{} G.FB{} G.FF{}:
+      {==}
+    case Sc.Japanese{} G.FB{} G.FD{}:
+      {==}
+    case Sc.Japanese{} G.FB{} G.FL{}:
+      {==}
+    case Sc.Japanese{} G.FB{} G.FB{}:
+      {==}
+    case Sc.Mirrored{} G.FU{} G.FU{}:
+      {==}
+    case Sc.Mirrored{} G.FU{} G.FR{}:
+      {==}
+    case Sc.Mirrored{} G.FU{} G.FF{}:
+      {==}
+    case Sc.Mirrored{} G.FU{} G.FD{}:
+      {==}
+    case Sc.Mirrored{} G.FU{} G.FL{}:
+      {==}
+    case Sc.Mirrored{} G.FU{} G.FB{}:
+      {==}
+    case Sc.Mirrored{} G.FR{} G.FU{}:
+      {==}
+    case Sc.Mirrored{} G.FR{} G.FR{}:
+      {==}
+    case Sc.Mirrored{} G.FR{} G.FF{}:
+      {==}
+    case Sc.Mirrored{} G.FR{} G.FD{}:
+      {==}
+    case Sc.Mirrored{} G.FR{} G.FL{}:
+      {==}
+    case Sc.Mirrored{} G.FR{} G.FB{}:
+      {==}
+    case Sc.Mirrored{} G.FF{} G.FU{}:
+      {==}
+    case Sc.Mirrored{} G.FF{} G.FR{}:
+      {==}
+    case Sc.Mirrored{} G.FF{} G.FF{}:
+      {==}
+    case Sc.Mirrored{} G.FF{} G.FD{}:
+      {==}
+    case Sc.Mirrored{} G.FF{} G.FL{}:
+      {==}
+    case Sc.Mirrored{} G.FF{} G.FB{}:
+      {==}
+    case Sc.Mirrored{} G.FD{} G.FU{}:
+      {==}
+    case Sc.Mirrored{} G.FD{} G.FR{}:
+      {==}
+    case Sc.Mirrored{} G.FD{} G.FF{}:
+      {==}
+    case Sc.Mirrored{} G.FD{} G.FD{}:
+      {==}
+    case Sc.Mirrored{} G.FD{} G.FL{}:
+      {==}
+    case Sc.Mirrored{} G.FD{} G.FB{}:
+      {==}
+    case Sc.Mirrored{} G.FL{} G.FU{}:
+      {==}
+    case Sc.Mirrored{} G.FL{} G.FR{}:
+      {==}
+    case Sc.Mirrored{} G.FL{} G.FF{}:
+      {==}
+    case Sc.Mirrored{} G.FL{} G.FD{}:
+      {==}
+    case Sc.Mirrored{} G.FL{} G.FL{}:
+      {==}
+    case Sc.Mirrored{} G.FL{} G.FB{}:
+      {==}
+    case Sc.Mirrored{} G.FB{} G.FU{}:
+      {==}
+    case Sc.Mirrored{} G.FB{} G.FR{}:
+      {==}
+    case Sc.Mirrored{} G.FB{} G.FF{}:
+      {==}
+    case Sc.Mirrored{} G.FB{} G.FD{}:
+      {==}
+    case Sc.Mirrored{} G.FB{} G.FL{}:
+      {==}
+    case Sc.Mirrored{} G.FB{} G.FB{}:
+      {==}
+    case Sc.Pastel{} G.FU{} G.FU{}:
+      {==}
+    case Sc.Pastel{} G.FU{} G.FR{}:
+      {==}
+    case Sc.Pastel{} G.FU{} G.FF{}:
+      {==}
+    case Sc.Pastel{} G.FU{} G.FD{}:
+      {==}
+    case Sc.Pastel{} G.FU{} G.FL{}:
+      {==}
+    case Sc.Pastel{} G.FU{} G.FB{}:
+      {==}
+    case Sc.Pastel{} G.FR{} G.FU{}:
+      {==}
+    case Sc.Pastel{} G.FR{} G.FR{}:
+      {==}
+    case Sc.Pastel{} G.FR{} G.FF{}:
+      {==}
+    case Sc.Pastel{} G.FR{} G.FD{}:
+      {==}
+    case Sc.Pastel{} G.FR{} G.FL{}:
+      {==}
+    case Sc.Pastel{} G.FR{} G.FB{}:
+      {==}
+    case Sc.Pastel{} G.FF{} G.FU{}:
+      {==}
+    case Sc.Pastel{} G.FF{} G.FR{}:
+      {==}
+    case Sc.Pastel{} G.FF{} G.FF{}:
+      {==}
+    case Sc.Pastel{} G.FF{} G.FD{}:
+      {==}
+    case Sc.Pastel{} G.FF{} G.FL{}:
+      {==}
+    case Sc.Pastel{} G.FF{} G.FB{}:
+      {==}
+    case Sc.Pastel{} G.FD{} G.FU{}:
+      {==}
+    case Sc.Pastel{} G.FD{} G.FR{}:
+      {==}
+    case Sc.Pastel{} G.FD{} G.FF{}:
+      {==}
+    case Sc.Pastel{} G.FD{} G.FD{}:
+      {==}
+    case Sc.Pastel{} G.FD{} G.FL{}:
+      {==}
+    case Sc.Pastel{} G.FD{} G.FB{}:
+      {==}
+    case Sc.Pastel{} G.FL{} G.FU{}:
+      {==}
+    case Sc.Pastel{} G.FL{} G.FR{}:
+      {==}
+    case Sc.Pastel{} G.FL{} G.FF{}:
+      {==}
+    case Sc.Pastel{} G.FL{} G.FD{}:
+      {==}
+    case Sc.Pastel{} G.FL{} G.FL{}:
+      {==}
+    case Sc.Pastel{} G.FL{} G.FB{}:
+      {==}
+    case Sc.Pastel{} G.FB{} G.FU{}:
+      {==}
+    case Sc.Pastel{} G.FB{} G.FR{}:
+      {==}
+    case Sc.Pastel{} G.FB{} G.FF{}:
+      {==}
+    case Sc.Pastel{} G.FB{} G.FD{}:
+      {==}
+    case Sc.Pastel{} G.FB{} G.FL{}:
+      {==}
+    case Sc.Pastel{} G.FB{} G.FB{}:
+      {==}
+
+def Laws.scheme_pick_presets():
+  {==}

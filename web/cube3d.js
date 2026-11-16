@@ -147,6 +147,12 @@ export function cube3d(el) {
     for (let i = 0; i < 54; i++) stickers[i].material = mats[facelets[i]] ?? mats.U;
   };
 
+  // the visitor's cube's colours (web/colours.js): a CSS colour for each face,
+  // U R F D L B; none, the standard ones
+  const colours = (css) => {
+    [..."URFDLB"].forEach((f, i) => mats[f].color.set(css?.[i] ?? COLOR[f]));
+  };
+
   // Turns
   let anim = null;
 
@@ -264,5 +270,5 @@ export function cube3d(el) {
     if (document.hidden && anim) settle();
   });
 
-  return { paint, turn: turnMove };
+  return { paint, turn: turnMove, colours };
 }

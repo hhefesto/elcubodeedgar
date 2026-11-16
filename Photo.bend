@@ -1,6 +1,7 @@
 import Base
 import ./Cube.bend as C
 import ./Guard.bend as Gd
+import ./Scheme.bend as Sc
 
 # A cube from six photos of it, one a face: the camera's half of "Read my
 # cube" (the page's host only shows the camera and hands over the pixels).
@@ -328,6 +329,126 @@ def ph.shows(xs: List<&2, U32>) -> List<&2, String>:
 def ph.seen.cells(s: String) -> String:
   String.join(ph.shows(ph.cells(s)), " ")
 
+# Which colours the cube has
+# --------------------------
+#
+# Not every cube has the page's colours (Scheme.bend). Photo k shows face
+# ph.order[k]'s centre, and a scheme says what colour that is. For each
+# scheme, the centres are evened out to its colours as a camera sees them
+# (sc.col.cam): each channel times the scheme's sum of it over the photos'
+# (so a lamp's yellow, or a shade's blue, is taken out as a whole), then each
+# is compared to its colour (ph.dist). The scheme it adds up least for is the
+# one the cube looks like. Schemes of the same six colours on other faces
+# (Standard, Japanese, Mirrored) are told apart that way in any light: a
+# light moves all the centres alike. So the page asks only that, and only
+# once four photos are in (the four sides: red and orange, a close pair, are
+# both seen then).
+
+# the colour face f has in faces fs, as a camera sees it
+def ph.cam(+fs: List<&2, U32>, +f: U32) -> Px:
+  +c = Sc.sc.col.cam(Sc.sc.get(fs, f))
+  Px{Gd.gd.get(c, 0), Gd.gd.get(c, 1), Gd.gd.get(c, 2)}
+
+# the colours photos ks (0..5, ph.order's) have in faces fs
+def ph.refs(+fs: List<&2, U32>, ks: List<&2, U32>) -> List<&2, Px>:
+  match ks:
+    case Nil{}:
+      Nil{}
+    case Con{+k, t}:
+      ph.cam(fs, Gd.gd.get(ph.order(), k)) <> ph.refs(fs, t)
+
+# channel ch of p (0 red, 1 green, 2 blue)
+def ph.ch(+p: Px, +ch: U32) -> U32:
+  match p:
+    case Px{+r, +g, +b}:
+      Bool.pick(U32, U32.is_eq(ch, 0), r, Bool.pick(U32, U32.is_eq(ch, 1), g, b))
+
+def ph.sum(ps: List<&2, Px>, +ch: U32) -> U32:
+  match ps:
+    case Nil{}:
+      0
+    case Con{+p, t}:
+      U32.add(ph.ch(p, ch), ph.sum(t, ch))
+
+# what to even channel ch by: the scheme's sum of it over the photos', in
+# 256ths
+def ph.gain(+rs: List<&2, Px>, +cs: List<&2, Px>, +ch: U32) -> U32:
+  U32.div(U32.mul(ph.sum(rs, ch), 256), U32.max(ph.sum(cs, ch), 1))
+
+def ph.even.ch(+v: U32, +g: U32) -> U32:
+  U32.min(U32.div(U32.mul(v, g), 256), 255)
+
+def ph.even(+p: Px, +gr: U32, +gg: U32, +gb: U32) -> Px:
+  match p:
+    case Px{+r, +g, +b}:
+      Px{ph.even.ch(r, gr), ph.even.ch(g, gg), ph.even.ch(b, gb)}
+
+def ph.unlike.go(cs: List<&2, Px>, +rs: List<&2, Px>, +gr: U32, +gg: U32, +gb: U32) -> U32:
+  match cs:
+    case Nil{}:
+      0
+    case Con{+c, t}:
+      U32.add(ph.dist(ph.even(c, gr, gg, gb), ph.first(rs)), ph.unlike.go(t, List.drop(&2, Px, rs, 1n), gr, gg, gb))
+
+# how unlike centres cs (of photos ks) are to faces fs's colours
+def ph.unlike(+fs: List<&2, U32>, +ks: List<&2, U32>, +cs: List<&2, Px>) -> U32:
+  +rs = ph.refs(fs, ks)
+  ph.unlike.go(cs, rs, ph.gain(rs, cs, 0), ph.gain(rs, cs, 1), ph.gain(rs, cs, 2))
+
+# How much more unlike the page's scheme, and every other layout, must be
+# than the one asked of (a made-up camera's noise and each photo in its own
+# shade, in four photos: no wrong one in 43,200 tries at 15,000)
+def ph.fit.margin() -> U32:
+  15000
+
+# more than any unlike adds up to
+def ph.fit.big() -> U32:
+  4000000000
+
+def ph.preset.faces(+i: U32) -> List<&2, U32>:
+  Sc.sc.faces(Sc.sc.preset(Sc.sc.at(i)))
+
+# of the presets (from i, n of them) with faces cur's colours moved round,
+# the one the centres look most like, as unlike * 8 + i; b the best so far
+def ph.fit.best(n: Nat, +i: U32, +cur: List<&2, U32>, +ks: List<&2, U32>, +cs: List<&2, Px>, +b: U32) -> U32:
+  match n:
+    case 0n:
+      b
+    case 1n+q:
+      +fs = ph.preset.faces(i)
+      +u = U32.add(U32.mul(U32.min(ph.unlike(fs, ks, cs), 50000000), 8), i)
+      ph.fit.best(q, U32.add(i, 1), cur, ks, cs, Bool.pick(U32, Bool.and(Sc.sc.moved(fs, cur), U32.is_lt(u, b)), u, b))
+
+# the least unlike of those (from i, n of them) laid out other than faces bf
+def ph.fit.next(n: Nat, +i: U32, +cur: List<&2, U32>, +bf: List<&2, U32>, +ks: List<&2, U32>, +cs: List<&2, Px>, +b: U32) -> U32:
+  match n:
+    case 0n:
+      b
+    case 1n+q:
+      +fs = ph.preset.faces(i)
+      +u = ph.unlike(fs, ks, cs)
+      +other = Bool.and(Sc.sc.moved(fs, cur), Bool.not(Sc.sc.same(fs, bf)))
+      ph.fit.next(q, U32.add(i, 1), cur, bf, ks, cs, Bool.pick(U32, Bool.and(other, U32.is_lt(u, b)), u, b))
+
+# The preset the centres cs of photos ks look like, when the page's scheme
+# (faces cur) is another layout of the same colours: four photos or more, and
+# the page's and every other layout far more unlike. Sc.sc.count() if none
+def ph.fit.of(+cs: List<&2, Px>, +ks: List<&2, U32>, +cur: List<&2, U32>) -> U32:
+  +big = ph.fit.big()
+  +p = ph.fit.best(5n, 0, cur, ks, cs, big)
+  +i = U32.mod(p, 8)
+  +bu = U32.div(p, 8)
+  +bf = ph.preset.faces(i)
+  +mine = Sc.sc.same(cur, bf)
+  +nu = ph.fit.next(5n, 0, cur, bf, ks, cs, Bool.pick(U32, mine, big, ph.unlike(cur, ks, cs)))
+  +ok = Bool.and(Bool.and(U32.is_ge(Sc.sc.len(ks), 4), U32.is_lt(p, big)),
+          Bool.and(Bool.not(mine), U32.is_ge(nu, U32.add(bu, ph.fit.margin()))))
+  Bool.pick(U32, ok, i, Sc.sc.count())
+
+# the same, of the photos ks themselves
+def ph.fit(+ks: List<&2, U32>, photos: List<&2, String>, +cur: List<&2, U32>) -> U32:
+  ph.fit.of(ph.centres.of(photos), ks, cur)
+
 # Photos made up, for the tests and the laws
 # ------------------------------------------
 
@@ -438,3 +559,23 @@ def ph.look(cols: List<&2, U32>, +pal: List<&2, U32>, +lt: List<&2, U32>) -> Lis
 # colour k of palette pal as a camera sees it in light lt
 def ph.seen(+pal: List<&2, U32>, +lt: List<&2, U32>, +k: U32) -> Px:
   ph.first(ph.pxs(ph.look([k], pal, lt)))
+
+# the centres of photos ks of a cube in preset p's colours, as a phone's
+# camera sees them in light l
+def ph.fit.seen.go(+pal: List<&2, U32>, +lt: List<&2, U32>, ks: List<&2, U32>) -> List<&2, Px>:
+  match ks:
+    case Nil{}:
+      Nil{}
+    case Con{+k, t}:
+      ph.seen(pal, lt, Gd.gd.get(ph.order(), k)) <> ph.fit.seen.go(pal, lt, t)
+
+def ph.fit.seen(p: Sc.Preset, l: Light, ks: List<&2, U32>) -> List<&2, Px>:
+  ph.fit.seen.go(Sc.sc.cam.pal(Sc.sc.faces(Sc.sc.preset(p))), ph.light(l), ks)
+
+# what the page should be told of a cube of preset p's colours when it shows
+# preset c's: nothing if they are laid out alike, or are not the same colours;
+# else the first preset laid out as p
+def ph.fit.want(+p: Sc.Preset, +c: Sc.Preset) -> U32:
+  +fp = Sc.sc.faces(Sc.sc.preset(p))
+  +fc = Sc.sc.faces(Sc.sc.preset(c))
+  Bool.pick(U32, Bool.or(Sc.sc.same(fp, fc), Bool.not(Sc.sc.moved(fp, fc))), Sc.sc.count(), Sc.sc.first(fp))

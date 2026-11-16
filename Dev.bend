@@ -7,6 +7,7 @@ import ./Guard.bend as Gd
 import ./Lite.bend as L
 import ./Kd.bend as D
 import ./Photo.bend as Ph
+import ./Scheme.bend as Sc
 
 # The solver on the visitor's device: what a Web Worker calls (web/solver.js
 # gives each worker one of these calls at a time; web/Sched.bend decides
@@ -226,6 +227,12 @@ def dv.twin(s: String) -> U32:
 # a photo's 9 stickers as the camera sees them: r g b of each, 27 numbers
 def dv.seen(s: String) -> String:
   Ph.ph.seen.cells(s)
+
+# the preset (Scheme.bend's number) the photos taken so far look like, when
+# the page shows another layout of the same colours (key's): ks the photos'
+# numbers (0 .. 5) as digits, s the photos, one a line; 5 if none
+def dv.fit(ks: String, s: String, +key: String) -> U32:
+  Ph.ph.fit(Sc.sc.digits(ks), Ph.ph.lines(s), Sc.sc.faces(Sc.sc.of(key)))
 
 # The canonical sequences of n moves (Search.bend's rules: never a face
 # twice in a row, a face and the one across in one order), last first in ms

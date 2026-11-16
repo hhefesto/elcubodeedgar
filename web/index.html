@@ -21,7 +21,11 @@
   --ink-2: #3a332a;
   --mute: #776b59;
   --rule: #cdbfa3;
+  /* the cube's colours: the visitor's scheme (web/colours.js, Scheme.bend)
+     sets them, and the ink to write on each; the page's own accents stay */
   --U: #f4f0e6; --R: #c41230; --F: #00a04e; --D: #ffd31a; --L: #ff6a13; --B: #0b4fb3;
+  --U-ink: var(--ink); --R-ink: var(--paper-3); --F-ink: var(--paper-3); --D-ink: var(--ink); --L-ink: var(--ink); --B-ink: var(--paper-3);
+  --red: #c41230; --green: #00a04e; --blue: #0b4fb3;
   /* the six colours in a band, white amid them */
   --six: linear-gradient(90deg, var(--R) 0 16.67%, var(--F) 0 33.33%, var(--U) 0 50%, var(--D) 0 66.67%, var(--L) 0 83.33%, var(--B) 0);
   --serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
@@ -76,7 +80,7 @@ kbd { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px 2px; border:
 /* the side */
 .side { padding: 44px 46px 40px 30px; border-left: 1px solid var(--rule); background: linear-gradient(90deg, rgba(231, 220, 197, 0.35), rgba(231, 220, 197, 0)); }
 .title { margin: 0 0 18px; line-height: 0.86; font-weight: 400; }
-.title .t1 { display: block; font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.32em; text-transform: uppercase; color: var(--R); margin-bottom: 14px; }
+.title .t1 { display: block; font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.32em; text-transform: uppercase; color: var(--red); margin-bottom: 14px; }
 .title .t2 { display: block; font-size: clamp(54px, 6.4vw, 96px); font-style: italic; font-weight: 340; letter-spacing: -0.025em; font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; }
 .lede { margin: 0 0 30px; max-width: 34em; color: var(--ink-2); font-size: 17.5px; }
 .lede em { font-style: italic; }
@@ -87,7 +91,7 @@ kbd { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px 2px; border:
 .searching .status { font-style: italic; color: var(--ink-2); }
 .searching .status::after { content: ""; display: inline-block; width: 0.9em; height: 0.9em; margin-left: 10px; vertical-align: -0.1em; border-radius: 2px; background: var(--R); animation: think 1.2s steps(1) infinite; }
 @keyframes think { 0% { background: var(--R); } 16% { background: var(--F); } 33% { background: var(--B); } 50% { background: var(--D); } 66% { background: var(--L); } 83% { background: var(--U); box-shadow: inset 0 0 0 1px var(--rule); } }
-.bad .status { color: var(--R); font-style: italic; }
+.bad .status { color: var(--red); font-style: italic; }
 
 .controls { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 26px; }
 .btn {
@@ -101,11 +105,11 @@ kbd { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px 2px; border:
 }
 .btn:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
 .btn:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
-.btn:focus-visible { outline: 3px solid var(--B); outline-offset: 3px; }
+.btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
 .btn:disabled { cursor: default; opacity: 0.38; box-shadow: 2px 2px 0 var(--ink); }
-.btn.primary { background: var(--ink); color: var(--paper-3); box-shadow: 4px 4px 0 var(--R); }
-.btn.primary:hover:not(:disabled) { box-shadow: 5px 5px 0 var(--R); }
-.btn.primary:active:not(:disabled) { box-shadow: 1px 1px 0 var(--R); }
+.btn.primary { background: var(--ink); color: var(--paper-3); box-shadow: 4px 4px 0 var(--red); }
+.btn.primary:hover:not(:disabled) { box-shadow: 5px 5px 0 var(--red); }
+.btn.primary:active:not(:disabled) { box-shadow: 1px 1px 0 var(--red); }
 .btn.ghost { background: transparent; box-shadow: none; border-style: dashed; }
 .btn.ghost:hover:not(:disabled) { box-shadow: none; background: var(--paper-3); }
 .btn-move:empty { display: none; }
@@ -156,7 +160,7 @@ kbd { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px 2px; border:
 .turn[data-face="U"] { --c: var(--U); } .turn[data-face="R"] { --c: var(--R); } .turn[data-face="F"] { --c: var(--F); }
 .turn[data-face="D"] { --c: var(--D); } .turn[data-face="L"] { --c: var(--L); } .turn[data-face="B"] { --c: var(--B); }
 .turn:active { transform: translateY(2px); background: var(--paper-2); }
-.turn:focus-visible { outline: 3px solid var(--B); outline-offset: 2px; }
+.turn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 .turn:disabled { opacity: 0.38; cursor: default; }
 .btn.solve { background: var(--F); color: var(--paper-3); }
 button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -180,7 +184,7 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
   background: var(--six);
 }
 .own-cta:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--ink); }
-.own-cta:focus-visible { outline: 3px solid var(--B); outline-offset: 4px; }
+.own-cta:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
 .own-cta-cube {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
   width: 66px; height: 66px; padding: 4px;
@@ -193,12 +197,12 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .own-cta-st[data-face="R"] { background: var(--R); } .own-cta-st[data-face="F"] { background: var(--F); } .own-cta-st[data-face="D"] { background: var(--D); }
 .own-cta-st[data-face="L"] { background: var(--L); } .own-cta-st[data-face="B"] { background: var(--B); }
 .own-cta-text { display: flex; flex-direction: column; min-width: 0; }
-.own-cta-k { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--R); margin-bottom: 2px; }
+.own-cta-k { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--red); margin-bottom: 2px; }
 .own-cta-t { font-size: 28px; line-height: 1.05; font-style: italic; font-weight: 450; letter-spacing: -0.012em; font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 1; }
 .own-cta-s { margin-top: 6px; font-family: var(--mono); font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
 .own-cta-go {
   display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
-  background: var(--ink); color: var(--paper-3); box-shadow: 3px 3px 0 var(--R);
+  background: var(--ink); color: var(--paper-3); box-shadow: 3px 3px 0 var(--red);
   font-family: var(--mono); font-size: 22px; font-weight: 600; line-height: 1;
   transition: transform 0.2s ease;
 }
@@ -215,9 +219,9 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
 /* the explanation of the moves */
 .pad-help { margin: -14px 0 20px; }
-.howto { min-height: 44px; padding: 8px 2px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--B); background: none; border: none; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-#howto-dlg { width: min(560px, calc(100vw - 20px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 0; border: 2px solid var(--ink); border-radius: 14px; background: var(--paper-3); color: var(--ink); box-shadow: 6px 6px 0 var(--ink); overflow: auto; overscroll-behavior: contain; }
-#howto-dlg::backdrop { background: rgba(27, 23, 18, 0.5); }
+.howto { min-height: 44px; padding: 8px 2px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--blue); background: none; border: none; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+#howto-dlg, #sch-dlg { width: min(560px, calc(100vw - 20px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 0; border: 2px solid var(--ink); border-radius: 14px; background: var(--paper-3); color: var(--ink); box-shadow: 6px 6px 0 var(--ink); overflow: auto; overscroll-behavior: contain; }
+#howto-dlg::backdrop, #sch-dlg::backdrop { background: rgba(27, 23, 18, 0.5); }
 #own-dlg { width: min(620px, calc(100vw - 20px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 0; border: 2px solid var(--ink); border-radius: 14px; background: var(--paper-3); color: var(--ink); box-shadow: 6px 6px 0 var(--ink); overflow: auto; overscroll-behavior: contain; }
 #own-dlg::backdrop { background: rgba(27, 23, 18, 0.5); }
 #own-dlg [data-face="U"] { background: var(--U); } #own-dlg [data-face="R"] { background: var(--R); } #own-dlg [data-face="F"] { background: var(--F); }
@@ -271,11 +275,11 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #own-pose .face { fill: var(--ink); }
 #own-pose .arw { fill: none; stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
 #own-pose .arh { fill: var(--ink); }
-.own-k { margin: 0 !important; font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--R) !important; }
+.own-k { margin: 0 !important; font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red) !important; }
 .own-hold { margin: 0 0 4px !important; font-size: 21px; line-height: 1.25; color: var(--ink) !important; font-variation-settings: "opsz" 48, "SOFT" 100; }
 .own-hold b { font-weight: 650; }
 .own-chip { display: inline-block; width: 0.8em; height: 0.8em; margin: 0 0.18em 0 0.05em; border: 1.5px solid var(--ink); border-radius: 3px; vertical-align: -0.05em; background: var(--c); }
-.own-turn { margin: 0 0 4px !important; font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--B) !important; }
+.own-turn { margin: 0 0 4px !important; font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--blue) !important; }
 .own-turn:empty { display: none; }
 .own-tip { margin: 0 !important; font-family: var(--mono); font-size: 12px; line-height: 1.5; color: var(--mute) !important; }
 .own-cam-row { margin-top: 10px; }
@@ -284,7 +288,7 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #own-cam-msg.bad { padding: 10px 12px; border: 2px solid #a3001b; border-radius: 10px; background: #fbe9e6; color: #a3001b; font-weight: 600; line-height: 1.4; }
 .own-snap { font-size: 15px; min-width: 190px; justify-content: center; }
 #own-net.fresh { animation: own-fresh 1.6s ease-out; border-radius: 8px; }
-@keyframes own-fresh { 0%, 40% { box-shadow: 0 0 0 4px var(--paper-3), 0 0 0 7px var(--F); } 100% { box-shadow: 0 0 0 4px var(--paper-3), 0 0 0 7px transparent; } }
+@keyframes own-fresh { 0%, 40% { box-shadow: 0 0 0 4px var(--paper-3), 0 0 0 7px var(--green); } 100% { box-shadow: 0 0 0 4px var(--paper-3), 0 0 0 7px transparent; } }
 @media (max-width: 560px) {
   .own-stage { grid-template-columns: 1fr; gap: 12px; }
   .own-view { width: min(100%, 360px); margin: 0 auto; }
@@ -303,19 +307,19 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .turn-pics figcaption { font-size: 13px; line-height: 1.3; color: var(--ink-2); }
 .faces { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
 .faces li { display: flex; align-items: center; gap: 10px; font-size: 15px; line-height: 1.25; }
-.chip { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--ink); border-radius: 7px; font-family: var(--mono); font-weight: 700; font-size: 16px; background: var(--U); color: var(--ink); }
-.chip[data-face="R"] { background: var(--R); color: var(--paper-3); } .chip[data-face="F"] { background: var(--F); color: var(--paper-3); }
-.chip[data-face="D"] { background: var(--D); } .chip[data-face="L"] { background: var(--L); } .chip[data-face="B"] { background: var(--B); color: var(--paper-3); }
+.chip { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--ink); border-radius: 7px; font-family: var(--mono); font-weight: 700; font-size: 16px; background: var(--U); color: var(--U-ink); }
+.chip[data-face="R"] { background: var(--R); color: var(--R-ink); } .chip[data-face="F"] { background: var(--F); color: var(--F-ink); }
+.chip[data-face="D"] { background: var(--D); color: var(--D-ink); } .chip[data-face="L"] { background: var(--L); color: var(--L-ink); } .chip[data-face="B"] { background: var(--B); color: var(--B-ink); }
 .keys-help { font-size: 14px; }
 .dlg .btn { margin-top: 4px; width: 100%; justify-content: center; }
 @media (max-width: 420px) { .faces { grid-template-columns: 1fr; } }
 
 /* the hand-off to a bigger device, and the toast */
-.handoff { margin: 0 0 22px; padding: 12px 14px; border: 2px dashed var(--B); border-radius: 10px; background: var(--paper-3); font-size: 15.5px; }
+.handoff { margin: 0 0 22px; padding: 12px 14px; border: 2px dashed var(--blue); border-radius: 10px; background: var(--paper-3); font-size: 15.5px; }
 .handoff.none { display: none; }
 .handoff p { margin: 0 0 8px; }
 .handoff-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0 !important; }
-.handoff a { font-family: var(--mono); font-size: 12.5px; color: var(--B); word-break: break-all; flex: 1 1 14em; }
+.handoff a { font-family: var(--mono); font-size: 12.5px; color: var(--blue); word-break: break-all; flex: 1 1 14em; }
 #toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 90; padding: 10px 16px; border-radius: 9px; background: var(--ink); color: var(--paper-3); font-family: var(--mono); font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 #toast.on { opacity: 1; }
 
@@ -325,10 +329,67 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .laws > p { margin: 0 0 18px; color: var(--ink-2); }
 .law-list { list-style: none; counter-reset: law; margin: 0; padding: 0; }
 .law-list li { counter-increment: law; position: relative; padding: 12px 0 12px 54px; border-bottom: 1px solid var(--rule); color: var(--ink-2); }
-.law-list li::before { content: counter(law, upper-roman); position: absolute; left: 0; top: 9px; width: 40px; font-size: 22px; font-style: italic; font-variation-settings: "opsz" 72, "WONK" 1; color: var(--R); }
+.law-list li::before { content: counter(law, upper-roman); position: absolute; left: 0; top: 9px; width: 40px; font-size: 22px; font-style: italic; font-variation-settings: "opsz" 72, "WONK" 1; color: var(--red); }
 .law-list b { color: var(--ink); font-weight: 600; }
 code { font-family: var(--mono); font-size: 0.86em; background: var(--paper-3); border: 1px solid var(--rule); border-radius: 5px; padding: 0 5px; white-space: nowrap; color: var(--ink); }
-.proof { display: inline-block; margin-left: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--F); border: 1px solid currentColor; border-radius: 4px; padding: 0 5px; vertical-align: 2px; }
+.proof { display: inline-block; margin-left: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); border: 1px solid currentColor; border-radius: 4px; padding: 0 5px; vertical-align: 2px; }
+/* your cube's colours (web/colours.js; Scheme.bend decides): the row under
+   "Enter your own cube" (App.bend), the line atop that panel, and the picker */
+.sch-row {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
+  width: 100%; margin: -8px 0 26px; padding: 11px 16px; text-align: left; font: inherit;
+  color: var(--ink); background: var(--paper-3); border: 2px solid var(--ink); border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--ink); cursor: pointer; transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.sch-row:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.sch-row:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+@media (hover: hover) { .sch-row:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); } .sch-row:hover .sch-go { color: var(--ink); } }
+.sch-txt { display: flex; flex-direction: column; min-width: 0; }
+.sch-k { font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mute); }
+.sch-name { font-size: 20px; line-height: 1.2; font-style: italic; font-variation-settings: "opsz" 48, "SOFT" 100; }
+.sch-name::after { content: var(--sch-name, "Standard"); }
+.sch-go { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--blue); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.sch-net { display: grid; grid-template-columns: repeat(4, 11px); grid-template-rows: repeat(3, 11px); gap: 2px; flex: none; }
+.sch-net i { border: 1.5px solid var(--ink); border-radius: 2.5px; background: var(--c, var(--paper-2)); }
+.sch-net [data-f="U"] { grid-area: 1 / 2; } .sch-net [data-f="L"] { grid-area: 2 / 1; } .sch-net [data-f="F"] { grid-area: 2 / 2; }
+.sch-net [data-f="R"] { grid-area: 2 / 3; } .sch-net [data-f="B"] { grid-area: 2 / 4; } .sch-net [data-f="D"] { grid-area: 3 / 2; }
+.sch-live [data-f="U"] { --c: var(--U); } .sch-live [data-f="R"] { --c: var(--R); } .sch-live [data-f="F"] { --c: var(--F); }
+.sch-live [data-f="D"] { --c: var(--D); } .sch-live [data-f="L"] { --c: var(--L); } .sch-live [data-f="B"] { --c: var(--B); }
+.own-sch { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 14px !important; padding: 8px 12px; border: 1.5px solid var(--rule); border-radius: 10px; background: var(--paper-2); font-family: var(--mono); font-size: 12.5px; color: var(--ink-2) !important; }
+.own-sch .sch-net { grid-template-columns: repeat(4, 9px); grid-template-rows: repeat(3, 9px); gap: 1.5px; }
+.own-sch b { font-weight: 700; color: var(--ink); }
+.own-sch b::after { content: var(--sch-name, "Standard"); }
+.sch-link { min-height: 36px; padding: 4px 2px; font: inherit; font-weight: 700; color: var(--blue); background: none; border: none; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sch-link:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+#sch-dlg .dlg { position: relative; padding-top: 30px; }
+#sch-dlg .dlg::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 9px; border-bottom: 2px solid var(--ink); background: var(--six); }
+#sch-list { display: grid; gap: 8px; margin: 12px 0 14px; }
+.sch-opt { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; padding: 10px 12px; text-align: left; font: inherit; color: var(--ink); background: var(--paper-3); border: 2px solid var(--rule); border-radius: 10px; cursor: pointer; }
+.sch-opt .sch-net { grid-template-columns: repeat(4, 15px); grid-template-rows: repeat(3, 15px); }
+.sch-opt-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sch-opt-t b { font-size: 18px; font-weight: 600; }
+.sch-opt-t span { font-family: var(--mono); font-size: 12px; line-height: 1.45; color: var(--ink-2); }
+.sch-opt[aria-checked="true"] { border-color: var(--ink); background: #fffdf8; box-shadow: 3px 3px 0 var(--ink); }
+.sch-opt[aria-checked="true"] .sch-opt-t b::after { content: "  \2713  yours"; font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: var(--green); }
+@media (hover: hover) { .sch-opt:hover { border-color: var(--ink); } }
+.sch-opt:focus-visible, .sch-sw:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+#sch-own { margin: 0 0 14px; padding-top: 10px; border-top: 1px solid var(--rule); }
+#sch-own summary { min-height: 40px; padding-top: 6px; cursor: pointer; font-family: var(--mono); font-size: 13.5px; font-weight: 700; color: var(--blue); }
+#sch-own p { font-size: 14px; }
+#sch-faces { display: grid; gap: 8px; margin: 4px 0 4px; }
+.sch-face { display: grid; grid-template-columns: 9em repeat(10, minmax(0, 32px)); gap: 5px; align-items: center; }
+.sch-where { font-family: var(--mono); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+.sch-where b { display: inline-block; width: 1.3em; color: var(--ink); }
+.sch-sw { aspect-ratio: 1; min-width: 0; padding: 0; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--c); cursor: pointer; }
+.sch-sw[aria-checked="true"] { box-shadow: 0 0 0 2px #fffdf8, 0 0 0 4px var(--ink); }
+@media (max-width: 560px) { .sch-face { grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; } .sch-where { grid-column: 1 / -1; } }
+/* after four photos: the cube's colours look like another layout */
+.own-fit { position: relative; margin: 14px 0 0; padding: 20px 14px 14px; border: 2px solid var(--ink); border-radius: 12px; background: #fffdf8; box-shadow: 4px 4px 0 var(--ink); overflow: hidden; }
+.own-fit::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7px; border-bottom: 2px solid var(--ink); background: var(--six); }
+.own-fit p { margin: 0 0 10px !important; line-height: 1.45; color: var(--ink-2); }
+.own-fit b { color: var(--ink); }
+.own-fit .own-row { margin: 0 !important; }
+.own-fit .btn { width: auto; flex: 1 1 12em; }
 .fine { margin: 18px 0 0; font-size: 14.5px; color: var(--mute); }
 footer { margin-top: 40px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; color: var(--mute); }
 footer a { color: inherit; }
@@ -420,20 +481,20 @@ footer a { color: inherit; }
     <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1b1712"/></marker></defs></svg>
     <div class="turn-pics">
       <figure>
-        <svg viewBox="0 0 64 64" role="img" aria-label="R: a quarter turn clockwise"><rect x="5" y="5" width="54" height="54" rx="6" fill="#c41230" stroke="#1b1712" stroke-width="2.5"/><path d="M23 5v54M41 5v54M5 23h54M5 41h54" stroke="#1b1712" stroke-width="1.5"/><path d="M32 13 A19 19 0 1 1 13 32" fill="none" stroke="#f6f0e3" stroke-width="7"/><path d="M32 13 A19 19 0 1 1 13 32" fill="none" stroke="#1b1712" stroke-width="3" marker-end="url(#ah)"/></svg>
+        <svg viewBox="0 0 64 64" role="img" aria-label="R: a quarter turn clockwise"><rect x="5" y="5" width="54" height="54" rx="6" style="fill: var(--R)" stroke="#1b1712" stroke-width="2.5"/><path d="M23 5v54M41 5v54M5 23h54M5 41h54" stroke="#1b1712" stroke-width="1.5"/><path d="M32 13 A19 19 0 1 1 13 32" fill="none" stroke="#f6f0e3" stroke-width="7"/><path d="M32 13 A19 19 0 1 1 13 32" fill="none" stroke="#1b1712" stroke-width="3" marker-end="url(#ah)"/></svg>
         <figcaption><code>R</code> a quarter turn clockwise</figcaption>
       </figure>
       <figure>
-        <svg viewBox="0 0 64 64" role="img" aria-label="R prime: a quarter turn counter-clockwise"><rect x="5" y="5" width="54" height="54" rx="6" fill="#c41230" stroke="#1b1712" stroke-width="2.5"/><path d="M23 5v54M41 5v54M5 23h54M5 41h54" stroke="#1b1712" stroke-width="1.5"/><path d="M32 13 A19 19 0 1 0 51 32" fill="none" stroke="#f6f0e3" stroke-width="7"/><path d="M32 13 A19 19 0 1 0 51 32" fill="none" stroke="#1b1712" stroke-width="3" marker-end="url(#ah)"/></svg>
+        <svg viewBox="0 0 64 64" role="img" aria-label="R prime: a quarter turn counter-clockwise"><rect x="5" y="5" width="54" height="54" rx="6" style="fill: var(--R)" stroke="#1b1712" stroke-width="2.5"/><path d="M23 5v54M41 5v54M5 23h54M5 41h54" stroke="#1b1712" stroke-width="1.5"/><path d="M32 13 A19 19 0 1 0 51 32" fill="none" stroke="#f6f0e3" stroke-width="7"/><path d="M32 13 A19 19 0 1 0 51 32" fill="none" stroke="#1b1712" stroke-width="3" marker-end="url(#ah)"/></svg>
         <figcaption><code>R'</code> a quarter turn counter-clockwise</figcaption>
       </figure>
       <figure>
-        <svg viewBox="0 0 64 64" role="img" aria-label="R2: a half turn"><rect x="5" y="5" width="54" height="54" rx="6" fill="#c41230" stroke="#1b1712" stroke-width="2.5"/><path d="M23 5v54M41 5v54M5 23h54M5 41h54" stroke="#1b1712" stroke-width="1.5"/><path d="M32 13 A19 19 0 0 1 32 51" fill="none" stroke="#f6f0e3" stroke-width="7"/><path d="M32 13 A19 19 0 0 1 32 51" fill="none" stroke="#1b1712" stroke-width="3" marker-end="url(#ah)"/></svg>
+        <svg viewBox="0 0 64 64" role="img" aria-label="R2: a half turn"><rect x="5" y="5" width="54" height="54" rx="6" style="fill: var(--R)" stroke="#1b1712" stroke-width="2.5"/><path d="M23 5v54M41 5v54M5 23h54M5 41h54" stroke="#1b1712" stroke-width="1.5"/><path d="M32 13 A19 19 0 0 1 32 51" fill="none" stroke="#f6f0e3" stroke-width="7"/><path d="M32 13 A19 19 0 0 1 32 51" fill="none" stroke="#1b1712" stroke-width="3" marker-end="url(#ah)"/></svg>
         <figcaption><code>R2</code> a half turn (either way: the same)</figcaption>
       </figure>
     </div>
     <p>The six letters are the six faces, named after where they are as you hold the cube:</p>
-    <ul class="faces">
+    <ul class="faces" data-say>
       <li><span class="chip" data-face="U">U</span><span><b>Up</b>, the top: white</span></li>
       <li><span class="chip" data-face="D">D</span><span><b>Down</b>, the bottom: yellow</span></li>
       <li><span class="chip" data-face="F">F</span><span><b>Front</b>, toward you: green</span></li>
@@ -441,7 +502,7 @@ footer a { color: inherit; }
       <li><span class="chip" data-face="R">R</span><span><b>Right</b>: red</span></li>
       <li><span class="chip" data-face="L">L</span><span><b>Left</b>: orange</span></li>
     </ul>
-    <p>A face's colour is the colour of its centre square, which never moves. In the picture the cube shows its up face (white) on top, its front (green) at the left and its right face (red) at the right; drag it to look at the others. Clockwise is always as seen from that face's own side, so from the front, <code>B</code> looks counter-clockwise, and <code>D</code> turns the other way to <code>U</code>.</p>
+    <p data-say>A face's colour is the colour of its centre square, which never moves. In the picture the cube shows its up face (white) on top, its front (green) at the left and its right face (red) at the right; drag it to look at the others. Clockwise is always as seen from that face's own side, so from the front, <code>B</code> looks counter-clockwise, and <code>D</code> turns the other way to <code>U</code>.</p>
     <p>In a solution, the moves are done in order, left to right: <code>R U R'</code> is R, then U, then R'.</p>
     <p class="keys-help">On a keyboard: <kbd>u</kbd> <kbd>r</kbd> <kbd>f</kbd> <kbd>d</kbd> <kbd>l</kbd> <kbd>b</kbd> turn a face clockwise; with <kbd>shift</kbd>, counter-clockwise.</p>
     <button class="btn primary" value="close">Got it</button>
@@ -450,8 +511,9 @@ footer a { color: inherit; }
 <dialog id="own-dlg" aria-labelledby="own-title">
   <form method="dialog" class="dlg">
     <h2 id="own-title" tabindex="-1" autofocus>Enter your own cube</h2>
-    <p id="own-intro">Hold your cube with its <b>white</b> centre on top and its <b>green</b> centre facing you. Pick a colour, then tap each sticker that has it (the centres are fixed): the net is your cube unfolded, white on top, then orange, green, red and blue, then yellow. Or let the camera read it: six photos, a face each, then fix what it got wrong here.</p>
-    <div id="own-pal" role="radiogroup" aria-label="the colour to paint">
+    <p class="own-sch"><span class="sch-net sch-live" aria-hidden="true"><i data-f="U"></i><i data-f="R"></i><i data-f="F"></i><i data-f="D"></i><i data-f="L"></i><i data-f="B"></i></span><span>Your cube's colours: <b></b></span><button type="button" class="sch-link" data-sch-open>Not yours? Change</button></p>
+    <p id="own-intro" data-say>Hold your cube with its <b>white</b> centre on top and its <b>green</b> centre facing you. Pick a colour, then tap each sticker that has it (the centres are fixed): the net is your cube unfolded, white on top, then orange, green, red and blue, then yellow. Or let the camera read it: six photos, a face each, then fix what it got wrong here.</p>
+    <div id="own-pal" role="radiogroup" aria-label="the colour to paint" data-say>
       <button type="button" role="radio" data-face="U" aria-checked="true" aria-label="white"></button>
       <button type="button" role="radio" data-face="R" aria-checked="false" aria-label="red"></button>
       <button type="button" role="radio" data-face="F" aria-checked="false" aria-label="green"></button>
@@ -474,8 +536,13 @@ footer a { color: inherit; }
             <p class="own-hold" id="own-hold" aria-live="polite"></p>
             <p class="own-turn" id="own-turn"></p>
             <p class="own-tip">Fill the square with the face, one dot on each sticker; the ring in the middle is the centre's colour.</p>
+            <p class="own-tip">Not the colour it says? Turn the cube as the arrow shows and take it anyway: after four photos the page works out your cube's colours.</p>
           </div>
         </div>
+      </div>
+      <div class="own-fit" id="own-fit" role="group" aria-labelledby="own-fit-t" hidden>
+        <p id="own-fit-t" aria-live="assertive"></p>
+        <p class="own-row"><button type="button" class="btn primary" id="own-fit-yes">Use them</button><button type="button" class="btn" id="own-fit-no">Keep these</button></p>
       </div>
       <p id="own-cam-msg" role="status" aria-live="assertive"></p>
       <p class="own-row own-cam-row">
@@ -494,20 +561,39 @@ footer a { color: inherit; }
     </p>
   </form>
 </dialog>
+<dialog id="sch-dlg" aria-labelledby="sch-title">
+  <form method="dialog" class="dlg">
+    <h2 id="sch-title" tabindex="-1" autofocus>Your cube's colours</h2>
+    <p>Not every cube has the same colours. Pick the one like yours: the cube here, the panel to enter yours, and the camera's instructions all use it. To tell them apart, hold yours with white on top and green facing you, then look at the right face, and the bottom.</p>
+    <div id="sch-list" role="radiogroup" aria-label="colour schemes"></div>
+    <details id="sch-own">
+      <summary>None of these? Pick each face's colour</summary>
+      <p>Hold your cube any way, and pick the colour of each centre. A colour another face has swaps with it.</p>
+      <div id="sch-faces"></div>
+    </details>
+    <p class="fine" style="margin: 0 0 12px">Now: <b id="sch-now">Standard</b>. Kept on this device.</p>
+    <button class="btn primary" value="close">Done</button>
+  </form>
+</dialog>
 <script type="module">
 import App from "./App.bend";
 import { makeSolver } from "./solver.js";
 import { mount } from "../bend-frp/runtime.js";
 import { cube3d } from "./cube3d.js";
 import { ownCube } from "./own.js";
+import { colours } from "./colours.js";
 
 const view = cube3d(document.getElementById("stage"));
+// the 3D cube in the visitor's cube's colours (web/colours.js)
+view.colours(colours.now().css);
+colours.on((c) => view.colours(c.css));
 let made = null;
 const solver = () => (made ??= makeSolver({ workers: Number(new URLSearchParams(location.search).get("workers")) || 0 }));
 // "Enter your own cube" (web/own.js): the cube it makes is shown as a link's
 // position (#m=, App.bend's route) and solved as any other
 const own = ownCube({
   solver,
+  colours,
   go: (moves) => {
     if (!moves) return;
     history.pushState(null, "", "#m=" + moves);
@@ -524,6 +610,8 @@ globalThis.bendFrp = {
   howto: () => document.getElementById("howto-dlg").showModal(),
   // the panel to paint or photograph a cube (App.bend's "Enter your own cube")
   own: () => own.open(),
+  // the colours of the visitor's cube (App.bend's "Your cube's colours")
+  colours: () => colours.open(),
   // the solver, on this device's cores (web/solver.js; ?workers=N for fewer)
   solve: (arg, done) => solver().solve(arg, done),
   // the hand-off link, to the clipboard (or the phone's share sheet)
