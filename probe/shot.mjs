@@ -1,6 +1,6 @@
 // Screenshots of the page in headless Chrome, driven over the DevTools protocol:
 //   node probe/shot.mjs URL WIDTHxHEIGHT STEPS...
-// a step is click:SELECTOR, wait:MS, shot:FILE.png or eval:EXPRESSION. The page's
+// a step is click:SELECTOR, wait:MS, until:EXPRESSION, shot:FILE.png or eval:EXPRESSION. The page's
 // console errors and exceptions are printed. DPR=3 sets the pixel ratio; a size
 // under 700 on its short side is a phone (touch, an iPhone's user agent).
 import { spawn } from "node:child_process";
@@ -76,10 +76,18 @@ try {
     const [k, ...rest] = s.split(":");
     const v = rest.join(":");
     if (k === "wait") await sleep(Number(v));
+    else if (k === "until") {
+      // until:EXPR: every second, until EXPR is true (15 minutes at most)
+      for (let i = 0; i < 900; i++) {
+        const r = await send("Runtime.evaluate", { expression: v, returnByValue: true });
+        if (r.result?.result?.value) break;
+        await sleep(1000);
+      }
+    }
     else if (k === "click") await send("Runtime.evaluate", { expression: `document.querySelector(${JSON.stringify(v)})?.click()` });
     else if (k === "eval") {
-      const r = await send("Runtime.evaluate", { expression: v, returnByValue: true });
-      console.log("EVAL", JSON.stringify(r.result?.result?.value ?? r.result).slice(0, 1500));
+      const r = await send("Runtime.evaluate", { expression: v, returnByValue: true, awaitPromise: true });
+      console.log("EVAL", JSON.stringify(r.result?.result?.value ?? r.result).slice(0, Number(process.env.EVAL_MAX || 1500)));
     } else if (k === "shot") {
       const r = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
       writeFileSync(v, Buffer.from(r.result.data, "base64"));

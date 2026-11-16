@@ -28,11 +28,32 @@
         root = ./.;
         fileset = fs.unions tableFiles;
       };
+      # what the device's downloaded tables are made from (DevTables.bend)
+      devTableFiles = [
+        ./Cube.bend
+        ./Coord.bend
+        ./Search.bend
+        ./Par.bend
+        ./Solve.bend
+        ./Sym.bend
+        ./Lite.bend
+        ./DevTables.bend
+      ];
+      devTablesSrc = fs.toSource {
+        root = ./.;
+        fileset = fs.unions devTableFiles;
+      };
       src = fs.toSource {
         root = ./.;
         fileset = fs.unions (
           tableFiles
+          ++ devTableFiles
           ++ [
+            ./Guard.bend
+            ./Dev.bend
+            ./web/Sched.bend
+            ./web/solver.js
+            ./web/solver-worker.js
             ./Opt.bend
             ./Fast.bend
             ./TwoPhase.bend
@@ -97,11 +118,43 @@
             ./build-tables $out/tables.bin | tee $out/build.log
             test -s $out/tables.bin
           '';
+          # the device's downloaded tables (DevTables.bend): Korf's three
+          # distance tables and Lite.bend's two-phase ones, brotli and gzip,
+          # named by their contents (so a browser keeps them for good), and
+          # tables.json, which says where each goes in the device's array
+          dev-tables = inSourceOf devTablesSrc pkgs "dev-tables" [ pkgs.brotli pkgs.gzip ] ''
+            bend DevTables.bend -o dev-tables
+            ./dev-tables korf.bin lite.bin | tee build.log
+            mkdir -p $out/t
+            for f in korf lite; do
+              h=$(sha256sum $f.bin | cut -c1-16)
+              brotli -q 11 -w 24 -c $f.bin > $out/t/$f-$h.bin.br &
+              gzip -9 -n -c $f.bin > $out/t/$f-$h.bin.gz &
+              echo "$f $h $(stat -c %s $f.bin)" >> names
+            done
+            wait
+            read -r _ kh ks < <(grep '^korf ' names)
+            read -r _ lh ls < <(grep '^lite ' names)
+            # where each goes: Dev.bend's array (dv.len words), korf from
+            # Coord.bend's corner distances on, lite from Lite.bend's lt.FM on
+            cat > $out/tables.json <<JSON
+            {"words": 39517680,
+             "korf": {"at": 13107200, "words": $((ks / 4)), "br": "t/korf-$kh.bin.br", "gz": "t/korf-$kh.bin.gz"},
+             "lite": {"at": 35000000, "words": $((ls / 4)), "br": "t/lite-$lh.bin.br", "gz": "t/lite-$lh.bin.gz"}}
+            JSON
+            cp build.log $out/
+          '';
           # the page, bundled: index.html, App.bend and bend-frp compiled to
-          # JavaScript, cube3d.js, three.js
+          # JavaScript, cube3d.js, three.js, the solver's thin JS and
+          # Sched.bend; beside it, as they are, what the device's Web Workers
+          # load (solver-worker.js, Dev.bend compiled), and the tables
           www = inSource pkgs "www" [ pkgs.gnutar pkgs.gzip ] ''
             tar xzf ${threeFor pkgs} -O package/build/three.module.min.js > web/three.module.min.js
+            bend web/Sched.bend -o web/sched.mjs
             bend web/index.html -o $out
+            bend Dev.bend -o $out/dev.mjs
+            cp web/solver-worker.js web/solver.js web/sched.mjs $out/
+            cp -r ${dev-tables}/t ${dev-tables}/tables.json $out/
           '';
           # `elcubodeedgar [PORT]` serves the page on 127.0.0.1:PORT (8093)
           default = pkgs.writeShellApplication {
@@ -155,7 +208,7 @@
           # loops and shared arrays, @unsafe, so they are built, not checked:
           # packages.server, solver-bin, tables)
           modules = inSource pkgs "modules" [ ] ''
-            for f in Cube.bend Coord.bend Search.bend Par.bend Solve.bend Sym.bend Kc.bend Opt.bend TwoPhase.bend Group.bend web/App.bend; do
+            for f in Cube.bend Coord.bend Search.bend Par.bend Solve.bend Sym.bend Kc.bend Opt.bend TwoPhase.bend Group.bend Guard.bend Lite.bend Dev.bend web/Sched.bend web/App.bend; do
               echo "== $f"
               bend $f --check-only 2>&1 | tee log
               grep -q 'ALL PROOFS CHECK' log

@@ -40,6 +40,8 @@ def init.as(+who: String) -> S:
 type Msg is Data:
   MStart{+seed: U32}
   MHow{}
+  MRoute{+v: String}
+  MCopy{}
   MScramble{+seed: U32}
   MTurn{+m: U32}
   MSolve{}
@@ -86,6 +88,8 @@ def msg.move(+s: String) -> Bool:
 def msg.of(+t: F.Time, +tag: String, +v: String) -> Msg:
   Bool.pick(Msg, String.eq(tag, "start"), MStart{seed.of(t)},
   Bool.pick(Msg, String.eq(tag, "howto"), MHow{},
+  Bool.pick(Msg, String.eq(tag, "route"), MRoute{v},
+  Bool.pick(Msg, String.eq(tag, "copy"), MCopy{},
   Bool.pick(Msg, String.eq(tag, "scramble"), MScramble{seed.of(t)},
   Bool.pick(Msg, String.eq(tag, "solve"), MSolve{},
   Bool.pick(Msg, String.eq(tag, "next"), MNext{},
@@ -96,7 +100,7 @@ def msg.of(+t: F.Time, +tag: String, +v: String) -> Msg:
   Bool.pick(Msg, String.starts_with(tag, "tick"), MTick{num(String.drop(tag, 4n))},
   Bool.pick(Msg, String.starts_with(tag, "again"), MAgain{num(String.drop(tag, 5n))},
   Bool.pick(Msg, Bool.and(String.starts_with(tag, "t"), msg.move(String.drop(tag, 1n))), MTurn{num(String.drop(tag, 1n))},
-    MOther{}))))))))))))
+    MOther{}))))))))))))))
 
 # Positions
 # ---------
@@ -192,8 +196,11 @@ def show.fx(+c: C.Cube) -> W.Effect:
 
 # ask the solver about the position, as request g
 # (who: the page's name, so the solver knows a page's asks from another's)
+# (the solver on this device, web/solver.js, which falls back on the site's: it
+# is told the cube's stickers, the moves that make it, and the page's name,
+# and tells each answer as the search goes, so it is asked once)
 def ask.fx(+pos: List<&2, U32>, +g: U32, +who: String) -> W.Effect:
-  W.Http{"sol" ++ U32.show(g), "GET", "/api/solve?m=" ++ C.cube.nums(pos) ++ "&v=" ++ who, ""}
+  W.Host{"sol" ++ U32.show(g), "solve", C.cube.facelets(C.cube.apply(pos, C.cube.solved())) ++ " " ++ C.cube.nums(pos) ++ " " ++ who}
 
 # a second's tick while request g waits, and asking again after a "down"
 def tick.fx(+g: U32) -> W.Effect:
@@ -408,13 +415,18 @@ def ak.of(+w: String) -> Ak:
   Bool.pick(Ak, String.eq(w, "queued"), AQueued{},
   Bool.pick(Ak, String.eq(w, "down"), ADown{},
   Bool.pick(Ak, String.eq(w, "late"), ALate{},
-  Bool.pick(Ak, Bool.or(Bool.or(String.eq(w, "busy"), String.eq(w, "cancelled")), String.eq(w, "none")), AWord{}, ABest{}))))))
+  Bool.pick(Ak, Bool.or(Bool.or(String.eq(w, "busy"), String.eq(w, "cancelled")), Bool.or(String.eq(w, "none"), String.eq(w, "nodevice"))), AWord{}, ABest{}))))))
 
 # an answer without moves, said plainly
 def word.say(+w: String) -> String:
   Bool.pick(String, String.eq(w, "busy"), "The solver is busy with other visitors' cubes. Press Solve again in a minute.",
   Bool.pick(String, String.eq(w, "cancelled"), "A newer solve from this page took this one's place.",
-    "The solver found no solution within 20 moves, which cannot happen. Please say so."))
+  Bool.pick(String, String.eq(w, "nodevice"), "This browser cannot run the solver here (it needs shared memory between its workers), and the site has no solver of its own to ask.",
+    "The solver found no solution within 20 moves, which cannot happen. Please say so.")))
+
+# how far the shortest search got (0: its tables are still on their way)
+def so.far(+b: U32) -> String:
+  Bool.pick(String, U32.is_zero(b), "Getting this device ready for the shortest search (its tables come once, then stay)...", "So far " ++ ruled(b) ++ ".")
 
 # a short way back, not proven the shortest: the lines are the word, the
 # nodes, the milliseconds since the cube was first asked for, "ok", the
@@ -428,12 +440,12 @@ def rough.go(final: Bool, good: Bool, +s: S, +xs: List<&2, U32>, +ls: List<&2, S
          "The search stopped after " ++ took(num(line(ls, 2n))) ++ ", so it may not be the shortest: " ++ ruled(num(line(ls, 4n))) ++ ".",
          False{}, False{}, gen, U32.div(num(line(ls, 2n)), 1000), who}, [])
     case False{} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, Some{xs}, 0, True{}, "So far " ++ ruled(num(line(ls, 4n))) ++ ".",
-         False{}, False{}, gen, U32.div(num(line(ls, 2n)), 1000), who}, [again.fx(gen, 300)])
+      (S{cube, queue, busy, auto, pos, Some{xs}, 0, True{}, so.far(num(line(ls, 4n))),
+         False{}, False{}, gen, U32.div(num(line(ls, 2n)), 1000), who}, [])
     case True{} False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
       late.go(checks(Some{C.cube.inv(pos)}, pos), s, num(line(ls, 4n)), took(num(line(ls, 2n))))
     case False{} False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (s, [again.fx(gen, 300)])
+      (s, [])
 
 def rough(+final: Bool, +s: S, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
   match s:
@@ -446,14 +458,18 @@ def rough(+final: Bool, +s: S, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
 def queued.go(+s: S) -> S & List<&2, W.Effect>:
   match s:
     case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, sol, step, True{}, "queued", False{}, opt, gen, wait, who}, [again.fx(gen, 300)])
+      (S{cube, queue, busy, auto, pos, sol, step, True{}, "queued", False{}, opt, gen, wait, who}, [])
+
+# where an answer was found: the device's line, or the site's solver
+def found.at(+w: String) -> String:
+  Bool.pick(String, String.is_empty(w), "on the site's solver", w)
 
 def answer.go(k: Ak, +s: S, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
   match k s:
     case ABest{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
       +m = C.cube.read(line(ls, 0n))
       +good = Bool.and(String.eq(line(ls, 3n), "ok"), checks(m, pos))
-      solved.go(m, good, s, commas(num(line(ls, 1n))) ++ " positions searched in " ++ took(num(line(ls, 2n))) ++ ", on 8 cores")
+      solved.go(m, good, s, commas(num(line(ls, 1n))) ++ " positions searched in " ++ took(num(line(ls, 2n))) ++ ", " ++ found.at(line(ls, 4n)))
     case AShort{} _:
       rough(True{}, s, ls)
     case AWork{} _:
@@ -523,12 +539,45 @@ def on.again(+s: S, +g: U32) -> S & List<&2, W.Effect>:
 def on.start(+s: S, +seed: U32) -> S & List<&2, W.Effect>:
   match s:
     case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, "w" ++ U32.show(seed)}, [show.fx(C.cube.solved())])
+      (S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, "w" ++ U32.show(seed)}, [show.fx(C.cube.solved()), W.Route{"route"}])
+
+# A link from another device: "/#m=3.10.17" (the fragment, so it never reaches
+# a server) is that position; it is shown and solved at once
+def route.moves(+v: String) -> Maybe<&2, List<&2, U32>>:
+  +f = line(String.split(v, '#'), 1n)
+  Bool.pick(Maybe<&2, List<&2, U32>>, String.starts_with(f, "m="), C.cube.read(String.drop(f, 2n)), None{})
+
+def route.go(m: Maybe<&2, List<&2, U32>>, +s: S) -> S & List<&2, W.Effect>:
+  match m s:
+    case Some{+ms} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+      +p = pos.simp(ms)
+      +c = C.cube.apply(p, C.cube.solved())
+      +g = U32.add(gen, 1)
+      Bool.pick(S & List<&2, W.Effect>, pos.solved(p), (s, []),
+        (S{c, Nil{}, False{}, False{}, p, None{}, 0, True{}, "", False{}, True{}, g, 0, who}, [show.fx(c), ask.fx(p, g, who), tick.fx(g)]))
+    case None{} _:
+      (s, [])
+
+# the hand-off link, for another device
+def handoff.path(+pos: List<&2, U32>) -> String:
+  "/#m=" ++ C.cube.nums(pos)
+
+def on.copy(+s: S) -> S & List<&2, W.Effect>:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+      (s, [W.Host{"copied", "copy", handoff.path(pos)}])
+
+def on.route(+s: S, +v: String) -> S & List<&2, W.Effect>:
+  route.go(route.moves(v), s)
 
 def apply(+s: S, m: Msg) -> S & List<&2, W.Effect>:
   match m:
     case MStart{seed}:
       on.start(s, seed)
+    case MRoute{v}:
+      on.route(s, v)
+    case MCopy{}:
+      on.copy(s)
     case MHow{}:
       (s, [W.Host{"howto:shown", "howto", ""}])
     case MScramble{seed}:
@@ -665,11 +714,25 @@ def next.label(+s: S) -> String:
     case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
       next.name(sol.at(sol, step))
 
+# when this device could not prove a shortest way (time up, or it cannot run
+# the solver): a link to the same position for a bigger one (a laptop, an iPad)
+def handoff(+on: Bool, +pos: List<&2, U32>) -> W.Html:
+  +path = handoff.path(pos)
+  Bool.pick(W.Html, on,
+    W.el("div", [W.cls("handoff"), W.Prop{"role", "note"}],
+      [W.el("p", [], [W.text("This device could not prove a shortest way in time. A bigger one (a laptop, or an iPad) may: open this link there, and it solves the same cube.")]),
+       W.el("p", [W.cls("handoff-row")],
+         [W.el("a", [W.Prop{"id", "handoff-link"}, W.Prop{"href", path}], [W.text("elcubodeedgar.hhefesto.dev" ++ path)]),
+          W.el("button", [W.Prop{"id", "copy"}, W.cls("btn"), W.On{"click", "copy"}], [W.text("Copy the link")])])]),
+    W.el("div", [W.cls("handoff none")], []))
+
 def view.go(+s: S) -> W.Html:
   match s:
     case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
       +can = Bool.and(Bool.not(busy), Maybe.is_some(&2, U32, sol.at(sol, step)))
       +now = pos.now(pos, sol, step)
+      +rough = Bool.and(Maybe.is_some(&2, List<&2, U32>, sol), Bool.not(opt))
+      +off = Bool.and(Bool.and(Bool.not(asked), Bool.not(List.is_empty(&2, U32, pos))), Bool.or(rough, String.starts_with(info, "This browser cannot")))
       W.el("div", [W.cls("app" ++ Bool.pick(String, bad, " bad", "") ++ Bool.pick(String, asked, " searching", "") ++ Bool.pick(String, busy, " busy", ""))],
         [W.el("p", [W.cls("status"), W.Prop{"aria-live", "polite"}], [W.text(status(s))]),
          W.el("div", [W.cls("controls")],
@@ -682,6 +745,7 @@ def view.go(+s: S) -> W.Html:
          pad(True{}),
          W.el("p", [W.cls("pad-help")], [W.el("button", [W.Prop{"id", "howto"}, W.cls("howto"), W.On{"click", "howto"}], [W.text("What do these buttons mean?")])]),
          strip(sol, step, opt),
+         handoff(off, pos),
          W.el("div", [W.cls("controls")],
            [W.el("button", [W.Prop{"id", "next"}, W.cls("btn"), prop.on("disabled", Bool.not(can)), W.On{"click", "next"}],
               [W.text("Next step"), W.el("span", [W.cls("btn-move")], [W.text(next.label(s))])]),

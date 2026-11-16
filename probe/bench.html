@@ -1,0 +1,57 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>running</title>
+<!-- Probe: the device's solver (web/solver.js, its Web Workers running
+     Dev.bend) on cubes, as the page uses it, timed:
+       bench.html?workers=N&cubes=3.0.6,1.4.7.10
+     For each cube: when the first short way came (and its length), when the
+     final answer came, what it is (a shortest solution, or "short" when the
+     120 s ran out), the bound reached. Then the memory the page and its
+     workers use (Chrome's measureUserAgentSpecificMemory). probe/shot.mjs
+     reads the result from #out. -->
+<pre id="out"></pre>
+<script type="module">
+import { makeSolver } from "./solver.js";
+import D from "./dev.mjs";
+const q = new URLSearchParams(location.search);
+const workers = Number(q.get("workers")) || 0;
+const cubes = (q.get("cubes") || "").split(",").filter((x) => x);
+const out = document.getElementById("out");
+const facelets = (m) => D["Cube:cube.facelets"](D["Cube:cube.apply"](D["Cube:cube.read"](m).value, D["Cube:cube.solved"]()));
+const S = makeSolver({ workers });
+const t00 = performance.now();
+const one = (m, who) =>
+  new Promise((ok) => {
+    const t0 = performance.now();
+    let first = null;
+    S.solve(`${facelets(m)} ${m} ${who}`, (text) => {
+      const ls = text.split("\n");
+      const ms = Math.round(performance.now() - t0);
+      if (ls[0] === "working") {
+        if (!first) first = { ms, len: ls[5] ? ls[5].split(".").length : 0 };
+        return;
+      }
+      const final = ls[0] === "short" || ls[0] === "late" ? ls[0] : "shortest";
+      const moves = final === "short" ? ls[5] : final === "shortest" ? ls[0] : "";
+      if (!first && final === "shortest") first = { ms, len: moves ? moves.split(".").length : 0 };
+      ok({ cube: m, scramble: m.split(".").length, first, final, moves, len: moves ? moves.split(".").length : 0, ms, bound: final === "shortest" ? null : Number(ls[4]), nodes: Number(ls[1]) });
+    });
+  });
+const res = { workers: S.cores, isolated: S.isolated, cubes: [] };
+// the tables first (a 1-move cube waits for them), timed apart
+const w = await one("3", "warm");
+res.boot = { ms: Math.round(performance.now() - t00), loads: S.loads, warm: w };
+for (const [i, m] of cubes.entries()) {
+  res.cubes.push(await one(m, "b" + i));
+  out.textContent = JSON.stringify(res);
+}
+try {
+  const mem = await performance.measureUserAgentSpecificMemory();
+  res.memory = { bytes: mem.bytes, breakdown: mem.breakdown.filter((b) => b.bytes > 1e6).map((b) => [b.bytes, b.types.join(","), b.attribution.map((a) => a.scope).join(",")]) };
+} catch (e) {
+  res.memory = String(e);
+}
+res.failed = S.failed();
+out.textContent = JSON.stringify(res);
+document.title = "done";
+</script>

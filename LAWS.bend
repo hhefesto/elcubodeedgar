@@ -2,6 +2,7 @@ import Base
 import ./Cube.bend as C
 import ./Search.bend as S
 import ./Group.bend as G
+import ./Guard.bend as Gd
 
 # The group theory the solver stands on, as laws. PROOF.bend proves each one;
 # `bend PROOF.bend` prints ALL PROOFS CHECK only when every law holds.
@@ -111,3 +112,57 @@ law search_first:
   for f: G.Face
   for t: G.Turn
   {S.sr.allowed(G.gr.m(f, t), 6) == True{} : Bool}
+
+# Reading a cube from its stickers (Guard.bend)
+# ---------------------------------------------
+#
+# The camera, the paint and the server all set a cube by its stickers'
+# colours, through Guard.bend's gd.check: the cube those stickers are, or why
+# a real cube cannot have them.
+
+# the solved cube's stickers read back as the solved cube
+law read_solved:
+  {Gd.gd.check(Gd.gd.of(C.cube.solved())) == Gd.Good{C.cube.solved()} : Gd.Read}
+
+# every move's stickers read back as that move
+law read_move:
+  for f: G.Face
+  for t: G.Turn
+  {Gd.gd.check(Gd.gd.of(G.gr.mv(f, t))) == Gd.Good{G.gr.mv(f, t)} : Gd.Read}
+
+# the superflip's (every edge flipped in place: what U R2 F B R B2 R U2 L B2
+# R U' D' R2 F R' L B2 U2 F2 makes) read back as it
+law read_superflip:
+  {Gd.gd.check(Gd.gd.of(C.Cube{[0, 1, 2, 3, 4, 5, 6, 7], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}))
+     == Gd.Good{C.Cube{[0, 1, 2, 3, 4, 5, 6, 7], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}} : Gd.Read}
+
+# and a scrambled cube's, every piece moved and most turned (what the hand
+# scramble L U' B2 U L F2 D' F2 R2 U B2 U' R F' R F' D L B' F2 R2 L' B makes)
+law read_hand23:
+  {Gd.gd.check(Gd.gd.of(C.Cube{[3, 2, 4, 5, 0, 6, 7, 1], [1, 0, 1, 1, 2, 0, 0, 1], [4, 1, 9, 8, 5, 6, 0, 2, 3, 7, 11, 10], [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0]}))
+     == Gd.Good{C.Cube{[3, 2, 4, 5, 0, 6, 7, 1], [1, 0, 1, 1, 2, 0, 0, 1], [4, 1, 9, 8, 5, 6, 0, 2, 3, 7, 11, 10], [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0]}} : Gd.Read}
+
+# a single corner twisted in place is refused, at every corner
+law refuse_twisted:
+  for p: Gd.Cn
+  {Gd.gd.ok(Gd.gd.check(Gd.gd.of(Gd.gd.twisted(p)))) == False{} : Bool}
+
+# a single edge flipped in place is refused, at every edge
+law refuse_flipped:
+  for e: Gd.Ed
+  {Gd.gd.ok(Gd.gd.check(Gd.gd.of(Gd.gd.flipped(e)))) == False{} : Bool}
+
+# two corners swapped (each and the next) are refused
+law refuse_corners_swapped:
+  for p: Gd.Cn
+  {Gd.gd.ok(Gd.gd.check(Gd.gd.of(Gd.gd.cswapped(p)))) == False{} : Bool}
+
+# two edges swapped (each and the next) are refused
+law refuse_edges_swapped:
+  for e: Gd.Ed
+  {Gd.gd.ok(Gd.gd.check(Gd.gd.of(Gd.gd.eswapped(e)))) == False{} : Bool}
+
+# a sticker painted another face's colour (10 of one, 8 of another) is refused
+law refuse_painted:
+  for f: G.Face
+  {Gd.gd.ok(Gd.gd.check(Gd.gd.painted(f))) == False{} : Bool}

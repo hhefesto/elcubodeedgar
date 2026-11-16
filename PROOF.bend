@@ -8,6 +8,7 @@ import Base
 import ./Cube.bend as C
 import ./Search.bend as S
 import ./Group.bend as G
+import ./Guard.bend as Gd
 import ./LAWS.bend as Laws
 
 def Laws.quarter_turn_order(f):
@@ -678,4 +679,159 @@ def Laws.search_first(f, t):
     case G.FB{} G.TH{}:
       {==}
     case G.FB{} G.TI{}:
+      {==}
+
+def Laws.read_solved():
+  {==}
+
+def Laws.read_move(f, t):
+  match f t:
+    case G.FU{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{}:
+      {==}
+
+def Laws.read_superflip():
+  {==}
+
+def Laws.read_hand23():
+  {==}
+
+def Laws.refuse_twisted(p):
+  match p:
+    case Gd.CURF{}:
+      {==}
+    case Gd.CUFL{}:
+      {==}
+    case Gd.CULB{}:
+      {==}
+    case Gd.CUBR{}:
+      {==}
+    case Gd.CDFR{}:
+      {==}
+    case Gd.CDLF{}:
+      {==}
+    case Gd.CDBL{}:
+      {==}
+    case Gd.CDRB{}:
+      {==}
+
+def Laws.refuse_corners_swapped(p):
+  match p:
+    case Gd.CURF{}:
+      {==}
+    case Gd.CUFL{}:
+      {==}
+    case Gd.CULB{}:
+      {==}
+    case Gd.CUBR{}:
+      {==}
+    case Gd.CDFR{}:
+      {==}
+    case Gd.CDLF{}:
+      {==}
+    case Gd.CDBL{}:
+      {==}
+    case Gd.CDRB{}:
+      {==}
+
+def Laws.refuse_flipped(e):
+  match e:
+    case Gd.EUR{}:
+      {==}
+    case Gd.EUF{}:
+      {==}
+    case Gd.EUL{}:
+      {==}
+    case Gd.EUB{}:
+      {==}
+    case Gd.EDR{}:
+      {==}
+    case Gd.EDF{}:
+      {==}
+    case Gd.EDL{}:
+      {==}
+    case Gd.EDB{}:
+      {==}
+    case Gd.EFR{}:
+      {==}
+    case Gd.EFL{}:
+      {==}
+    case Gd.EBL{}:
+      {==}
+    case Gd.EBR{}:
+      {==}
+
+def Laws.refuse_edges_swapped(e):
+  match e:
+    case Gd.EUR{}:
+      {==}
+    case Gd.EUF{}:
+      {==}
+    case Gd.EUL{}:
+      {==}
+    case Gd.EUB{}:
+      {==}
+    case Gd.EDR{}:
+      {==}
+    case Gd.EDF{}:
+      {==}
+    case Gd.EDL{}:
+      {==}
+    case Gd.EDB{}:
+      {==}
+    case Gd.EFR{}:
+      {==}
+    case Gd.EFL{}:
+      {==}
+    case Gd.EBL{}:
+      {==}
+    case Gd.EBR{}:
+      {==}
+
+def Laws.refuse_painted(f):
+  match f:
+    case G.FU{}:
+      {==}
+    case G.FR{}:
+      {==}
+    case G.FF{}:
+      {==}
+    case G.FD{}:
+      {==}
+    case G.FL{}:
+      {==}
+    case G.FB{}:
       {==}
