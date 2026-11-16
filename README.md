@@ -17,25 +17,35 @@ cores. Everything that thinks is Bend:
 
 On the visitor's device:
 
-- `Dev.bend`: what a Web Worker runs. Coord.bend's move tables (made on the
-  device, the edges' rows split over the workers), Korf's IDA* (Search.bend)
-  over Coord.bend's three distance tables (the corners; two sets of six
-  edges), one bound at a time, or one subtree of a bound (a three-move prefix
-  of the 3,240) at a time: independent calls, so a bound spreads over every
-  worker; and Lite.bend's two-phase answer for one of the cube's three axes.
-  Every answer is checked by Cube.bend.
+- `Dev.bend`: what a Web Worker runs. The corners' move tables (made on the
+  device), the shortest search (Kd.bend), one bound at a time, or one subtree
+  of a bound (a three-move prefix of the 3,240) at a time: independent
+  calls, so a bound spreads over every worker; Lite.bend's two-phase answer
+  for one of the cube's three axes; and the "Enter your own cube" panel's
+  Bend (dv.check, dv.photo, dv.undo). Every answer is checked by Cube.bend.
+- `Kd.bend`: the shortest search's bound, Kociemba's optimal solver's table
+  made small enough for a browser: each cube's exact distance to the
+  subgroup where edges are unflipped, corners untwisted and the U-D slice
+  edges in their slice, by flip, slice places and twist (2.2 billion cubes),
+  kept by class under the 8 turns that keep the U-D axis (127,166 classes x
+  2,187 twists) at 2 bits an entry (the distance mod 3: the search knows its
+  node's exact distance and a move changes it by at most one). Looked up on
+  the cube's three axes (the cube turned by URF3, URF3^2), with the corners'
+  exact distances: the bound is the largest of the four, about one move more
+  than Korf's corners and two sets of six edges gave, and each move is ~13x
+  the nodes. Made by `FstTables.bend` (30 s on 8 cores).
 - `Lite.bend`: Kociemba's two-phase algorithm with tables a phone can hold
   (phase 1 bounded by two exact distances of parts, 2048 x 495 and
   2187 x 495; phase 2 as TwoPhase.bend's): a short way back, about 20 moves,
   in a second or two.
-- `DevTables.bend`: the tables the device downloads, made once (`nix build
-  .#dev-tables`): Korf's 86.7 MB and Lite's 18 MB, kept as brotli (21.9 MB
-  and 1.5 MB) and gzip (40.9 MB and 2.3 MB), named by their contents, so a
-  browser keeps them for good (Cache API).
+- `DevTables.bend`, `FstTables.bend`: the tables the device downloads, made
+  once (`nix build .#dev-tables`): the corners' 44 MB, Kd.bend's 80 MB and
+  Lite's 18 MB, kept as brotli (6.2, 42.8 and 1.5 MB) and gzip, named by
+  their contents, so a browser keeps them for good (Cache API).
 - `web/Sched.bend`: what the workers do for a cube and what the page is told:
   two-phase on three axes first (a short way at once; the position's own
   moves undone, from the page, are one too, so no answer is longer than
-  them), then Korf's bounds,
+  them), then the shortest search's bounds,
   from 11 on split into the 3,240 subtrees for any free worker; a solution is
   called shortest only when every shorter bound was searched in full (or once
   the bounds reach the short way's length). Past 120 s the page gets the
@@ -53,7 +63,14 @@ On the visitor's device:
   "What do these buttons mean?" (the moves explained, `web/index.html`), and,
   when a device cannot prove the shortest in time, a link (`/#m=3.10.17`, the
   position in the fragment, never sent to a server) to open the same cube on
-  a bigger one.
+  a bigger one. "Enter your own cube" (`web/own.js`, a thin shim): paint the
+  stickers on a flat net, or read them with the camera a face at a time
+  (Photo.bend gives each sticker the colour of the centre it looks most
+  like) and fix them by painting; Guard.bend says plainly why the stickers
+  cannot be a real cube, if they cannot; the cube is then shown as a
+  `#m=` position (a short solution, undone) and solved as any other. The 3D
+  view turns freely (a quaternion trackball: drag any way, any face to the
+  front; a double tap brings it back).
 
 Not used by the site (it asks no server; the user, 11-16: "I don't want
 Edgar's site to use delfos at all"): the first, server-side solver, kept as

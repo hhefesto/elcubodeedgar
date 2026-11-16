@@ -10,13 +10,13 @@ import ./Lite.bend as L
 #
 #   dev-tables <korf file> <lite file>
 #
-#   korf: words 13107200 .. 34774160 of the device's array: Coord.bend's
-#         three distance tables (the corners; two sets of six edges), 4 bits
-#         an entry: what Korf's search needs, 86.7 MB (about 22 MB brotli)
+#   korf: words 13107200 .. 24129680 of this array: Coord.bend's corners'
+#         exact distances, 4 bits an entry, 44 MB; the device puts them at
+#         Kd.bend's kd.PC (the six edges' tables Korf's search used are
+#         gone: Kd.bend's bound, FstTables.bend's file, took their place)
 #   lite: words 35000000 .. lt.end(): Lite.bend's two-phase tables
 #         (18 MB, mostly zeros' worth of small numbers)
-# little-endian. The device makes Coord.bend's move tables itself (they are
-# bigger than they are slow to make: the edges' 48 MB, 29 MB brotli).
+# little-endian. The device makes the corners' move tables itself.
 #
 # IO and a loop over the file, so built, not checked; the tables' code is
 # Coord.bend's, Solve.bend's and Lite.bend's, checked.
@@ -87,9 +87,7 @@ def dt.coord(t0: Array<U32>) -> Array<U32>:
   +s = K.co.of(C.cube.solved())
   t1 = K.co.moves.fill(t0)
   t2 = V.sv.seed(V.sv.seed(V.sv.seed(t1, K.co.T.pc(), 0), K.co.T.pa(), P.pl.ea(s)), K.co.T.pb(), P.pl.eb(s))
-  t3 = V.sv.levels(12n, (t2, 0), K.KC{}, 0)
-  t4 = V.sv.levels(12n, (t3, 0), K.KE{K.co.T.pa()}, 0)
-  V.sv.levels(12n, (t4, 0), K.KE{K.co.T.pb()}, 0)
+  V.sv.levels(12n, (t2, 0), K.KC{}, 0)
 
 type Args is Data:
   Args{+korf: String, +lite: String}
@@ -108,7 +106,7 @@ def dt.go(a: Args, t: Array<U32>, +t0: Nat) -> IO(Unit):
       do IO<Unit>:
         +t1 : Nat <- IO.now()
         IO.print("tables made in " ++ dt.ms(t0, t1))
-        t2 : Array<U32> <- dt.save(korf, t, K.co.T.pc(), 34774160)
+        t2 : Array<U32> <- dt.save(korf, t, K.co.T.pc(), 24129680)
         t3 : Array<U32> <- dt.save(lite, t2, L.lt.FM(), L.lt.end())
         +t4 : Nat <- IO.now()
         IO.print("written to " ++ korf ++ " and " ++ lite ++ " in " ++ dt.ms(t1, t4))

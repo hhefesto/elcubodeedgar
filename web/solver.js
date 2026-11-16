@@ -25,7 +25,7 @@ export function makeSolver(opts = {}) {
   let booting = null;
   let failed = isolated ? null : "this page is not cross-origin isolated";
   let prefixes = [];
-  const ready = { lite: false, korf: false, cptw: false, e: 0, es: cores };
+  const ready = { lite: false, korf: false, cptw: false, e: 0, es: 0 };
   const build = []; // the tables' jobs, first
   const twos = []; // two-phase jobs: need lite and the corners' moves
   const korfs = []; // the shortest search's: need every table
@@ -36,7 +36,7 @@ export function makeSolver(opts = {}) {
   let ticker = null;
   let jobId = 0;
   let lastAsk = "";
-  const loads = { lite: 0, korf: 0, via: {}, ms: {}, built: 0 };
+  const loads = { lite: 0, korf: 0, fst: 0, via: {}, ms: {}, built: 0 };
   const t00 = performance.now();
 
   const now = () => Math.round(performance.now());
@@ -216,19 +216,17 @@ export function makeSolver(opts = {}) {
       const man = await (await fetch(new URL("tables.json", document.baseURI), { cache: "no-cache" })).json();
       sab = new SharedArrayBuffer(man.words * 4);
       await Promise.all(Array.from({ length: cores }, () => addWorker()));
-      // Coord.bend's move tables, made here: the edges' rows split over the workers
+      // Coord.bend's corners' move tables, made here (Kd.bend's search needs
+      // no edges' move tables)
       build.push({ op: "prefixes" }, { op: "cptw" });
-      const rows = 665280;
-      for (let k = 0; k < cores; k++) {
-        const i = Math.floor((rows * k) / cores);
-        build.push({ op: "e", i, n: Math.floor((rows * (k + 1)) / cores) - i });
-      }
       dispatch();
       const keep = [];
       await load("lite", man.lite, keep);
       ready.lite = true;
       dispatch();
-      await load("korf", man.korf, keep);
+      // the shortest search's bound: the corners' distances and Kd.bend's
+      // flip, slice and twist table
+      await Promise.all([load("korf", man.korf, keep), load("fst", man.fst, keep)]);
       ready.korf = true;
       dispatch();
       tidy(keep);

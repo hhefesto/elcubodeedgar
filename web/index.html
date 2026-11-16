@@ -165,6 +165,23 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .howto { min-height: 44px; padding: 8px 2px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--B); background: none; border: none; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 #howto-dlg { width: min(560px, calc(100vw - 20px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 0; border: 2px solid var(--ink); border-radius: 14px; background: var(--paper-3); color: var(--ink); box-shadow: 6px 6px 0 var(--ink); overflow: auto; overscroll-behavior: contain; }
 #howto-dlg::backdrop { background: rgba(27, 23, 18, 0.5); }
+#own-dlg { width: min(620px, calc(100vw - 20px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 0; border: 2px solid var(--ink); border-radius: 14px; background: var(--paper-3); color: var(--ink); box-shadow: 6px 6px 0 var(--ink); overflow: auto; overscroll-behavior: contain; }
+#own-dlg::backdrop { background: rgba(27, 23, 18, 0.5); }
+#own-dlg [data-face="U"] { background: var(--U); } #own-dlg [data-face="R"] { background: var(--R); } #own-dlg [data-face="F"] { background: var(--F); }
+#own-dlg [data-face="D"] { background: var(--D); } #own-dlg [data-face="L"] { background: var(--L); } #own-dlg [data-face="B"] { background: var(--B); }
+#own-pal { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 14px; }
+#own-pal button { width: 44px; height: 44px; border: 2px solid var(--ink); border-radius: 10px; cursor: pointer; padding: 0; }
+#own-pal button[aria-checked="true"] { box-shadow: 0 0 0 3px var(--paper-3), 0 0 0 6px var(--ink); }
+#own-net { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; margin: 0 0 12px; touch-action: manipulation; }
+.own-st { aspect-ratio: 1; min-width: 0; padding: 0; border: 1.5px solid var(--ink); border-radius: 5px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.own-st.centre { cursor: default; box-shadow: inset 0 0 0 3px rgba(27, 23, 18, 0.35); }
+#own-msg { min-height: 1.5em; margin: 6px 0; }
+#own-msg.bad { color: #a3001b; font-weight: 600; }
+.own-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
+.own-view { position: relative; width: min(100%, 340px); aspect-ratio: 1; margin: 6px auto; overflow: hidden; border-radius: 12px; background: #000; }
+.own-view video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.own-guide { position: absolute; left: 20%; top: 20%; width: 60%; height: 60%; border: 3px solid #fff; border-radius: 6px; box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(#fff, #fff) 33.3% 0 / 2px 100% no-repeat, linear-gradient(#fff, #fff) 66.6% 0 / 2px 100% no-repeat, linear-gradient(#fff, #fff) 0 33.3% / 100% 2px no-repeat, linear-gradient(#fff, #fff) 0 66.6% / 100% 2px no-repeat; }
 .dlg { padding: 18px 18px 20px; font-size: 16px; line-height: 1.5; }
 .dlg h2 { margin: 0 0 8px; outline: none; font-size: 26px; font-weight: 420; font-style: italic; font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 1; }
 .dlg p { margin: 0 0 12px; color: var(--ink-2); }
@@ -306,15 +323,53 @@ footer a { color: inherit; }
     <button class="btn primary" value="close">Got it</button>
   </form>
 </dialog>
+<dialog id="own-dlg" aria-labelledby="own-title">
+  <form method="dialog" class="dlg">
+    <h2 id="own-title" tabindex="-1" autofocus>Enter your own cube</h2>
+    <p>Hold your cube with its <b>white</b> centre on top and its <b>green</b> centre facing you. Pick a colour, then tap each sticker that has it (the centres are fixed): the net is your cube unfolded, white on top, then orange, green, red and blue, then yellow. Or let the camera read it, a face at a time, and fix what it got wrong.</p>
+    <div id="own-pal" role="radiogroup" aria-label="the colour to paint">
+      <button type="button" role="radio" data-face="U" aria-checked="true" aria-label="white"></button>
+      <button type="button" role="radio" data-face="R" aria-checked="false" aria-label="red"></button>
+      <button type="button" role="radio" data-face="F" aria-checked="false" aria-label="green"></button>
+      <button type="button" role="radio" data-face="D" aria-checked="false" aria-label="yellow"></button>
+      <button type="button" role="radio" data-face="L" aria-checked="false" aria-label="orange"></button>
+      <button type="button" role="radio" data-face="B" aria-checked="false" aria-label="blue"></button>
+    </div>
+    <div id="own-net" role="group" aria-label="your cube's stickers, unfolded"></div>
+    <div id="own-cam-box" hidden>
+      <div class="own-view"><video id="own-video" playsinline muted></video><div class="own-guide" aria-hidden="true"></div></div>
+      <p id="own-hold"></p>
+      <p class="own-row"><button type="button" class="btn primary" id="own-shot">Take this face</button><button type="button" class="btn ghost" id="own-cam-stop">Stop the camera</button></p>
+    </div>
+    <p id="own-msg" role="status" aria-live="polite"></p>
+    <p class="own-row">
+      <button type="button" class="btn primary" id="own-go">Solve this cube</button>
+      <button type="button" class="btn ghost" id="own-cam">Use the camera</button>
+      <button type="button" class="btn ghost" id="own-clear">Start from solved</button>
+      <button class="btn ghost" value="close">Close</button>
+    </p>
+  </form>
+</dialog>
 <script type="module">
 import App from "./App.bend";
 import { makeSolver } from "./solver.js";
 import { mount } from "../bend-frp/runtime.js";
 import { cube3d } from "./cube3d.js";
+import { ownCube } from "./own.js";
 
 const view = cube3d(document.getElementById("stage"));
 let made = null;
 const solver = () => (made ??= makeSolver({ workers: Number(new URLSearchParams(location.search).get("workers")) || 0 }));
+// "Enter your own cube" (web/own.js): the cube it makes is shown as a link's
+// position (#m=, App.bend's route) and solved as any other
+const own = ownCube({
+  solver,
+  go: (moves) => {
+    if (!moves) return;
+    history.pushState(null, "", "#m=" + moves);
+    dispatchEvent(new PopStateEvent("popstate"));
+  },
+});
 globalThis.bendFrp = {
   show: (facelets) => view.paint(facelets),
   turn: (arg, done) => {
@@ -323,6 +378,8 @@ globalThis.bendFrp = {
   },
   // the explanation of the moves (App.bend's "What do these buttons mean?")
   howto: () => document.getElementById("howto-dlg").showModal(),
+  // the panel to paint or photograph a cube (App.bend's "Enter your own cube")
+  own: () => own.open(),
   // the solver, on this device's cores (web/solver.js; ?workers=N for fewer)
   solve: (arg, done) => solver().solve(arg, done),
   // the hand-off link, to the clipboard (or the phone's share sheet)

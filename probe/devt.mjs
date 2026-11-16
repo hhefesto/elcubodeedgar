@@ -1,24 +1,24 @@
-// Probe: Dev.bend compiled to JavaScript (dev.mjs), on one thread under bun:
+// Probe (Kd.bend's layout): Dev.bend compiled to JavaScript (dev.mjs), on one thread under bun:
 // the tables as the page has them (korf.bin and lite.bin placed at their
 // offsets, Coord.bend's move tables made here), then for each cube its
 // three two-phase answers and the shortest by bounds (whole, or split by
 // the three-move prefixes). Every answer is Dev.bend's, checked by it.
 //
-//   bun probe/devt.mjs DEV.mjs KORF LITE MAXBOUND CUBE...    (a cube: moves, "3.0.6")
+//   bun probe/devt2.mjs DEV.mjs KORF FST LITE MAXBOUND CUBE...  (a cube: moves, "3.0.6")
+// (the corners: KORF's first 11,022,480 words, at Kd.bend's kd.PC; FST at kd.P)
 import { readFileSync } from "node:fs";
-const [devPath, korf, lite, maxb, ...cubes] = process.argv.slice(2);
+const [devPath, korf, fst, lite, maxb, ...cubes] = process.argv.slice(2);
 const D = (await import(devPath)).default;
 const t0 = performance.now();
 const ms = () => Math.round(performance.now() - t0);
 const len = D["dv.len"]();
 const t = new Uint32Array(len);
-t.set(new Uint32Array(readFileSync(korf).buffer.slice(0)), 13107200);
+t.set(new Uint32Array(readFileSync(korf).buffer.slice(0), 0, 11022480), 1048576);
+t.set(new Uint32Array(readFileSync(fst).buffer.slice(0)), 12071056);
 t.set(new Uint32Array(readFileSync(lite).buffer.slice(0)), 35000000);
 console.log(`tables read: ${len} words, ${ms()} ms`);
 D["dv.build.cptw"](t);
 console.log(`corner moves made: ${ms()} ms`);
-D["dv.build.e"](t, 0, 665280);
-console.log(`edge moves made: ${ms()} ms`);
 const pre = D["dv.prefixes"](3).split(" ");
 console.log(`prefixes: ${pre.length}`);
 for (const m of cubes) {
@@ -32,6 +32,7 @@ for (const m of cubes) {
     a = performance.now();
   }
   const h = D["dv.h"](t, r).snd;
+  const nd = D["dv.nd"](t, r).snd; // the root's node, kept (as solver-worker.js does)
   let found = null, nodes = 0;
   const b0 = performance.now();
   for (let b = h; b <= Number(maxb) && !found; b++) {
@@ -42,7 +43,7 @@ for (const m of cubes) {
       if (w !== "none") found = [w, mv, b];
     } else {
       for (const p of pre) {
-        const [w, mv, n] = D["dv.sub"](t, r, p, b).snd.split("\n");
+        const [w, mv, n] = D["dv.subk"](t, r, nd, p, b).snd.split("\n");
         nodes += Number(n);
         if (w !== "none") { found = [w, mv, b]; break; }
       }

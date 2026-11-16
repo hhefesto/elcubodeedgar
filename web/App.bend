@@ -40,6 +40,7 @@ def init.as(+who: String) -> S:
 type Msg is Data:
   MStart{+seed: U32}
   MHow{}
+  MOwn{}
   MRoute{+v: String}
   MCopy{}
   MScramble{+seed: U32}
@@ -88,6 +89,7 @@ def msg.move(+s: String) -> Bool:
 def msg.of(+t: F.Time, +tag: String, +v: String) -> Msg:
   Bool.pick(Msg, String.eq(tag, "start"), MStart{seed.of(t)},
   Bool.pick(Msg, String.eq(tag, "howto"), MHow{},
+  Bool.pick(Msg, String.eq(tag, "own"), MOwn{},
   Bool.pick(Msg, String.eq(tag, "route"), MRoute{v},
   Bool.pick(Msg, String.eq(tag, "copy"), MCopy{},
   Bool.pick(Msg, String.eq(tag, "scramble"), MScramble{seed.of(t)},
@@ -100,7 +102,7 @@ def msg.of(+t: F.Time, +tag: String, +v: String) -> Msg:
   Bool.pick(Msg, String.starts_with(tag, "tick"), MTick{num(String.drop(tag, 4n))},
   Bool.pick(Msg, String.starts_with(tag, "again"), MAgain{num(String.drop(tag, 5n))},
   Bool.pick(Msg, Bool.and(String.starts_with(tag, "t"), msg.move(String.drop(tag, 1n))), MTurn{num(String.drop(tag, 1n))},
-    MOther{}))))))))))))))
+    MOther{})))))))))))))))
 
 # Positions
 # ---------
@@ -601,6 +603,8 @@ def apply(+s: S, m: Msg) -> S & List<&2, W.Effect>:
       on.copy(s)
     case MHow{}:
       (s, [W.Host{"howto:shown", "howto", ""}])
+    case MOwn{}:
+      (s, [W.Host{"own:shown", "own", ""}])
     case MScramble{seed}:
       on.scramble(s, seed)
     case MTurn{+t}:
@@ -764,7 +768,8 @@ def view.go(+s: S) -> W.Html:
             W.el("button", [W.Prop{"id", "reset"}, W.cls("btn ghost"), prop.on("disabled", Bool.or(busy, Bool.and(List.is_empty(&2, U32, now), Bool.not(asked)))), W.On{"click", "reset"}],
               [W.text("Reset")])]),
          pad(True{}),
-         W.el("p", [W.cls("pad-help")], [W.el("button", [W.Prop{"id", "howto"}, W.cls("howto"), W.On{"click", "howto"}], [W.text("What do these buttons mean?")])]),
+         W.el("p", [W.cls("pad-help")], [W.el("button", [W.Prop{"id", "howto"}, W.cls("howto"), W.On{"click", "howto"}], [W.text("What do these buttons mean?")]), W.text(" "),
+            W.el("button", [W.Prop{"id", "own"}, W.cls("howto"), W.On{"click", "own"}], [W.text("Enter your own cube")])]),
          strip(sol, step, opt),
          handoff(off, pos),
          W.el("div", [W.cls("controls")],

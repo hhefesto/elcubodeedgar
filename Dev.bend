@@ -5,6 +5,8 @@ import ./Search.bend as S
 import ./Sym.bend as Y
 import ./Guard.bend as Gd
 import ./Lite.bend as L
+import ./Kd.bend as D
+import ./Photo.bend as Ph
 
 # The solver on the visitor's device: what a Web Worker calls (web/solver.js
 # gives each worker one of these calls at a time; web/Sched.bend decides
@@ -13,10 +15,10 @@ import ./Lite.bend as L
 # Web Workers, natively as Bend's parallel calls.
 #
 # The tables: one array of lt.end() words, shared by the workers (a
-# SharedArrayBuffer): Coord.bend's move tables (made here, dv.build.*, the
-# edges' split over the workers), Coord.bend's three distance tables (Korf's:
-# the corners, two sets of six edges) and Lite.bend's (both downloaded once,
-# made by DevTables.bend).
+# SharedArrayBuffer): Coord.bend's corners' move tables (made here,
+# dv.build.cptw), Coord.bend's corners' distances and Kd.bend's flip, slice
+# and twist table (the shortest search's bound: Kd.bend), and Lite.bend's
+# (downloaded once, made by DevTables.bend and FstTables.bend).
 #
 # A cube is its stickers, a facelet string ("UUUUUUUUURRR..."), read by
 # Guard.bend: so a cube from the camera or the paint is solved as one from
@@ -99,8 +101,8 @@ def dv.h.of(r: Array<U32> & U32) -> Array<U32> & U32:
 # the cube's bound: every solution has at least that many moves
 def dv.h(t: Array<U32>, +r: Root) -> Array<U32> & U32:
   match r:
-    case Root{c, +k}:
-      dv.h.of(S.sr.h(t, dv.cp(k), dv.tw(k), dv.ea(k), dv.eb(k)))
+    case Root{+c, k}:
+      dv.h.of(D.kd.h(t, c))
     case NoRoot{w}:
       (t, 99)
 
@@ -126,8 +128,8 @@ def dv.say(+c: C.Cube, r: Array<U32> & S.Res) -> Array<U32> & String:
 # shortest one if every smaller bound had none
 def dv.bound(t: Array<U32>, +r: Root, +b: U32) -> Array<U32> & String:
   match r:
-    case Root{+c, +k}:
-      dv.say(c, S.sr.below(U32.to_nat(b), t, dv.cp(k), dv.tw(k), dv.ea(k), dv.eb(k), 6, Nil{}))
+    case Root{+c, k}:
+      dv.say(c, D.kd.below(U32.to_nat(b), t, c, 6, Nil{}, c))
     case NoRoot{w}:
       (t, "none\n\n0")
 
@@ -143,9 +145,8 @@ def dv.sub.go(over: Bool, t: Array<U32>, +c: C.Cube, +ps: List<&2, U32>, +b: U32
     case True{}:
       (t, "none\n\n0")
     case False{}:
-      +k = K.co.of(C.cube.apply(ps, c))
-      dv.say(c, S.sr.below(U32.to_nat(U32.sub(b, dv.len.of(ps))), t, dv.cp(k), dv.tw(k), dv.ea(k), dv.eb(k),
-        dv.last(ps, 6), List.reverse(&2, U32, ps)))
+      dv.say(c, D.kd.below(U32.to_nat(U32.sub(b, dv.len.of(ps))), t, C.cube.apply(ps, c),
+        dv.last(ps, 6), List.reverse(&2, U32, ps), c))
 
 # the sequences of b moves from the cube that begin with the moves p (one
 # of dv.prefixes): one subtree of bound b, independent of the others
@@ -156,6 +157,62 @@ def dv.sub(t: Array<U32>, +r: Root, +p: String, +b: U32) -> Array<U32> & String:
       dv.sub.go(U32.is_ge(dv.len.of(ps), b), t, c, ps, b)
     case NoRoot{w}:
       (t, "none\n\n0")
+
+# The root's node (Kd.bend: its coordinates and exact distances), made once
+# a cube by a worker and kept for its subtrees (Bend's JavaScript changes
+# only arrays in place, never a value like this)
+def dv.nd(t: Array<U32>, +r: Root) -> Array<U32> & D.Nd:
+  match r:
+    case Root{+c, k}:
+      D.kd.nd(t, c)
+    case NoRoot{w}:
+      D.kd.nd(t, C.cube.solved())
+
+def dv.subk.go(over: Bool, t: Array<U32>, +c: C.Cube, +n: D.Nd, +ps: List<&2, U32>, +b: U32) -> Array<U32> & String:
+  match over:
+    case True{}:
+      (t, "none\n\n0")
+    case False{}:
+      dv.say(c, D.kd.below.at(U32.to_nat(U32.sub(b, dv.len.of(ps))), t, n, dv.last(ps, 6), ps, c))
+
+# dv.sub, from the root's node n (dv.nd's)
+def dv.subk(t: Array<U32>, +r: Root, +n: D.Nd, +p: String, +b: U32) -> Array<U32> & String:
+  match r:
+    case Root{+c, k}:
+      +ps = Maybe.default(&2, List<&2, U32>, C.cube.read(p), Nil{})
+      dv.subk.go(U32.is_ge(dv.len.of(ps), b), t, c, n, ps, b)
+    case NoRoot{w}:
+      (t, "none\n\n0")
+
+# Your own cube (the page's "Enter your own cube", web/own.js)
+# ---------------------------------------------------------
+
+# "" if the stickers (facelet letters, U R F D L B nine each) can be a real
+# cube, else plainly why not (Guard.bend: the colours' counts, the centres,
+# each piece real and there once, the corners' twist, the edges' flip, the
+# two permutations' parity)
+def dv.check(s: String) -> String:
+  dv.why(dv.root(s))
+
+def dv.undo.m(m: Maybe<&2, List<&2, U32>>) -> String:
+  match m:
+    case Some{+xs}:
+      C.cube.nums(C.cube.inv(xs))
+    case None{}:
+      ""
+
+# moves ("3.10.17") undone: if they solve a cube, these make it from solved
+def dv.undo(s: String) -> String:
+  dv.undo.m(C.cube.read(s))
+
+# six photos, one a line (Photo.bend's form, in ph.order's order), as
+# sticker letters, for the visitor to check and fix by painting
+def dv.photo(s: String) -> String:
+  Gd.gd.letters(Ph.ph.classify(Ph.ph.meds(Ph.ph.cells.all(String.split(s, '\n')))))
+
+# how to hold the cube for photo k (0 .. 5)
+def dv.hold(+k: U32) -> String:
+  Ph.ph.hold(k)
 
 # The canonical sequences of n moves (Search.bend's rules: never a face
 # twice in a row, a face and the one across in one order), last first in ms

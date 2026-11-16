@@ -835,3 +835,57 @@ def Laws.refuse_painted(f):
       {==}
     case G.FB{}:
       {==}
+
+def Laws.fst_step():
+  {==}
+
+def Laws.fst_rank_0():
+  {==}
+
+def Laws.fst_rank_1():
+  {==}
+
+def Laws.fst_rank_2():
+  {==}
+
+def Laws.fst_rank_3():
+  {==}
+
+def Laws.fst_rank_4():
+  {==}
+
+def Laws.fst_rank_5():
+  {==}
+
+def Laws.fst_rank_6():
+  {==}
+
+def Laws.fst_rank_7():
+  {==}
+
+def Laws.fst_rank_8():
+  {==}
+
+def Laws.fst_rank_9():
+  {==}
+
+def Laws.fst_rank_10():
+  {==}
+
+def Laws.fst_rank_11():
+  {==}
+
+def Laws.fst_rank_12():
+  {==}
+
+def Laws.fst_rank_13():
+  {==}
+
+def Laws.fst_rank_14():
+  {==}
+
+def Laws.fst_rank_15():
+  {==}
+
+def Laws.fst_home():
+  {==}

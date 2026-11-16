@@ -3,6 +3,8 @@ import ./Cube.bend as C
 import ./Search.bend as S
 import ./Group.bend as G
 import ./Guard.bend as Gd
+import ./Lite.bend as L
+import ./Kd.bend as D
 
 # The group theory the solver stands on, as laws. PROOF.bend proves each one;
 # `bend PROOF.bend` prints ALL PROOFS CHECK only when every law holds.
@@ -166,3 +168,70 @@ law refuse_edges_swapped:
 law refuse_painted:
   for f: G.Face
   {Gd.gd.ok(Gd.gd.check(Gd.gd.painted(f))) == False{} : Bool}
+
+# The shortest search's bound (Kd.bend)
+# -------------------------------------
+# Its table keeps each cube's distance to Lite.bend's phase-1 goal S mod 3
+# (2 bits): the search knows its node's exact distance, and a move changes it
+# by at most one.
+
+# so a neighbour's residue gives its exact distance: one more, the same, or
+# one less, for every distance the table holds (0 .. 12)
+law fst_step:
+  {D.kd.step.all(13n) == True{} : Bool}
+
+# Kd.bend ranks the slice edges' places (a set of 4 of 12, a mask) by a sum
+# of binomials, without Lite.bend's list of the 495: each by how many such
+# masks are smaller, its place in that list. All 4,096 masks, 256 a law
+# (one law for all of them runs out of the kernel's fuel)
+law fst_rank_0:
+  {D.kd.rank.from(256n, 0, 0) == True{} : Bool}
+
+law fst_rank_1:
+  {D.kd.rank.from(256n, 256, 70) == True{} : Bool}
+
+law fst_rank_2:
+  {D.kd.rank.from(256n, 512, 126) == True{} : Bool}
+
+law fst_rank_3:
+  {D.kd.rank.from(256n, 768, 182) == True{} : Bool}
+
+law fst_rank_4:
+  {D.kd.rank.from(256n, 1024, 210) == True{} : Bool}
+
+law fst_rank_5:
+  {D.kd.rank.from(256n, 1280, 266) == True{} : Bool}
+
+law fst_rank_6:
+  {D.kd.rank.from(256n, 1536, 294) == True{} : Bool}
+
+law fst_rank_7:
+  {D.kd.rank.from(256n, 1792, 322) == True{} : Bool}
+
+law fst_rank_8:
+  {D.kd.rank.from(256n, 2048, 330) == True{} : Bool}
+
+law fst_rank_9:
+  {D.kd.rank.from(256n, 2304, 386) == True{} : Bool}
+
+law fst_rank_10:
+  {D.kd.rank.from(256n, 2560, 414) == True{} : Bool}
+
+law fst_rank_11:
+  {D.kd.rank.from(256n, 2816, 442) == True{} : Bool}
+
+law fst_rank_12:
+  {D.kd.rank.from(256n, 3072, 450) == True{} : Bool}
+
+law fst_rank_13:
+  {D.kd.rank.from(256n, 3328, 478) == True{} : Bool}
+
+law fst_rank_14:
+  {D.kd.rank.from(256n, 3584, 486) == True{} : Bool}
+
+law fst_rank_15:
+  {D.kd.rank.from(256n, 3840, 494) == True{} : Bool}
+
+# S's places (the slice edges home) ranked by both
+law fst_home:
+  {D.kd.home() == L.lt.u(C.cube.solved()) : U32}

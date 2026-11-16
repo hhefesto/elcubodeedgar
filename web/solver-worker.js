@@ -8,6 +8,11 @@
 import D from "./dev.mjs";
 
 let t = null;
+// the root's node (Kd.bend: coordinates, exact distances) of the cube whose
+// subtrees this worker searches, kept: Bend's JavaScript changes arrays in
+// place, never such a value, and finding it again costs a bound's 3,240 jobs
+let ndKey = null;
+let nd = null;
 
 onmessage = ({ data: m }) => {
   if (m.sab) {
@@ -23,7 +28,13 @@ onmessage = ({ data: m }) => {
     else if (m.op === "h") out = String(D["dv.h"](t, D["dv.root"](m.s)).snd);
     else if (m.op === "two") out = D["dv.two"](t, D["dv.root"](m.s), m.a).snd;
     else if (m.op === "bound") out = D["dv.bound"](t, D["dv.root"](m.s), m.b).snd;
-    else if (m.op === "sub") out = D["dv.sub"](t, D["dv.root"](m.s), m.p, m.b).snd;
+    else if (m.op === "sub") {
+      if (m.s !== ndKey) {
+        nd = D["dv.nd"](t, D["dv.root"](m.s)).snd;
+        ndKey = m.s;
+      }
+      out = D["dv.subk"](t, D["dv.root"](m.s), nd, m.p, m.b).snd;
+    }
   } catch (e) {
     out = "error\n" + String(e).slice(0, 200) + "\n0";
   }
