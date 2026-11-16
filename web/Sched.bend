@@ -41,7 +41,7 @@ def sc.split() -> U32:
   11
 
 # The state: the cube (its facelets), whether it runs, the bound being
-# searched, the short way known (its moves, its length; 21 if none), the
+# searched, the short way known (its moves, its length; 99 if none), the
 # jobs of the bound not done, the nodes, when it began, when the page was
 # last told, the cores, the last answer said and whose
 type Sc is Data:
@@ -49,7 +49,7 @@ type Sc is Data:
      +t0: Nat, +said: Nat, +cores: U32, +last: String, +np: U32}
 
 def sc.init() -> Sc:
-  Sc{"", False{}, 0, "", 21, 0, 0, 0n, 0n, 1, "", 0}
+  Sc{"", False{}, 0, "", 99, 0, 0, 0n, 0n, 1, "", 0}
 
 def sc.word(+ws: List<&2, String>, +i: Nat) -> String:
   Maybe.default(&2, String, List.get(&2, String, ws, i), "")
@@ -94,19 +94,21 @@ def sc.proven(+s: Sc, +now: Nat) -> Sc & String:
     case Sc{key, run, b, +short, cap, left, +nodes, +t0, said, +cores, last, np}:
       sc.final(s, sc.best(short, nodes, Nat.sub(now, t0), cores))
 
-# bound b next: proven if the short way is no longer, else its jobs
+# bound b next: proven if the short way is no longer; else its jobs; past 20
+# with no way known (it cannot be: every cube is 20 moves at most), the end
 def sc.bound(+s: Sc, +b: U32, +now: Nat) -> Sc & String:
   match s:
-    case Sc{+key, run, ob, +short, +cap, left, +nodes, +t0, +said, +cores, +last, np}:
+    case Sc{+key, run, ob, +short, +cap, left, +nodes, +t0, +said, +cores, +last, +np}:
       Bool.pick(Sc & String, U32.is_ge(b, cap), sc.proven(s, now),
-        (Sc{key, True{}, b, short, cap, sc.count(b, np), nodes, t0, said, cores, last, np}, sc.jobs(b)))
+      Bool.pick(Sc & String, U32.is_gt(b, 20), sc.final(s, sc.late(nodes, Nat.sub(now, t0), b)),
+        (Sc{key, True{}, b, short, cap, sc.count(b, np), nodes, t0, said, cores, last, np}, sc.jobs(b))))
 
 # Events
 # ------
 
 # a new cube: the jobs for its short way (three axes) and its bound
 def sc.start.new(+s: Sc, +key: String, +now: Nat, +cores: U32, +np: U32) -> Sc & String:
-  (Sc{key, True{}, 0, "", 21, 0, 0, now, now, cores, "", np}, "stop\njob two 0\njob two 1\njob two 2\njob h")
+  (Sc{key, True{}, 0, "", 99, 0, 0, now, now, cores, "", np}, "stop\njob two 0\njob two 1\njob two 2\njob h")
 
 def sc.start.go(same: Bool, +s: Sc, +key: String, +now: Nat, +cores: U32, +np: U32) -> Sc & String:
   match same s:
