@@ -96,12 +96,13 @@ export function cube3d(el) {
   shadow.position.y = -2.05;
   scene.add(shadow);
 
-  // tilt (about x) holds spin (about y) holds the cubies: dragging turns the
-  // cube on a turntable
+  // tilt (the trackball's turn, below) holds spin (a slight sway) holds the
+  // cubies
   const tilt = new THREE.Group();
   const spin = new THREE.Group();
   tilt.add(spin);
   scene.add(tilt);
+  const start = tilt.quaternion.clone();
 
   const bodyGeo = bodyGeometry();
   const bodyMat = new THREE.MeshStandardMaterial({ color: 0x15120f, roughness: 0.42, metalness: 0.0 });
@@ -171,29 +172,57 @@ export function cube3d(el) {
     anim = { pivot, axis, angle, after, done, t0: performance.now(), ms: Math.max(ms, 1), ease: ms > 300 ? easeBack : easeInOut };
   };
 
-  // Looking around
-  const view = { tx: 0, ty: 0, vx: 0, vy: 0, drag: null };
+  // Looking around: a trackball. A drag turns the cube about the axis at
+  // right angles to it, as the camera sees it, by the drag's length: every
+  // face can be brought to the front, from any side, with no pole to stop at
+  // (a quaternion, three.js's: no gimbal lock). A flick goes on and slows; a
+  // double click or double tap brings the cube back to how it started.
+  const view = { drag: null, axis: new THREE.Vector3(0, 1, 0), w: 0, t: 0, back: false };
+  const K = 0.0085;
+  const dq = new THREE.Quaternion();
+  const ax = new THREE.Vector3();
+  const turnView = (axis, angle) => {
+    dq.setFromAxisAngle(axis, angle);
+    tilt.quaternion.premultiply(dq).normalize();
+  };
   el.addEventListener("pointerdown", (e) => {
-    view.drag = { x: e.clientX, y: e.clientY };
-    el.setPointerCapture(e.pointerId);
+    view.drag = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    view.w = 0;
+    view.back = false;
+    try {
+      el.setPointerCapture(e.pointerId);
+    } catch {}
     el.classList.add("dragging");
   });
   el.addEventListener("pointermove", (e) => {
-    if (!view.drag) return;
+    if (!view.drag || e.pointerId !== view.drag.id) return;
     const dx = e.clientX - view.drag.x;
     const dy = e.clientY - view.drag.y;
-    view.drag = { x: e.clientX, y: e.clientY };
-    view.vy = dx * 0.0085;
-    view.vx = dy * 0.0085;
-    view.ty += view.vy;
-    view.tx = Math.max(-0.9, Math.min(1.1, view.tx + view.vx));
+    view.drag.x = e.clientX;
+    view.drag.y = e.clientY;
+    view.t = performance.now();
+    const len = Math.hypot(dx, dy);
+    if (len === 0) return;
+    // (dy, dx, 0) in the camera's frame: right turns about its up, down
+    // about its right; in the world's
+    ax.set(dy / len, dx / len, 0).applyQuaternion(camera.quaternion).normalize();
+    view.axis.copy(ax);
+    view.w = len * K;
+    turnView(ax, view.w);
   });
-  const up = () => {
+  const up = (e) => {
+    if (view.drag && e && e.pointerId !== view.drag.id) return;
+    // held still before letting go: no flick
+    if (performance.now() - (view.t || 0) > 80) view.w = 0;
     view.drag = null;
     el.classList.remove("dragging");
   };
   el.addEventListener("pointerup", up);
   el.addEventListener("pointercancel", up);
+  el.addEventListener("dblclick", () => {
+    view.w = 0;
+    view.back = true;
+  });
 
   const fit = () => {
     const w = el.clientWidth || 1;
@@ -208,14 +237,18 @@ export function cube3d(el) {
   fit();
 
   const frame = (now) => {
-    if (!view.drag) {
-      view.vx *= 0.92;
-      view.vy *= 0.92;
-      view.ty += view.vy;
-      view.tx = Math.max(-0.9, Math.min(1.1, view.tx + view.vx));
+    if (!view.drag && view.w > 1e-4) {
+      view.w *= 0.92;
+      turnView(view.axis, view.w);
     }
-    tilt.rotation.x = view.tx;
-    spin.rotation.y = view.ty + Math.sin(now / 2600) * 0.025;
+    if (view.back) {
+      tilt.quaternion.slerp(start, 0.15);
+      if (tilt.quaternion.angleTo(start) < 1e-3) {
+        tilt.quaternion.copy(start);
+        view.back = false;
+      }
+    }
+    spin.rotation.y = Math.sin(now / 2600) * 0.025;
     if (anim) {
       const t = Math.min(1, (now - anim.t0) / anim.ms);
       anim.pivot.rotation[AXIS[anim.axis]] = anim.angle * anim.ease(t);
