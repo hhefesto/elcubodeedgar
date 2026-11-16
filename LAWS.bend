@@ -135,7 +135,7 @@ law search_first:
 # ---------------------------------------------
 #
 # The camera, the paint and the server all set a cube by its stickers'
-# colours, through Guard.bend's gd.check: the cube those stickers are, or why
+# colors, through Guard.bend's gd.check: the cube those stickers are, or why
 # a real cube cannot have them.
 
 # the solved cube's stickers read back as the solved cube
@@ -187,7 +187,7 @@ law refuse_edges_swapped:
   for e: Gd.Ed
   {Gd.gd.ok(Gd.gd.check(Gd.gd.of(Gd.gd.eswapped(e)))) == False{} : Bool}
 
-# a sticker painted another face's colour (10 of one, 8 of another) is refused
+# a sticker painted another face's color (10 of one, 8 of another) is refused
 law refuse_painted:
   for f: G.Face
   {Gd.gd.ok(Gd.gd.check(Gd.gd.painted(f))) == False{} : Bool}
@@ -340,7 +340,7 @@ law photo_pose_corner:
   {U32.is_lt(Ph.ph.pose.corner(Ph.ph.pose(Ph.ph.shot.of(G.gr.face(f)))), 8) == True{} : Bool}
 
 # a face photographed twice is caught, and two faces never pass for one: in
-# each light, each of a real cube's colours as a phone saw them (ph.pal.phone)
+# each light, each of a real cube's colors as a phone saw them (ph.pal.phone)
 # is the same as itself and as no other (red and orange under a lamp too)
 law photo_same_face:
   for a: G.Face
@@ -350,10 +350,10 @@ law photo_same_face:
               Ph.ph.seen(Ph.ph.pal.phone(), Ph.ph.light(l), G.gr.face(b)))
      == U32.is_eq(G.gr.face(a), G.gr.face(b)) : Bool}
 
-# Your cube's colours (Scheme.bend)
+# Your cube's colors (Scheme.bend)
 # ---------------------------------
 
-# every preset gives the six faces six different colours
+# every preset gives the six faces six different colors
 law scheme_six:
   for p: Sc.Preset
   {Sc.sc.why.faces(Sc.sc.faces(Sc.sc.preset(p))) == "" : String}
@@ -363,10 +363,10 @@ law scheme_key:
   for p: Sc.Preset
   {Sc.sc.at(Sc.sc.index(p)) == p : Sc.Preset}
 
-# and six digits are a scheme of the visitor's own, two faces of one colour
+# and six digits are a scheme of the visitor's own, two faces of one color
 # caught
 law scheme_own:
-  {Sc.sc.why("022135") == "Two faces are red: each face needs a colour of its own." : String}
+  {Sc.sc.why("022135") == "Two faces are red: each face needs a color of its own." : String}
 
 # the Japanese scheme is the standard one with yellow and blue swapped (down
 # and back), the mirrored one with red and orange (right and left)
@@ -378,7 +378,7 @@ law scheme_mirrored:
   {Sc.sc.faces(Sc.sc.preset(Sc.Mirrored{}))
      == List.set(&2, U32, List.set(&2, U32, Sc.sc.faces(Sc.sc.preset(Sc.Standard{})), 1n, 3), 4n, 2) : List<&2, U32>}
 
-# the page's messages name faces by the standard scheme's colours: in the
+# the page's messages name faces by the standard scheme's colors: in the
 # standard scheme they are said as they are
 law scheme_say_standard:
   for a: G.Face
@@ -386,16 +386,16 @@ law scheme_say_standard:
   {Sc.sc.say("0", "The " ++ Gd.gd.name(G.gr.face(a)) ++ "-" ++ Gd.gd.name(G.gr.face(b)) ++ " edge (white 8).")
      == "The " ++ Gd.gd.name(G.gr.face(a)) ++ "-" ++ Gd.gd.name(G.gr.face(b)) ++ " edge (white 8)." : String}
 
-# and in every preset, a face's standard name is said as its colour there
+# and in every preset, a face's standard name is said as its color there
 law scheme_say_face:
   for p: Sc.Preset
   for f: G.Face
   {Sc.sc.say.in(Sc.sc.preset(p), "the " ++ Gd.gd.name(G.gr.face(f)) ++ " centre")
      == "the " ++ Sc.sc.col.name(Sc.sc.get(Sc.sc.faces(Sc.sc.preset(p)), G.gr.face(f))) ++ " centre" : String}
 
-# a face's colour picked (the picker's "None of these?"): a colour another
+# a face's color picked (the picker's "None of these?"): a color another
 # face has swaps with it, so from every preset, whichever face is given
-# whichever of the standard six, the six stay six different colours
+# whichever of the standard six, the six stay six different colors
 law scheme_pick_six:
   for p: Sc.Preset
   for f: G.Face

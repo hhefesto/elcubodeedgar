@@ -5,7 +5,7 @@
 #   probe/camera.sh URL OUT [desktop|phone]
 #
 # The camera is a canvas: a grey table and a cube's face filling the guide
-# square, in a phone's colours (Photo.bend's ph.pal.phone), a little noise
+# square, in a phone's colors (Photo.bend's ph.pal.phone), a little noise
 # each frame. The cube is R U (probe/view-own.sh's). The six photos are taken
 # as the page asks; before the second, the first face is shown again (the
 # page must say it is photo 1 again and keep nothing); after the sixth, the

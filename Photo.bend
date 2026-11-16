@@ -10,7 +10,7 @@ import ./Scheme.bend as Sc
 # by row from the top left, each pixel's red, green and blue as one char each
 # (code 256 + value, so no char is a control or a surrogate): 3,888 chars.
 # The square is 3 x 3 cells of 12 x 12 pixels, a sticker each; a sticker's
-# colour is the median, channel by channel, of its cell's middle 6 x 6
+# color is the median, channel by channel, of its cell's middle 6 x 6
 # pixels (so a cube up to 3 pixels off, a sticker's black edge, or glare on
 # a few pixels change nothing).
 #
@@ -19,14 +19,14 @@ import ./Scheme.bend as Sc
 # it out (U seen with B on top, D with F on top, the others with U on top):
 # a cell's place in the photo is the facelet's place in its face.
 #
-# Each sticker is then given the colour of the centre it looks most like, of
+# Each sticker is then given the color of the centre it looks most like, of
 # the six centres in the same photos (so the light, the camera, and the cube's
-# own shades matter little): the closest pairs first, and no colour on more
+# own shades matter little): the closest pairs first, and no color on more
 # than 9 stickers. What that gives goes through Guard.bend like any cube.
 #
 # Every def is prefixed `ph.`.
 
-# A sticker's colour as photographed: red, green, blue (0..255)
+# A sticker's color as photographed: red, green, blue (0..255)
 type Px is Data:
   Px{+r: U32, +g: U32, +b: U32}
 
@@ -162,15 +162,15 @@ def ph.meds.go(+ks: List<&2, U32>, n: Nat, +g: U32, +acc: List<&2, U32>) -> List
     case 1n+p:
       ph.meds.go(ks, p, U32.add(g, 1), ph.middle(ph.group(ks, g, Nil{})) <> acc)
 
-# A photo's 9 stickers' colours: each cell's median red, green, blue (27
+# A photo's 9 stickers' colors: each cell's median red, green, blue (27
 # numbers, the cells row by row from the top left)
 def ph.cells(s: String) -> List<&2, U32>:
   ph.meds.go(List.sort(~U32, ~U32.is_le, ph.keys.go(s, 0, Nil{})), 27n, 0, Nil{})
 
-# Telling the colours apart
+# Telling the colors apart
 # -------------------------
 
-# r g b numbers as colours
+# r g b numbers as colors
 def ph.pxs(xs: List<&2, U32>) -> List<&2, Px>:
   match xs:
     case +r <> +g <> +b <> t:
@@ -182,9 +182,9 @@ def ph.sq(+a: U32, +b: U32) -> U32:
   +d = Bool.pick(U32, U32.is_lt(a, b), U32.sub(b, a), U32.sub(a, b))
   U32.mul(d, d)
 
-# How unlike two colours are: their red, green and blue shares of their
+# How unlike two colors are: their red, green and blue shares of their
 # brightness (in thousandths) apart, squared, and a little of their
-# brightness apart (so a face in shade is still its colour)
+# brightness apart (so a face in shade is still its color)
 def ph.dist(+p: Px, +q: Px) -> U32:
   match p q:
     case Px{+r1, +g1, +b1} Px{+r2, +g2, +b2}:
@@ -221,7 +221,7 @@ def ph.pairs(ps: List<&2, Px>, +cs: List<&2, Px>, +i: U32, +acc: List<&2, U32>) 
       ph.pairs(t, cs, U32.add(i, 1),
         Bool.pick(List<&2, U32>, U32.is_eq(U32.mod(i, 9), 4), acc, ph.pairs.face(p, cs, i, 0, acc)))
 
-# no colour yet (6), but each centre its face's
+# no color yet (6), but each centre its face's
 def ph.blank(n: Nat, +i: U32, +acc: List<&2, U32>) -> List<&2, U32>:
   match n:
     case 0n:
@@ -229,8 +229,8 @@ def ph.blank(n: Nat, +i: U32, +acc: List<&2, U32>) -> List<&2, U32>:
     case 1n+p:
       ph.blank(p, U32.add(i, 1), Bool.pick(U32, U32.is_eq(U32.mod(i, 9), 4), U32.div(i, 9), 6) <> acc)
 
-# the pairs, closest first: sticker i gets colour f if it has none yet and f
-# is on fewer than 9 (every sticker gets one: 6 colours of 9 are 54)
+# the pairs, closest first: sticker i gets color f if it has none yet and f
+# is on fewer than 9 (every sticker gets one: 6 colors of 9 are 54)
 def ph.assign(ks: List<&2, U32>, +cols: List<&2, U32>, +cnt: List<&2, U32>) -> List<&2, U32>:
   match ks:
     case Nil{}:
@@ -242,8 +242,8 @@ def ph.assign(ks: List<&2, U32>, +cols: List<&2, U32>, +cnt: List<&2, U32>) -> L
       ph.assign(t, Bool.pick(List<&2, U32>, ok, List.set(&2, U32, cols, U32.to_nat(i), f), cols),
         Bool.pick(List<&2, U32>, ok, List.set(&2, U32, cnt, U32.to_nat(f), U32.add(Gd.gd.get(cnt, f), 1)), cnt))
 
-# The stickers' colours (Guard.bend's: 54 of 0..5, facelet order) from their
-# colours as photographed (162 numbers: r, g, b of each, facelet order)
+# The stickers' colors (Guard.bend's: 54 of 0..5, facelet order) from their
+# colors as photographed (162 numbers: r, g, b of each, facelet order)
 def ph.classify(+meds: List<&2, U32>) -> List<&2, U32>:
   +ps = ph.pxs(meds)
   ph.assign(List.sort(~U32, ~U32.is_le, ph.pairs(ps, ph.centres(ps, 0, Nil{}), 0, Nil{})),
@@ -270,8 +270,8 @@ def ph.read(+photos: List<&2, String>) -> Gd.Read:
 # A face photographed twice
 # -------------------------
 
-# How unlike two colours may be and still be one: a sticker in two photos in
-# one light is far closer (noise, a little shade), two colours in one light
+# How unlike two colors may be and still be one: a sticker in two photos in
+# one light is far closer (noise, a little shade), two colors in one light
 # far farther (the closest, a phone's red and orange under a lamp: 28,134)
 def ph.near() -> U32:
   8000
@@ -297,7 +297,7 @@ def ph.centres.of(photos: List<&2, String>) -> List<&2, Px>:
     case Con{p, t}:
       ph.centre(p) <> ph.centres.of(t)
 
-# the first of ps (from i) the colour x is, or 6
+# the first of ps (from i) the color x is, or 6
 def ph.find(ps: List<&2, Px>, +x: Px, +i: U32) -> U32:
   match ps:
     case Nil{}:
@@ -305,7 +305,7 @@ def ph.find(ps: List<&2, Px>, +x: Px, +i: U32) -> U32:
     case Con{+p, t}:
       Bool.pick(U32, ph.same(p, x), i, ph.find(t, x, U32.add(i, 1)))
 
-# Which of the photos before the last has a centre the colour of the last
+# Which of the photos before the last has a centre the color of the last
 # one's (the same face again: the cube was not turned), or 6 if none
 def ph.twin.of(cs: List<&2, Px>) -> U32:
   match cs:
@@ -329,27 +329,27 @@ def ph.shows(xs: List<&2, U32>) -> List<&2, String>:
 def ph.seen.cells(s: String) -> String:
   String.join(ph.shows(ph.cells(s)), " ")
 
-# Which colours the cube has
+# Which colors the cube has
 # --------------------------
 #
-# Not every cube has the page's colours (Scheme.bend). Photo k shows face
-# ph.order[k]'s centre, and a scheme says what colour that is. For each
-# scheme, the centres are evened out to its colours as a camera sees them
+# Not every cube has the page's colors (Scheme.bend). Photo k shows face
+# ph.order[k]'s centre, and a scheme says what color that is. For each
+# scheme, the centres are evened out to its colors as a camera sees them
 # (sc.col.cam): each channel times the scheme's sum of it over the photos'
 # (so a lamp's yellow, or a shade's blue, is taken out as a whole), then each
-# is compared to its colour (ph.dist). The scheme it adds up least for is the
-# one the cube looks like. Schemes of the same six colours on other faces
+# is compared to its color (ph.dist). The scheme it adds up least for is the
+# one the cube looks like. Schemes of the same six colors on other faces
 # (Standard, Japanese, Mirrored) are told apart that way in any light: a
 # light moves all the centres alike. So the page asks only that, and only
 # once four photos are in (the four sides: red and orange, a close pair, are
 # both seen then).
 
-# the colour face f has in faces fs, as a camera sees it
+# the color face f has in faces fs, as a camera sees it
 def ph.cam(+fs: List<&2, U32>, +f: U32) -> Px:
   +c = Sc.sc.col.cam(Sc.sc.get(fs, f))
   Px{Gd.gd.get(c, 0), Gd.gd.get(c, 1), Gd.gd.get(c, 2)}
 
-# the colours photos ks (0..5, ph.order's) have in faces fs
+# the colors photos ks (0..5, ph.order's) have in faces fs
 def ph.refs(+fs: List<&2, U32>, ks: List<&2, U32>) -> List<&2, Px>:
   match ks:
     case Nil{}:
@@ -390,7 +390,7 @@ def ph.unlike.go(cs: List<&2, Px>, +rs: List<&2, Px>, +gr: U32, +gg: U32, +gb: U
     case Con{+c, t}:
       U32.add(ph.dist(ph.even(c, gr, gg, gb), ph.first(rs)), ph.unlike.go(t, List.drop(&2, Px, rs, 1n), gr, gg, gb))
 
-# how unlike centres cs (of photos ks) are to faces fs's colours
+# how unlike centres cs (of photos ks) are to faces fs's colors
 def ph.unlike(+fs: List<&2, U32>, +ks: List<&2, U32>, +cs: List<&2, Px>) -> U32:
   +rs = ph.refs(fs, ks)
   ph.unlike.go(cs, rs, ph.gain(rs, cs, 0), ph.gain(rs, cs, 1), ph.gain(rs, cs, 2))
@@ -408,7 +408,7 @@ def ph.fit.big() -> U32:
 def ph.preset.faces(+i: U32) -> List<&2, U32>:
   Sc.sc.faces(Sc.sc.preset(Sc.sc.at(i)))
 
-# of the presets (from i, n of them) with faces cur's colours moved round,
+# of the presets (from i, n of them) with faces cur's colors moved round,
 # the one the centres look most like, as unlike * 8 + i; b the best so far
 def ph.fit.best(n: Nat, +i: U32, +cur: List<&2, U32>, +ks: List<&2, U32>, +cs: List<&2, Px>, +b: U32) -> U32:
   match n:
@@ -431,7 +431,7 @@ def ph.fit.next(n: Nat, +i: U32, +cur: List<&2, U32>, +bf: List<&2, U32>, +ks: L
       ph.fit.next(q, U32.add(i, 1), cur, bf, ks, cs, Bool.pick(U32, Bool.and(other, U32.is_lt(u, b)), u, b))
 
 # The preset the centres cs of photos ks look like, when the page's scheme
-# (faces cur) is another layout of the same colours: four photos or more, and
+# (faces cur) is another layout of the same colors: four photos or more, and
 # the page's and every other layout far more unlike. Sc.sc.count() if none
 def ph.fit.of(+cs: List<&2, Px>, +ks: List<&2, U32>, +cur: List<&2, U32>) -> U32:
   +big = ph.fit.big()
@@ -458,7 +458,7 @@ def ph.rand(+x: U32) -> U32:
   +b = U32.xor(a, U32.shrn(a, 17n))
   U32.xor(b, U32.shln(b, 5n))
 
-# sticker colours: the page's (Cube.bend's U R F D L B: white, red, green,
+# sticker colors: the page's (Cube.bend's U R F D L B: white, red, green,
 # yellow, orange, blue), and a real cube's as a phone saw them
 def ph.pal.page() -> List<&2, U32>:
   [244, 240, 230, 196, 18, 48, 0, 160, 78, 255, 211, 26, 255, 106, 19, 11, 79, 179]
@@ -490,7 +490,7 @@ def ph.light(l: Light) -> List<&2, U32>:
     case Shade{}:
       ph.light.shade()
 
-# channel ch of the pixel at x, y of a photo of a face with colours cols, the
+# channel ch of the pixel at x, y of a photo of a face with colors cols, the
 # cube sx, sy pixels down and right of where it should be, less 3 (0..6)
 def ph.px(+cols: List<&2, U32>, +pal: List<&2, U32>, +lt: List<&2, U32>, +sx: U32, +sy: U32, +x: U32, +y: U32, +ch: U32) -> U32:
   +ok = Bool.and(Bool.and(U32.is_ge(U32.add(x, 3), sx), U32.is_ge(U32.add(y, 3), sy)),
@@ -519,13 +519,13 @@ def ph.paint.go(n: Nat, +i: U32, +cols: List<&2, U32>, +pal: List<&2, U32>, +lt:
              ph.rand(U32.xor(seed, U32.mul(U32.add(i, 1), 2654435761))))
       ph.paint.go(q, U32.sub(i, 1), cols, pal, lt, sx, sy, a, seed, SCon{Char.from_u32(U32.add(v, 256)), acc})
 
-# A photo of a face with colours cols (its 9), as the page's host would hand
+# A photo of a face with colors cols (its 9), as the page's host would hand
 # it: in light lt, the cube sx, sy pixels off (3: none), with noise up to a
 # either way (from seed)
 def ph.paint(+cols: List<&2, U32>, +pal: List<&2, U32>, +lt: List<&2, U32>, +sx: U32, +sy: U32, +a: U32, +seed: U32) -> String:
   ph.paint.go(3888n, 3887, cols, pal, lt, sx, sy, a, seed, SNil{})
 
-# face f's 9 of a cube's 54 colours
+# face f's 9 of a cube's 54 colors
 def ph.face(+cols: List<&2, U32>, +f: U32) -> List<&2, U32>:
   List.take(&2, U32, List.drop(&2, U32, cols, U32.to_nat(U32.mul(f, 9))), 9n)
 
@@ -543,7 +543,7 @@ def ph.photos.go(n: Nat, +k: U32, +cols: List<&2, U32>, +pal: List<&2, U32>, +lt
 def ph.photos(+cols: List<&2, U32>, +pal: List<&2, U32>, +lt: List<&2, U32>, +seed: U32) -> List<&2, String>:
   ph.photos.go(6n, 0, cols, pal, lt, seed)
 
-# The stickers' colours as a camera sees them, in light lt (r, g, b of each:
+# The stickers' colors as a camera sees them, in light lt (r, g, b of each:
 # what ph.cells finds in a photo without noise)
 def ph.look(cols: List<&2, U32>, +pal: List<&2, U32>, +lt: List<&2, U32>) -> List<&2, U32>:
   match cols:
@@ -556,11 +556,11 @@ def ph.look(cols: List<&2, U32>, +pal: List<&2, U32>, +lt: List<&2, U32>) -> Lis
         <> U32.min(U32.div(U32.mul(Gd.gd.get(pal, U32.add(i, 2)), Gd.gd.get(lt, 2)), 256), 255)
         <> ph.look(t, pal, lt)
 
-# colour k of palette pal as a camera sees it in light lt
+# color k of palette pal as a camera sees it in light lt
 def ph.seen(+pal: List<&2, U32>, +lt: List<&2, U32>, +k: U32) -> Px:
   ph.first(ph.pxs(ph.look([k], pal, lt)))
 
-# the centres of photos ks of a cube in preset p's colours, as a phone's
+# the centres of photos ks of a cube in preset p's colors, as a phone's
 # camera sees them in light l
 def ph.fit.seen.go(+pal: List<&2, U32>, +lt: List<&2, U32>, ks: List<&2, U32>) -> List<&2, Px>:
   match ks:
@@ -572,8 +572,8 @@ def ph.fit.seen.go(+pal: List<&2, U32>, +lt: List<&2, U32>, ks: List<&2, U32>) -
 def ph.fit.seen(p: Sc.Preset, l: Light, ks: List<&2, U32>) -> List<&2, Px>:
   ph.fit.seen.go(Sc.sc.cam.pal(Sc.sc.faces(Sc.sc.preset(p))), ph.light(l), ks)
 
-# what the page should be told of a cube of preset p's colours when it shows
-# preset c's: nothing if they are laid out alike, or are not the same colours;
+# what the page should be told of a cube of preset p's colors when it shows
+# preset c's: nothing if they are laid out alike, or are not the same colors;
 # else the first preset laid out as p
 def ph.fit.want(+p: Sc.Preset, +c: Sc.Preset) -> U32:
   +fp = Sc.sc.faces(Sc.sc.preset(p))

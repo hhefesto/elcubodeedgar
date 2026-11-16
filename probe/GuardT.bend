@@ -5,7 +5,7 @@ import ../Guard.bend as Gd
 # Probe: Guard.bend on many cubes. n random scrambles (30 moves each, from
 # Marsaglia's xorshift32): each must read back as itself; each with one
 # corner twisted, one edge flipped, two corners or two edges swapped, or one
-# sticker painted another colour must be refused. Prints the counts, and one
+# sticker painted another color must be refused. Prints the counts, and one
 # reason of each kind.
 #
 #   guardt [n]

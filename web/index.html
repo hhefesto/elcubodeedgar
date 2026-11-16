@@ -21,12 +21,12 @@
   --ink-2: #3a332a;
   --mute: #776b59;
   --rule: #cdbfa3;
-  /* the cube's colours: the visitor's scheme (web/colours.js, Scheme.bend)
+  /* the cube's colors: the visitor's scheme (web/colors.js, Scheme.bend)
      sets them, and the ink to write on each; the page's own accents stay */
   --U: #f4f0e6; --R: #c41230; --F: #00a04e; --D: #ffd31a; --L: #ff6a13; --B: #0b4fb3;
   --U-ink: var(--ink); --R-ink: var(--paper-3); --F-ink: var(--paper-3); --D-ink: var(--ink); --L-ink: var(--ink); --B-ink: var(--paper-3);
   --red: #c41230; --green: #00a04e; --blue: #0b4fb3;
-  /* the six colours in a band, white amid them */
+  /* the six colors in a band, white amid them */
   --six: linear-gradient(90deg, var(--R) 0 16.67%, var(--F) 0 33.33%, var(--U) 0 50%, var(--D) 0 66.67%, var(--L) 0 83.33%, var(--B) 0);
   --serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -167,7 +167,7 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .strip.rough .tile { border-style: dashed; }
 
 /* "Enter your own cube" (App.bend's own.cta): a card under the main buttons,
-   the six colours along its top, a small scrambled face that gives a quarter
+   the six colors along its top, a small scrambled face that gives a quarter
    turn when pointed at, and an arrow */
 .own-cta {
   position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px;
@@ -239,7 +239,7 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .own-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
 /* the camera (web/own.js): six photos, a face each. While it is on, the panel
    is the camera alone: the six steps, the picture with its 3 x 3 square (a
-   dot on each sticker, the colour the camera sees there), and how to hold
+   dot on each sticker, the color the camera sees there), and how to hold
    the cube, drawn and said */
 #own-dlg.cam #own-intro, #own-dlg.cam #own-pal, #own-dlg.cam #own-net, #own-dlg.cam .own-foot, #own-dlg [hidden] { display: none; }
 .own-cam-go { background: var(--paper-3); }
@@ -333,7 +333,7 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .law-list b { color: var(--ink); font-weight: 600; }
 code { font-family: var(--mono); font-size: 0.86em; background: var(--paper-3); border: 1px solid var(--rule); border-radius: 5px; padding: 0 5px; white-space: nowrap; color: var(--ink); }
 .proof { display: inline-block; margin-left: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); border: 1px solid currentColor; border-radius: 4px; padding: 0 5px; vertical-align: 2px; }
-/* your cube's colours (web/colours.js; Scheme.bend decides): the row under
+/* your cube's colors (web/colors.js; Scheme.bend decides): the row under
    "Enter your own cube" (App.bend), the line atop that panel, and the picker */
 .sch-row {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
@@ -383,7 +383,7 @@ code { font-family: var(--mono); font-size: 0.86em; background: var(--paper-3); 
 .sch-sw { aspect-ratio: 1; min-width: 0; padding: 0; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--c); cursor: pointer; }
 .sch-sw[aria-checked="true"] { box-shadow: 0 0 0 2px #fffdf8, 0 0 0 4px var(--ink); }
 @media (max-width: 560px) { .sch-face { grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; } .sch-where { grid-column: 1 / -1; } }
-/* after four photos: the cube's colours look like another layout */
+/* after four photos: the cube's colors look like another layout */
 .own-fit { position: relative; margin: 14px 0 0; padding: 20px 14px 14px; border: 2px solid var(--ink); border-radius: 12px; background: #fffdf8; box-shadow: 4px 4px 0 var(--ink); overflow: hidden; }
 .own-fit::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7px; border-bottom: 2px solid var(--ink); background: var(--six); }
 .own-fit p { margin: 0 0 10px !important; line-height: 1.45; color: var(--ink-2); }
@@ -503,7 +503,7 @@ footer a { color: inherit; }
       <li><span class="chip" data-face="R">R</span><span><b>Right</b>: red</span></li>
       <li><span class="chip" data-face="L">L</span><span><b>Left</b>: orange</span></li>
     </ul>
-    <p data-say>A face's colour is the colour of its centre square, which never moves. In the picture the cube shows its up face (white) on top, its front (green) at the left and its right face (red) at the right; drag it to look at the others. Clockwise is always as seen from that face's own side, so from the front, <code>B</code> looks counter-clockwise, and <code>D</code> turns the other way to <code>U</code>.</p>
+    <p data-say>A face's color is the color of its centre square, which never moves. In the picture the cube shows its up face (white) on top, its front (green) at the left and its right face (red) at the right; drag it to look at the others. Clockwise is always as seen from that face's own side, so from the front, <code>B</code> looks counter-clockwise, and <code>D</code> turns the other way to <code>U</code>.</p>
     <p>In a solution, the moves are done in order, left to right: <code>R U R'</code> is R, then U, then R'.</p>
     <p class="keys-help">On a keyboard: <kbd>u</kbd> <kbd>r</kbd> <kbd>f</kbd> <kbd>d</kbd> <kbd>l</kbd> <kbd>b</kbd> turn a face clockwise; with <kbd>shift</kbd>, counter-clockwise.</p>
     <button class="btn primary" value="close">Got it</button>
@@ -512,9 +512,9 @@ footer a { color: inherit; }
 <dialog id="own-dlg" aria-labelledby="own-title">
   <form method="dialog" class="dlg">
     <h2 id="own-title" tabindex="-1" autofocus>Enter your own cube</h2>
-    <p class="own-sch"><span class="sch-net sch-live" aria-hidden="true"><i data-f="U"></i><i data-f="R"></i><i data-f="F"></i><i data-f="D"></i><i data-f="L"></i><i data-f="B"></i></span><span>Your cube's colours: <b></b></span><button type="button" class="sch-link" data-sch-open>Not yours? Change</button></p>
-    <p id="own-intro" data-say>Hold your cube with its <b>white</b> centre on top and its <b>green</b> centre facing you. Pick a colour, then tap each sticker that has it (the centres are fixed): the net is your cube unfolded, white on top, then orange, green, red and blue, then yellow. Or let the camera read it: six photos, a face each, then fix what it got wrong here.</p>
-    <div id="own-pal" role="radiogroup" aria-label="the colour to paint" data-say>
+    <p class="own-sch"><span class="sch-net sch-live" aria-hidden="true"><i data-f="U"></i><i data-f="R"></i><i data-f="F"></i><i data-f="D"></i><i data-f="L"></i><i data-f="B"></i></span><span>Your cube's colors: <b></b></span><button type="button" class="sch-link" data-sch-open>Not yours? Change</button></p>
+    <p id="own-intro" data-say>Hold your cube with its <b>white</b> centre on top and its <b>green</b> centre facing you. Pick a color, then tap each sticker that has it (the centres are fixed): the net is your cube unfolded, white on top, then orange, green, red and blue, then yellow. Or let the camera read it: six photos, a face each, then fix what it got wrong here.</p>
+    <div id="own-pal" role="radiogroup" aria-label="the color to paint" data-say>
       <button type="button" role="radio" data-face="U" aria-checked="true" aria-label="white"></button>
       <button type="button" role="radio" data-face="R" aria-checked="false" aria-label="red"></button>
       <button type="button" role="radio" data-face="F" aria-checked="false" aria-label="green"></button>
@@ -536,8 +536,8 @@ footer a { color: inherit; }
             <p class="own-k" id="own-k"></p>
             <p class="own-hold" id="own-hold" aria-live="polite"></p>
             <p class="own-turn" id="own-turn"></p>
-            <p class="own-tip">Fill the square with the face, one dot on each sticker; the ring in the middle is the centre's colour.</p>
-            <p class="own-tip">Not the colour it says? Turn the cube as the arrow shows and take it anyway: after four photos the page works out your cube's colours.</p>
+            <p class="own-tip">Fill the square with the face, one dot on each sticker; the ring in the middle is the centre's color.</p>
+            <p class="own-tip">Not the color it says? Turn the cube as the arrow shows and take it anyway: after four photos the page works out your cube's colors.</p>
           </div>
         </div>
       </div>
@@ -564,12 +564,12 @@ footer a { color: inherit; }
 </dialog>
 <dialog id="sch-dlg" aria-labelledby="sch-title">
   <form method="dialog" class="dlg">
-    <h2 id="sch-title" tabindex="-1" autofocus>Your cube's colours</h2>
-    <p>Not every cube has the same colours. Pick the one like yours: the cube here, the panel to enter yours, and the camera's instructions all use it. To tell them apart, hold yours with white on top and green facing you, then look at the right face, and the bottom.</p>
-    <div id="sch-list" role="radiogroup" aria-label="colour schemes"></div>
+    <h2 id="sch-title" tabindex="-1" autofocus>Your cube's colors</h2>
+    <p>Not every cube has the same colors. Pick the one like yours: the cube here, the panel to enter yours, and the camera's instructions all use it. To tell them apart, hold yours with white on top and green facing you, then look at the right face, and the bottom.</p>
+    <div id="sch-list" role="radiogroup" aria-label="color schemes"></div>
     <details id="sch-own">
-      <summary>None of these? Pick each face's colour</summary>
-      <p>Hold your cube any way, and pick the colour of each centre. A colour another face has swaps with it.</p>
+      <summary>None of these? Pick each face's color</summary>
+      <p>Hold your cube any way, and pick the color of each centre. A color another face has swaps with it.</p>
       <div id="sch-faces"></div>
     </details>
     <p class="fine" style="margin: 0 0 12px">Now: <b id="sch-now">Standard</b>. Kept on this device.</p>
@@ -582,28 +582,28 @@ import { makeSolver } from "./solver.js";
 import { mount } from "../bend-frp/runtime.js";
 import { cube3d } from "./cube3d.js";
 import { ownCube } from "./own.js";
-import { colours } from "./colours.js";
+import { colors } from "./colors.js";
 
 const stage = document.getElementById("stage");
 const view = cube3d(stage);
-// the 3D cube in the visitor's cube's colours (web/colours.js), and a change
+// the 3D cube in the visitor's cube's colors (web/colors.js), and a change
 // of them shown on it (it turns to the faces that changed) once it can be
 // seen: no dialog over it, on screen, the tab in front
-view.colours(colours.now().css, true);
+view.colors(colors.now().css, true);
 let onScreen = true;
-const showColours = () => {
+const showColors = () => {
   if (onScreen && !document.hidden && !document.querySelector("dialog[open]")) view.show();
 };
-colours.on((c) => {
-  view.colours(c.css);
-  showColours();
+colors.on((c) => {
+  view.colors(c.css);
+  showColors();
 });
-for (const d of document.querySelectorAll("dialog")) d.addEventListener("close", showColours);
-document.addEventListener("visibilitychange", showColours);
+for (const d of document.querySelectorAll("dialog")) d.addEventListener("close", showColors);
+document.addEventListener("visibilitychange", showColors);
 new IntersectionObserver(
   ([e]) => {
     onScreen = e.intersectionRatio >= 0.5;
-    showColours();
+    showColors();
   },
   { threshold: [0, 0.5, 1] },
 ).observe(stage);
@@ -613,7 +613,7 @@ const solver = () => (made ??= makeSolver({ workers: Number(new URLSearchParams(
 // position (#m=, App.bend's route) and solved as any other
 const own = ownCube({
   solver,
-  colours,
+  colors,
   go: (moves) => {
     if (!moves) return;
     history.pushState(null, "", "#m=" + moves);
@@ -630,8 +630,8 @@ globalThis.bendFrp = {
   howto: () => document.getElementById("howto-dlg").showModal(),
   // the panel to paint or photograph a cube (App.bend's "Enter your own cube")
   own: () => own.open(),
-  // the colours of the visitor's cube (App.bend's "Your cube's colours")
-  colours: () => colours.open(),
+  // the colors of the visitor's cube (App.bend's "Your cube's colors")
+  colors: () => colors.open(),
   // the solver, on this device's cores (web/solver.js; ?workers=N for fewer)
   solve: (arg, done) => solver().solve(arg, done),
   // the hand-off link, to the clipboard (or the phone's share sheet)

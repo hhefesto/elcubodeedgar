@@ -189,7 +189,7 @@ def dv.subk(t: Array<U32>, +r: Root, +n: D.Nd, +p: String, +b: U32) -> Array<U32
 # ---------------------------------------------------------
 
 # "" if the stickers (facelet letters, U R F D L B nine each) can be a real
-# cube, else plainly why not (Guard.bend: the colours' counts, the centres,
+# cube, else plainly why not (Guard.bend: the colors' counts, the centres,
 # each piece real and there once, the corners' twist, the edges' flip, the
 # two permutations' parity)
 def dv.check(s: String) -> String:
@@ -220,7 +220,7 @@ def dv.pose(+k: U32) -> String:
   Gd.gd.letters(Ph.ph.pose(k))
 
 # photos, one a line: which before the last shows the last one's face again
-# (its centre's colour), or 6 if none
+# (its centre's color), or 6 if none
 def dv.twin(s: String) -> U32:
   Ph.ph.twin(Ph.ph.lines(s))
 
@@ -229,7 +229,7 @@ def dv.seen(s: String) -> String:
   Ph.ph.seen.cells(s)
 
 # the preset (Scheme.bend's number) the photos taken so far look like, when
-# the page shows another layout of the same colours (key's): ks the photos'
+# the page shows another layout of the same colors (key's): ks the photos'
 # numbers (0 .. 5) as digits, s the photos, one a line; 5 if none
 def dv.fit(ks: String, s: String, +key: String) -> U32:
   Ph.ph.fit(Sc.sc.digits(ks), Ph.ph.lines(s), Sc.sc.faces(Sc.sc.of(key)))

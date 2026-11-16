@@ -1,11 +1,20 @@
-// Your cube's colours: the thin JS around Scheme.bend, which decides
+// Your cube's colors: the thin JS around Scheme.bend, which decides
 // everything (the presets, what a key names, a scheme of one's own, a face's
-// colour picked, the page's words in the visitor's colours). This only
-// applies what it says: the page's CSS colours (--U .. --B, the ink on each,
+// color picked, the page's words in the visitor's colors). This only
+// applies what it says: the page's CSS colors (--U .. --B, the ink on each,
 // --sch-name), the 3D cube's (through the hooks), the words of whatever is
 // marked data-say, and the picker (#sch-dlg). The scheme is kept in
 // localStorage as its key, with what it gave, so a page opens in it at once.
-const STORE = "elcubo.colours";
+const STORE = "elcubo.colors";
+// where it was kept before the page said "color": read once, moved to STORE
+const STORE_OLD = "elcubo.colours";
+try {
+  const old = localStorage.getItem(STORE_OLD);
+  if (old !== null) {
+    if (localStorage.getItem(STORE) === null) localStorage.setItem(STORE, old);
+    localStorage.removeItem(STORE_OLD);
+  }
+} catch {}
 const FACES = "URFDLB";
 const STANDARD = { key: "0", name: "Standard", names: ["white", "red", "green", "yellow", "orange", "blue"], css: null, inks: null };
 
@@ -36,7 +45,7 @@ const paint = () => {
   document.documentElement.dataset.scheme = cur.key;
 };
 
-// the page's words in the scheme's colours: each text node under data-say,
+// the page's words in the scheme's colors: each text node under data-say,
 // said again from what it first said
 const first = new WeakMap();
 const words = () => {
@@ -75,7 +84,7 @@ const use = async (key) => {
 };
 
 // The picker: the presets, each as its six centres on a net, its name and
-// what it is; under them, a colour for each face, for a cube of one's own
+// what it is; under them, a color for each face, for a cube of one's own
 const dlg = () => document.getElementById("sch-dlg");
 const net = (css) => {
   const n = document.createElement("span");
@@ -136,7 +145,7 @@ const draw = () => {
       const row = document.createElement("div");
       row.className = "sch-face";
       row.setAttribute("role", "radiogroup");
-      row.setAttribute("aria-label", `${where}: the ${FACES[f]} face's colour`);
+      row.setAttribute("aria-label", `${where}: the ${FACES[f]} face's color`);
       const l = document.createElement("span");
       l.className = "sch-where";
       l.innerHTML = `<b>${FACES[f]}</b> ${where}`;
@@ -170,11 +179,11 @@ const open = async () => {
   dlg().showModal();
 };
 
-export const colours = {
+export const colors = {
   // the scheme now: key, name, names (U R F D L B)
   now: () => cur,
   name,
-  // a message in the scheme's colours (as is until Scheme.bend is loaded)
+  // a message in the scheme's colors (as is until Scheme.bend is loaded)
   say: (t) => (S && cur.key !== "0" ? S["sc.say"](cur.key, t) : t),
   ready: bend,
   use,

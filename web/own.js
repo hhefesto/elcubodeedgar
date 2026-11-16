@@ -1,7 +1,7 @@
 // "Enter your own cube": the thin JS around it. The visitor paints the 54
-// stickers on a flat net (a colour, then a sticker; the centres are fixed) or
+// stickers on a flat net (a color, then a sticker; the centres are fixed) or
 // reads them with the camera, a face at a time (each photo's 3 x 3 guide square
-// handed to Dev.bend's dv.photo, which gives each sticker the colour of the
+// handed to Dev.bend's dv.photo, which gives each sticker the color of the
 // centre it looks most like), then fixes what is wrong by painting. Dev.bend
 // decides everything: whether the stickers can be a real cube (dv.check,
 // Guard.bend: plainly why not, if not), how to hold the cube for each photo
@@ -9,8 +9,8 @@
 // (dv.twin), and, from a short solution the device's solver finds, the moves
 // that make the cube (dv.undo); the page then shows that position (#m=) and
 // solves it as any other. What it says names faces by the visitor's cube's
-// colours (web/colours.js, Scheme.bend's sc.say); after four photos, Dev.bend
-// also says if the cube's colours are another layout than the page's (dv.fit:
+// colors (web/colors.js, Scheme.bend's sc.say); after four photos, Dev.bend
+// also says if the cube's colors are another layout than the page's (dv.fit:
 // the Japanese one, say), and the panel offers it.
 const FACES = "URFDLB";
 const SOLVED = [...FACES].map((f) => f.repeat(9)).join("");
@@ -18,7 +18,7 @@ const SOLVED = [...FACES].map((f) => f.repeat(9)).join("");
 // L F R B, then D (Cube.bend's facelet layout)
 const AT = { U: [0, 3], L: [3, 0], F: [3, 3], R: [3, 6], B: [3, 9], D: [6, 3] };
 
-export function ownCube({ solver, go, colours }) {
+export function ownCube({ solver, go, colors }) {
   const dlg = document.getElementById("own-dlg");
   const net = document.getElementById("own-net");
   const msg = document.getElementById("own-msg");
@@ -77,11 +77,11 @@ export function ownCube({ solver, go, colours }) {
   // The camera: six photos, a face each, in Photo.bend's order (F R B L U D).
   // Dev.bend decides how to hold the cube for each (dv.hold, said; dv.pose,
   // drawn), what the camera sees on each sticker (dv.seen: a dot of that
-  // colour on each), whether a photo is a face already taken (dv.twin: the
+  // color on each), whether a photo is a face already taken (dv.twin: the
   // cube was not turned), and the cube the six make (dv.photo). Photos are
   // kept if the camera is stopped, until the six are read.
-  const NAME = new Proxy({}, { get: (_, f) => colours.name(f) });
-  const said = (t) => colours.say(t);
+  const NAME = new Proxy({}, { get: (_, f) => colors.name(f) });
+  const said = (t) => colors.say(t);
   const fitBox = document.getElementById("own-fit");
   const fitText = document.getElementById("own-fit-t");
   const fitYes = document.getElementById("own-fit-yes");
@@ -121,7 +121,7 @@ export function ownCube({ solver, go, colours }) {
     dlg.classList.remove("cam");
   };
 
-  // the 3 x 3 square: a dot on each sticker, the centre's ringed in its colour
+  // the 3 x 3 square: a dot on each sticker, the centre's ringed in its color
   const dots = [];
   for (let i = 0; i < 9; i++) {
     const c = document.createElement("i");
@@ -134,7 +134,7 @@ export function ownCube({ solver, go, colours }) {
     return [...Array(9)].map((_, i) => `rgb(${n[3 * i]},${n[3 * i + 1]},${n[3 * i + 2]})`);
   };
 
-  // the six steps: the face's colour along the bottom, then what was read
+  // the six steps: the face's color along the bottom, then what was read
   const chips = [];
   for (let k = 0; k < 6; k++) {
     const li = document.createElement("li");
@@ -150,7 +150,7 @@ export function ownCube({ solver, go, colours }) {
   }
 
   // the cube held for photo k, drawn: front (at the left), top, right; only
-  // the centres in colour (a face is its centre's colour), and the turn to it
+  // the centres in color (a face is its centre's color), and the turn to it
   const SVGNS = "http://www.w3.org/2000/svg";
   const el = (tag, attrs) => {
     const e = document.createElementNS(SVGNS, tag);
@@ -193,11 +193,11 @@ export function ownCube({ solver, go, colours }) {
     if (k === 5) pose.appendChild(arrow("6,92", "-6,62", "6,32"));
   };
 
-  // how to hold it, said: its colours with a chip each; the turn apart
+  // how to hold it, said: its colors with a chip each; the turn apart
   const sayHold = (t) => {
     const m = t.match(/^(.*?)\s*\((.*)\)\.?$/);
     const main = m ? m[1].replace(/[,.]?$/, ".") : t;
-    const names = colours.now().names;
+    const names = colors.now().names;
     holdText.replaceChildren(
       ...main.split(new RegExp(`\\b(${names.join("|")})\\b`)).map((w, i) => {
         if (i % 2 === 0) return document.createTextNode(w);
@@ -223,7 +223,7 @@ export function ownCube({ solver, go, colours }) {
 
   const ask = async (k) => {
     const d = await dev();
-    await colours.ready();
+    await colors.ready();
     at = k;
     held = null;
     keepBtn.hidden = true;
@@ -346,11 +346,11 @@ export function ownCube({ solver, go, colours }) {
     ask(next);
   };
 
-  // the cube's colours, from four photos on: another layout of the page's
+  // the cube's colors, from four photos on: another layout of the page's
   // (Dev.bend's dv.fit), or null
   const fit = async () => {
     const ks = [0, 1, 2, 3, 4, 5].filter((k) => shots[k]);
-    const key = colours.now().key;
+    const key = colors.now().key;
     if (ks.length < 4 || kept.has(key)) return null;
     const d = await dev();
     let p = 5;
@@ -363,20 +363,20 @@ export function ownCube({ solver, go, colours }) {
   };
   // offered: that scheme, or the page's kept; the photos stay either way
   const offer = async (p, next) => {
-    const s = await colours.ready();
-    const now = colours.now().name;
+    const s = await colors.ready();
+    const now = colors.now().name;
     const name = s["sc.name.of"](String(p));
     fitText.replaceChildren(
-      Object.assign(document.createElement("b"), { textContent: `Your cube looks like it has the ${name} colours, not the ${now} ones. ` }),
+      Object.assign(document.createElement("b"), { textContent: `Your cube looks like it has the ${name} colors, not the ${now} ones. ` }),
       document.createTextNode(s["sc.about.of"](String(p)) + " Your photos stay as they are."),
     );
-    fitYes.textContent = `Use the ${name} colours`;
+    fitYes.textContent = `Use the ${name} colors`;
     fitNo.textContent = `Keep ${now}`;
     fitYes.dataset.p = String(p);
     fitThen = next ?? -1;
     fitBox.hidden = false;
     shotBtn.disabled = true;
-    shotBtn.textContent = "First, your cube's colours";
+    shotBtn.textContent = "First, your cube's colors";
     drawSteps();
     say("");
     fitYes.focus({ preventScroll: true });
@@ -390,16 +390,16 @@ export function ownCube({ solver, go, colours }) {
     fitBox.hidden = true;
     shotBtn.disabled = false;
     // (fitThen still set: the scheme's hook leaves the panel to onward)
-    if (use) await colours.use(fitYes.dataset.p);
-    else kept.add(colours.now().key);
+    if (use) await colors.use(fitYes.dataset.p);
+    else kept.add(colors.now().key);
     fitThen = null;
     answering = false;
     onward(next);
   };
   fitYes.addEventListener("click", () => answered(true));
   fitNo.addEventListener("click", () => answered(false));
-  // another scheme (picked, or offered): the panel says it in its colours
-  colours.on(() => {
+  // another scheme (picked, or offered): the panel says it in its colors
+  colors.on(() => {
     if (stream && poses && fitThen === null) ask(at);
   });
   shotBtn.addEventListener("click", async () => {

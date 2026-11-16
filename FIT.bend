@@ -1,5 +1,5 @@
 # Laws BendTT's kernel runs out of fuel on, with their proofs: Photo.bend's
-# ph.fit (which colour scheme a cube's photos look like), the camera reading a
+# ph.fit (which color scheme a cube's photos look like), the camera reading a
 # scrambled cube, and "Enter your own cube" on a 23-move scramble. Bend's
 # checker evaluates them (`bend FIT.bend --check-only`: ALL PROOFS CHECK, the
 # flake's check "fit"); BendTT's kernel says "out of fuel" (--verdict, in
@@ -16,7 +16,7 @@ import ./Dev.bend as Dv
 
 # The camera reads a cube: the stickers of a cube scrambled by hand (LAWS.bend's
 # read_hand23, every piece moved), as a phone sees them in each light (no
-# noise), are each given back their own colour (ph.classify: the colour of the
+# noise), are each given back their own color (ph.classify: the color of the
 # centre each looks most like, the closest pairs first)
 def Laws.h23() -> C.Cube:
   C.Cube{[3, 2, 4, 5, 0, 6, 7, 1], [1, 0, 1, 1, 2, 0, 0, 1], [4, 1, 9, 8, 5, 6, 0, 2, 3, 7, 11, 10], [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0]}
@@ -50,9 +50,9 @@ law Laws.own_undo_hand23:
 def Laws.own_undo_hand23():
   {==}
 
-# The photos tell layouts apart: the centres of a cube in preset p's colours,
+# The photos tell layouts apart: the centres of a cube in preset p's colors,
 # as a phone sees them in each light, while the page shows preset c's, of the
-# same colours moved round: the page is told p's layout exactly when c's is
+# same colors moved round: the page is told p's layout exactly when c's is
 # another, after the six photos, and after the first four (the sides)
 law Laws.scheme_fit_six:
   for p: Sc.Preset
@@ -109,6 +109,12 @@ def Laws.scheme_fit_six(p, c, l):
       {==}
     case Sc.Standard{} Sc.Pastel{} Ph.Shade{}:
       {==}
+    case Sc.Standard{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Standard{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Standard{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
     case Sc.Stickerless{} Sc.Standard{} Ph.Day{}:
       {==}
     case Sc.Stickerless{} Sc.Standard{} Ph.Lamp{}:
@@ -138,6 +144,12 @@ def Laws.scheme_fit_six(p, c, l):
     case Sc.Stickerless{} Sc.Pastel{} Ph.Lamp{}:
       {==}
     case Sc.Stickerless{} Sc.Pastel{} Ph.Shade{}:
+      {==}
+    case Sc.Stickerless{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Stickerless{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Stickerless{} Sc.RubiksSpeed{} Ph.Shade{}:
       {==}
     case Sc.Japanese{} Sc.Standard{} Ph.Day{}:
       {==}
@@ -169,6 +181,12 @@ def Laws.scheme_fit_six(p, c, l):
       {==}
     case Sc.Japanese{} Sc.Pastel{} Ph.Shade{}:
       {==}
+    case Sc.Japanese{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Japanese{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Japanese{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
     case Sc.Mirrored{} Sc.Standard{} Ph.Day{}:
       {==}
     case Sc.Mirrored{} Sc.Standard{} Ph.Lamp{}:
@@ -199,6 +217,12 @@ def Laws.scheme_fit_six(p, c, l):
       {==}
     case Sc.Mirrored{} Sc.Pastel{} Ph.Shade{}:
       {==}
+    case Sc.Mirrored{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Mirrored{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Mirrored{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
     case Sc.Pastel{} Sc.Standard{} Ph.Day{}:
       {==}
     case Sc.Pastel{} Sc.Standard{} Ph.Lamp{}:
@@ -228,6 +252,48 @@ def Laws.scheme_fit_six(p, c, l):
     case Sc.Pastel{} Sc.Pastel{} Ph.Lamp{}:
       {==}
     case Sc.Pastel{} Sc.Pastel{} Ph.Shade{}:
+      {==}
+    case Sc.Pastel{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Pastel{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Pastel{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Standard{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Standard{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Standard{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Stickerless{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Stickerless{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Stickerless{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Japanese{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Japanese{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Japanese{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Mirrored{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Mirrored{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Mirrored{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Pastel{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Pastel{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Pastel{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.RubiksSpeed{} Ph.Shade{}:
       {==}
 
 def Laws.scheme_fit_four(p, c, l):
@@ -262,6 +328,12 @@ def Laws.scheme_fit_four(p, c, l):
       {==}
     case Sc.Standard{} Sc.Pastel{} Ph.Shade{}:
       {==}
+    case Sc.Standard{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Standard{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Standard{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
     case Sc.Stickerless{} Sc.Standard{} Ph.Day{}:
       {==}
     case Sc.Stickerless{} Sc.Standard{} Ph.Lamp{}:
@@ -291,6 +363,12 @@ def Laws.scheme_fit_four(p, c, l):
     case Sc.Stickerless{} Sc.Pastel{} Ph.Lamp{}:
       {==}
     case Sc.Stickerless{} Sc.Pastel{} Ph.Shade{}:
+      {==}
+    case Sc.Stickerless{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Stickerless{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Stickerless{} Sc.RubiksSpeed{} Ph.Shade{}:
       {==}
     case Sc.Japanese{} Sc.Standard{} Ph.Day{}:
       {==}
@@ -322,6 +400,12 @@ def Laws.scheme_fit_four(p, c, l):
       {==}
     case Sc.Japanese{} Sc.Pastel{} Ph.Shade{}:
       {==}
+    case Sc.Japanese{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Japanese{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Japanese{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
     case Sc.Mirrored{} Sc.Standard{} Ph.Day{}:
       {==}
     case Sc.Mirrored{} Sc.Standard{} Ph.Lamp{}:
@@ -352,6 +436,12 @@ def Laws.scheme_fit_four(p, c, l):
       {==}
     case Sc.Mirrored{} Sc.Pastel{} Ph.Shade{}:
       {==}
+    case Sc.Mirrored{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Mirrored{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Mirrored{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
     case Sc.Pastel{} Sc.Standard{} Ph.Day{}:
       {==}
     case Sc.Pastel{} Sc.Standard{} Ph.Lamp{}:
@@ -381,6 +471,48 @@ def Laws.scheme_fit_four(p, c, l):
     case Sc.Pastel{} Sc.Pastel{} Ph.Lamp{}:
       {==}
     case Sc.Pastel{} Sc.Pastel{} Ph.Shade{}:
+      {==}
+    case Sc.Pastel{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Pastel{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Pastel{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Standard{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Standard{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Standard{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Stickerless{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Stickerless{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Stickerless{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Japanese{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Japanese{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Japanese{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Mirrored{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Mirrored{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Mirrored{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Pastel{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Pastel{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Pastel{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.RubiksSpeed{} Ph.Shade{}:
       {==}
 
 def Laws.scheme_fit_three(p, c, l):
@@ -415,6 +547,12 @@ def Laws.scheme_fit_three(p, c, l):
       {==}
     case Sc.Standard{} Sc.Pastel{} Ph.Shade{}:
       {==}
+    case Sc.Standard{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Standard{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Standard{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
     case Sc.Stickerless{} Sc.Standard{} Ph.Day{}:
       {==}
     case Sc.Stickerless{} Sc.Standard{} Ph.Lamp{}:
@@ -444,6 +582,12 @@ def Laws.scheme_fit_three(p, c, l):
     case Sc.Stickerless{} Sc.Pastel{} Ph.Lamp{}:
       {==}
     case Sc.Stickerless{} Sc.Pastel{} Ph.Shade{}:
+      {==}
+    case Sc.Stickerless{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Stickerless{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Stickerless{} Sc.RubiksSpeed{} Ph.Shade{}:
       {==}
     case Sc.Japanese{} Sc.Standard{} Ph.Day{}:
       {==}
@@ -475,6 +619,12 @@ def Laws.scheme_fit_three(p, c, l):
       {==}
     case Sc.Japanese{} Sc.Pastel{} Ph.Shade{}:
       {==}
+    case Sc.Japanese{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Japanese{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Japanese{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
     case Sc.Mirrored{} Sc.Standard{} Ph.Day{}:
       {==}
     case Sc.Mirrored{} Sc.Standard{} Ph.Lamp{}:
@@ -505,6 +655,12 @@ def Laws.scheme_fit_three(p, c, l):
       {==}
     case Sc.Mirrored{} Sc.Pastel{} Ph.Shade{}:
       {==}
+    case Sc.Mirrored{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Mirrored{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Mirrored{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
     case Sc.Pastel{} Sc.Standard{} Ph.Day{}:
       {==}
     case Sc.Pastel{} Sc.Standard{} Ph.Lamp{}:
@@ -534,4 +690,46 @@ def Laws.scheme_fit_three(p, c, l):
     case Sc.Pastel{} Sc.Pastel{} Ph.Lamp{}:
       {==}
     case Sc.Pastel{} Sc.Pastel{} Ph.Shade{}:
+      {==}
+    case Sc.Pastel{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.Pastel{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.Pastel{} Sc.RubiksSpeed{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Standard{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Standard{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Standard{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Stickerless{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Stickerless{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Stickerless{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Japanese{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Japanese{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Japanese{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Mirrored{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Mirrored{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Mirrored{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Pastel{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Pastel{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.Pastel{} Ph.Shade{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.RubiksSpeed{} Ph.Day{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.RubiksSpeed{} Ph.Lamp{}:
+      {==}
+    case Sc.RubiksSpeed{} Sc.RubiksSpeed{} Ph.Shade{}:
       {==}

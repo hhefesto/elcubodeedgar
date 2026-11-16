@@ -1,25 +1,26 @@
 import Base
 
-# Your cube's colours: which colour each face of a real cube has, its colour
+# Your cube's colors: which color each face of a real cube has, its color
 # scheme. Cubes differ. Most have the standard one (white opposite yellow,
 # green opposite blue, red opposite orange), but some have blue and yellow
 # swapped (the Japanese scheme), some are the standard one's mirror image, and
-# the shades differ (stickers, bright stickerless plastic, pastels with pink
-# for red). The page only ever turns faces U R F D L B (Cube.bend): a scheme
-# is how it shows them, and what it calls them.
+# the shades differ (stickers, bright stickerless plastic, Rubik's Speed's
+# coral red and sky blue, pastels with pink for red). The page only ever
+# turns faces U R F D L B (Cube.bend): a scheme is how it shows them, and
+# what it calls them.
 #
-# A colour is a number: 0 white, 1 yellow, 2 red, 3 orange, 4 green, 5 blue,
-# 6 pink, 7 purple, 8 black, 9 grey. A scheme's faces are the colours of
+# A color is a number: 0 white, 1 yellow, 2 red, 3 orange, 4 green, 5 blue,
+# 6 pink, 7 purple, 8 black, 9 grey. A scheme's faces are the colors of
 # U R F D L B, in that order, and its shades how the page paints them (r, g,
 # b of each, 0..255).
 #
-# The page names a scheme with a key: a preset's number ("0" .. "4"), or six
-# digits, a colour for each face, for a scheme of the visitor's own. What it
+# The page names a scheme with a key: a preset's number ("0" .. "5"), or six
+# digits, a color for each face, for a scheme of the visitor's own. What it
 # gets back is plain text.
 #
 # The page's messages (Guard.bend's, Photo.bend's) name faces by the standard
-# scheme's colours ("the white centre on top"); sc.say puts the visitor's
-# colours in their place (LAWS.bend: scheme_say_standard, scheme_say_face).
+# scheme's colors ("the white centre on top"); sc.say puts the visitor's
+# colors in their place (LAWS.bend: scheme_say_standard, scheme_say_face).
 #
 # Every def is prefixed `sc.`.
 
@@ -29,7 +30,7 @@ def sc.get(+xs: List<&2, U32>, +i: U32) -> U32:
 def sc.len(xs: List<&2, U32>) -> U32:
   U32.from_nat(List.length(&2, U32, xs))
 
-# The colours
+# The colors
 # -----------
 
 def sc.col.names() -> List<&2, String>:
@@ -39,23 +40,23 @@ def sc.col.count() -> U32:
   10
 
 def sc.col.name(+c: U32) -> String:
-  Maybe.default(&2, String, List.get(&2, String, sc.col.names(), U32.to_nat(c)), "no colour")
+  Maybe.default(&2, String, List.get(&2, String, sc.col.names(), U32.to_nat(c)), "no color")
 
-# a colour as stickers have it: the shade the page paints a colour of a
+# a color as stickers have it: the shade the page paints a color of a
 # scheme of the visitor's own
 def sc.col.rgb(+c: U32) -> List<&2, U32>:
   Maybe.default(&2, List<&2, U32>, List.get(&2, List<&2, U32>,
     [[244, 240, 230], [255, 211, 26], [196, 18, 48], [255, 106, 19], [0, 160, 78], [11, 79, 179],
      [242, 107, 166], [123, 75, 179], [38, 34, 30], [143, 138, 131]], U32.to_nat(c)), [0, 0, 0])
 
-# a colour as a phone's camera saw a real cube's (Photo.bend's ph.pal.phone,
+# a color as a phone's camera saw a real cube's (Photo.bend's ph.pal.phone,
 # for the first six; pink, purple, black and grey made like them)
 def sc.col.cam(+c: U32) -> List<&2, U32>:
   Maybe.default(&2, List<&2, U32>, List.get(&2, List<&2, U32>,
     [[186, 192, 196], [206, 198, 44], [168, 32, 42], [226, 98, 34], [22, 148, 72], [24, 62, 150],
      [214, 92, 140], [96, 62, 140], [40, 40, 44], [120, 122, 126]], U32.to_nat(c)), [0, 0, 0])
 
-# faces fs's colours as a camera sees them, r g b of each (the form of
+# faces fs's colors as a camera sees them, r g b of each (the form of
 # Photo.bend's palettes)
 def sc.cam.pal(fs: List<&2, U32>) -> List<&2, U32>:
   match fs:
@@ -77,6 +78,7 @@ type Preset is Data:
   Japanese{}
   Mirrored{}
   Pastel{}
+  RubiksSpeed{}
 
 def sc.preset(p: Preset) -> Scheme:
   match p:
@@ -95,16 +97,20 @@ def sc.preset(p: Preset) -> Scheme:
     case Pastel{}:
       Scheme{"Pastel", "Soft shades on the standard layout, pink in place of red.",
         [0, 6, 4, 1, 3, 5], [251, 248, 242, 245, 154, 184, 143, 217, 168, 251, 228, 138, 248, 178, 124, 138, 184, 240]}
+    case RubiksSpeed{}:
+      Scheme{"Rubik's Speed", "Rubik's own speedcube: the standard layout in its stickerless plastic, a coral red, a bright green and a sky blue.",
+        [0, 2, 4, 1, 3, 5], [237, 238, 242, 242, 80, 94, 40, 205, 70, 252, 211, 4, 253, 145, 80, 10, 145, 212]}
 
 def sc.count() -> U32:
-  5
+  6
 
 # preset i (Standard if none)
 def sc.at(+i: U32) -> Preset:
   Bool.pick(Preset, U32.is_eq(i, 1), Stickerless{},
     Bool.pick(Preset, U32.is_eq(i, 2), Japanese{},
       Bool.pick(Preset, U32.is_eq(i, 3), Mirrored{},
-        Bool.pick(Preset, U32.is_eq(i, 4), Pastel{}, Standard{}))))
+        Bool.pick(Preset, U32.is_eq(i, 4), Pastel{},
+          Bool.pick(Preset, U32.is_eq(i, 5), RubiksSpeed{}, Standard{})))))
 
 def sc.index(p: Preset) -> U32:
   match p:
@@ -118,8 +124,10 @@ def sc.index(p: Preset) -> U32:
       3
     case Pastel{}:
       4
+    case RubiksSpeed{}:
+      5
 
-# each colour's sticker shade, in turn
+# each color's sticker shade, in turn
 def sc.shades(fs: List<&2, U32>) -> List<&2, U32>:
   match fs:
     case Nil{}:
@@ -127,9 +135,9 @@ def sc.shades(fs: List<&2, U32>) -> List<&2, U32>:
     case Con{+c, t}:
       List.append(&2, U32, sc.col.rgb(c), sc.shades(t))
 
-# a scheme of the visitor's own: faces fs, each its colour's sticker shade
+# a scheme of the visitor's own: faces fs, each its color's sticker shade
 def sc.own(+fs: List<&2, U32>) -> Scheme:
-  Scheme{"Your own", "Each face the colour you picked.", fs, sc.shades(fs)}
+  Scheme{"Your own", "Each face the color you picked.", fs, sc.shades(fs)}
 
 def sc.name(+s: Scheme) -> String:
   match s:
@@ -169,8 +177,8 @@ def sc.of.ds(+ds: List<&2, U32>) -> Scheme:
 def sc.of(+key: String) -> Scheme:
   sc.of.ds(sc.digits(key))
 
-# What is wrong with faces fs as a cube's colours, or "" if nothing: six of
-# them, each a colour, no two the same
+# What is wrong with faces fs as a cube's colors, or "" if nothing: six of
+# them, each a color, no two the same
 # ------------------------------------------------------------------------
 
 def sc.has(fs: List<&2, U32>, +c: U32) -> U32:
@@ -180,7 +188,7 @@ def sc.has(fs: List<&2, U32>, +c: U32) -> U32:
     case Con{+x, t}:
       U32.add(Bool.to_u32(U32.is_eq(x, c)), sc.has(t, c))
 
-# the first colour (from c, n of them) on two faces or more; 10 if none
+# the first color (from c, n of them) on two faces or more; 10 if none
 def sc.twice(n: Nat, +fs: List<&2, U32>, +c: U32) -> U32:
   match n:
     case 0n:
@@ -190,13 +198,13 @@ def sc.twice(n: Nat, +fs: List<&2, U32>, +c: U32) -> U32:
 
 def sc.why.faces(+fs: List<&2, U32>) -> String:
   +d = sc.twice(10n, fs, 0)
-  Bool.pick(String, U32.is_ne(sc.len(fs), 6), "A cube has six faces: pick a colour for each.",
-    Bool.pick(String, U32.is_lt(d, sc.col.count()), "Two faces are " ++ sc.col.name(d) ++ ": each face needs a colour of its own.", ""))
+  Bool.pick(String, U32.is_ne(sc.len(fs), 6), "A cube has six faces: pick a color for each.",
+    Bool.pick(String, U32.is_lt(d, sc.col.count()), "Two faces are " ++ sc.col.name(d) ++ ": each face needs a color of its own.", ""))
 
 # Comparing schemes
 # -----------------
 
-# the same colour on every face
+# the same color on every face
 def sc.same(a: List<&2, U32>, +b: List<&2, U32>) -> Bool:
   match a:
     case Nil{}:
@@ -204,8 +212,8 @@ def sc.same(a: List<&2, U32>, +b: List<&2, U32>) -> Bool:
     case Con{+x, t}:
       Bool.and(U32.is_eq(x, sc.get(b, 0)), sc.same(t, List.drop(&2, U32, b, 1n)))
 
-# the same colours, maybe on other faces: each of a's is one of b's (six
-# different each, so one is the other's colours moved round)
+# the same colors, maybe on other faces: each of a's is one of b's (six
+# different each, so one is the other's colors moved round)
 def sc.moved(a: List<&2, U32>, +b: List<&2, U32>) -> Bool:
   match a:
     case Nil{}:
@@ -247,12 +255,12 @@ def sc.names(fs: List<&2, U32>) -> List<&2, String>:
     case Con{+c, t}:
       sc.col.name(c) <> sc.names(t)
 
-# the faces' colours, U R F D L B, as digits: the key of the same scheme as
+# the faces' colors, U R F D L B, as digits: the key of the same scheme as
 # one of the visitor's own
 def sc.faces.of(+key: String) -> String:
   String.join(sc.shows(sc.faces(sc.of(key))), "")
 
-# the faces' colour names, U R F D L B, a space between
+# the faces' color names, U R F D L B, a space between
 def sc.names.of(+key: String) -> String:
   String.join(sc.names(sc.faces(sc.of(key))), " ")
 
@@ -261,7 +269,7 @@ def sc.css(+rs: List<&2, U32>, +k: U32) -> String:
   +i = U32.mul(k, 3)
   "rgb(" ++ U32.show(sc.get(rs, i)) ++ "," ++ U32.show(sc.get(rs, U32.add(i, 1))) ++ "," ++ U32.show(sc.get(rs, U32.add(i, 2))) ++ ")"
 
-# what to write on shade k: dark ink ("d") on a light colour, light ("l") on
+# what to write on shade k: dark ink ("d") on a light color, light ("l") on
 # a dark one (its brightness, as eyes see it, 0..255: below 125 is dark)
 def sc.ink(+rs: List<&2, U32>, +k: U32) -> String:
   +i = U32.mul(k, 3)
@@ -275,11 +283,11 @@ def sc.each(n: Nat, +rs: List<&2, U32>, +ink: Bool, +k: U32) -> List<&2, String>
     case 1n+q:
       Bool.pick(String, ink, sc.ink(rs, k), sc.css(rs, k)) <> sc.each(q, rs, ink, U32.add(k, 1))
 
-# the faces' shades as CSS colours, U R F D L B, a space between
+# the faces' shades as CSS colors, U R F D L B, a space between
 def sc.css.of(+key: String) -> String:
   String.join(sc.each(6n, sc.rgb(sc.of(key)), False{}, 0), " ")
 
-# the ink for each face's colour, "d" or "l", a space between
+# the ink for each face's color, "d" or "l", a space between
 def sc.inks.of(+key: String) -> String:
   String.join(sc.each(6n, sc.rgb(sc.of(key)), True{}, 0), " ")
 
@@ -287,12 +295,12 @@ def sc.inks.of(+key: String) -> String:
 def sc.why(+key: String) -> String:
   sc.why.faces(sc.faces(sc.of(key)))
 
-# Picking a face's colour
+# Picking a face's color
 # -----------------------
 #
-# The visitor makes a scheme of their own a face at a time. A colour another
-# face has goes there in a swap (that face gets this one's old colour), so the
-# six stay six different colours (LAWS.bend: scheme_pick_*); and six that are
+# The visitor makes a scheme of their own a face at a time. A color another
+# face has goes there in a swap (that face gets this one's old color), so the
+# six stay six different colors (LAWS.bend: scheme_pick_*); and six that are
 # a preset's are that preset, by its name.
 
 def sc.pick.go(fs: List<&2, U32>, +i: U32, +f: U32, +c: U32, +old: U32) -> List<&2, U32>:
@@ -302,14 +310,14 @@ def sc.pick.go(fs: List<&2, U32>, +i: U32, +f: U32, +c: U32, +old: U32) -> List<
     case Con{+x, t}:
       Bool.pick(U32, U32.is_eq(i, f), c, Bool.pick(U32, U32.is_eq(x, c), old, x)) <> sc.pick.go(t, U32.add(i, 1), f, c, old)
 
-# the key of key's scheme with face f (U R F D L B are 0..5) colour c
+# the key of key's scheme with face f (U R F D L B are 0..5) color c
 def sc.pick(+key: String, +f: U32, +c: U32) -> String:
   +fs = sc.faces(sc.of(key))
   +ns = sc.pick.go(fs, 0, f, c, sc.get(fs, f))
   +p = sc.first(ns)
   Bool.pick(String, U32.is_lt(p, sc.count()), U32.show(p), String.join(sc.shows(ns), ""))
 
-# the colours a scheme of the visitor's own may use, a space between, and
+# the colors a scheme of the visitor's own may use, a space between, and
 # their shades as CSS
 def sc.palette() -> String:
   String.join(sc.col.names(), " ")
@@ -317,7 +325,7 @@ def sc.palette() -> String:
 def sc.palette.css() -> String:
   String.join(sc.each(10n, sc.shades([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]), False{}, 0), " ")
 
-# Saying it in the visitor's colours
+# Saying it in the visitor's colors
 # ----------------------------------
 
 # the standard scheme's names, U R F D L B: the page's words for faces
@@ -333,7 +341,7 @@ def sc.std.face(ns: List<&2, String>, +w: String, +f: U32) -> U32:
       Bool.pick(U32, String.eq(n, w), f, sc.std.face(t, w, U32.add(f, 1)))
 
 # a word as scheme faces fs says it: a face's standard name becomes the name
-# of that face's colour in fs
+# of that face's color in fs
 def sc.word(+fs: List<&2, U32>, +w: String) -> String:
   +f = sc.std.face(sc.std.names(), w, 0)
   Bool.pick(String, U32.is_lt(f, 6), sc.col.name(sc.get(fs, f)), w)
@@ -358,7 +366,7 @@ def sc.put(s: String, out: List<&2, Char>) -> List<&2, Char>:
 def sc.flush(+fs: List<&2, U32>, w: List<&2, Char>, out: List<&2, Char>) -> List<&2, Char>:
   sc.put(sc.word(fs, sc.str(w, SNil{})), out)
 
-# s said in faces fs's colours, a loop: the word so far in w, what is said
+# s said in faces fs's colors, a loop: the word so far in w, what is said
 # so far in out (both the last char first)
 def sc.say.go(s: String, +fs: List<&2, U32>, +w: List<&2, Char>, +out: List<&2, Char>) -> String:
   match s:
@@ -372,6 +380,6 @@ def sc.say.go(s: String, +fs: List<&2, U32>, +w: List<&2, Char>, +out: List<&2, 
 def sc.say.in(+s: Scheme, msg: String) -> String:
   sc.say.go(msg, sc.faces(s), Nil{}, Nil{})
 
-# a message in a key's scheme's colours
+# a message in a key's scheme's colors
 def sc.say(+key: String, msg: String) -> String:
   sc.say.in(sc.of(key), msg)

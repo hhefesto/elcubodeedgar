@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# Your cube's colours (web/colours.js, Scheme.bend), in headless Chrome
+# Your cube's colors (web/colors.js, Scheme.bend), in headless Chrome
 # (probe/shot.mjs), as a visitor would use them:
 #
-#   probe/colours.sh URL OUT [desktop|phone]
+#   probe/colors.sh URL OUT [desktop|phone]
 #
 # The picker: the row under "Enter your own cube" opens it; Japanese picked,
-# the page's colours and words are the Japanese ones (the panel's "then
-# yellow" is "then blue"), and kept on a reload; a face's colour picked of
+# the page's colors and words are the Japanese ones (the panel's "then
+# yellow" is "then blue"), and kept on a reload; a face's color picked of
 # one's own (the right face pink: a scheme of one's own).
-# The 3D cube: in the Japanese colours too (#stage's data-colours, U R F D L
+# The 3D cube: in the Japanese colors too (#stage's data-colors, U R F D L
 # B), and, the picker closed, turned to show the two faces that changed
 # (blue underneath, yellow at the back: data-look DB), then back; on a
 # reload, in them from the start, with no turn.
-# The camera: a cube with the Japanese colours, photographed while the page
+# The camera: a cube with the Japanese colors, photographed while the page
 # shows the Standard ones, as the page asks (turning as the arrow shows); after
-# the fourth photo the page must offer the Japanese colours, and once they are
+# the fourth photo the page must offer the Japanese colors, and once they are
 # taken, the six photos must read the cube.
 # Screenshots of each. Prints PASS or FAIL. A thin shim: the page's own answers.
 set -euo pipefail
@@ -29,16 +29,20 @@ state="JSON.stringify({key:document.documentElement.dataset.scheme,D:$root.getPr
 intro="document.getElementById('own-intro').textContent"
 cube3="JSON.stringify(document.getElementById('stage').dataset)"
 
-steps=(wait:1500 shot:"$out/$dev-page.png" click:#colours wait:600 shot:"$out/$dev-picker.png"
+steps=(wait:1500 shot:"$out/$dev-page.png" click:#colors wait:600 shot:"$out/$dev-picker.png"
   "click:#sch-list [data-k=\"2\"]" wait:400 "eval:'PICKED '+$state" shot:"$out/$dev-picker-jp.png"
   "click:#sch-dlg button[value=close]" wait:1000 "eval:'CUBE '+$cube3" shot:"$out/$dev-page-jp.png" wait:2600 shot:"$out/$dev-page-jp-back.png"
   click:#own wait:500 "eval:'INTRO '+$intro" shot:"$out/$dev-own-jp.png"
   "click:#own-dlg button[value=close]" wait:300
   "eval:(location.reload(),'reload')" wait:2500 "eval:'KEPT '+$state" "eval:'CUBEKEPT '+$cube3" "eval:'HOWTO '+document.querySelector('.faces').textContent.replace(/\\s+/g,' ')"
-  click:#colours wait:500 "click:#sch-own summary" wait:300 "click:#sch-faces [data-f=\"1\"][data-c=\"6\"]" wait:400
-  "eval:'OWN '+$state" shot:"$out/$dev-picker-own.png")
-env $env node probe/shot.mjs "$url/" $size "${steps[@]}" >"$out/$dev-colours.log" 2>&1 || true
-cat "$out/$dev-colours.log"
+  click:#colors wait:500 "click:#sch-own summary" wait:300 "click:#sch-faces [data-f=\"1\"][data-c=\"6\"]" wait:400
+  "eval:'OWN '+$state" shot:"$out/$dev-picker-own.png"
+  "click:#sch-list [data-k=\"5\"]" wait:400 "eval:'SPEED '+$state" shot:"$out/$dev-picker-speed.png"
+  "click:#sch-dlg button[value=close]" wait:1000 "eval:'CUBESPEED '+$cube3" wait:2600 shot:"$out/$dev-page-speed.png"
+  "eval:(localStorage.removeItem('elcubo.colors'),localStorage.setItem('elcubo.colours',JSON.stringify({key:'2',name:'Japanese',names:['white','red','green','blue','orange','yellow'],css:null,inks:null})),location.reload(),'reload')"
+  wait:2500 "eval:'MOVED '+$state+' '+(localStorage.getItem('elcubo.colours')===null)")
+env $env node probe/shot.mjs "$url/" $size "${steps[@]}" >"$out/$dev-colors.log" 2>&1 || true
+cat "$out/$dev-colors.log"
 
 # the camera: a Japanese cube, the page on Standard (a fresh profile)
 cube=UUUUUUFFFUBBRRRRRRRRRFFDFFDDDBDDBDDBFFDLLLLLLLLLUBBUBB
@@ -72,8 +76,8 @@ for k in 4 5; do
   steps+=("$(show "$(photo $k)")" wait:700 click:#own-shot wait:700)
 done
 steps+=(wait:800 "eval:'NET '+$net" "eval:'MSG '+$msg" shot:"$out/$dev-cam-read.png")
-env $env node probe/shot.mjs "$url/" $size "${steps[@]}" >"$out/$dev-colours-cam.log" 2>&1 || true
-cat "$out/$dev-colours-cam.log"
+env $env node probe/shot.mjs "$url/" $size "${steps[@]}" >"$out/$dev-colors-cam.log" 2>&1 || true
+cat "$out/$dev-colors-cam.log"
 
 # a mirrored cube (orange on the right, red on the left), the offer declined:
 # the page stays Standard, the photos go on, and the six still read the cube
@@ -90,26 +94,29 @@ for k in 4 5; do
   steps+=("$(show "$(photo $k)")" wait:700 click:#own-shot wait:700)
 done
 steps+=(wait:800 "eval:'NET '+$net" "eval:'MSG '+$msg")
-env $env node probe/shot.mjs "$url/" $size "${steps[@]}" >"$out/$dev-colours-keep.log" 2>&1 || true
-cat "$out/$dev-colours-keep.log"
+env $env node probe/shot.mjs "$url/" $size "${steps[@]}" >"$out/$dev-colors-keep.log" 2>&1 || true
+cat "$out/$dev-colors-keep.log"
 
 ok=1
-log=$out/$dev-colours.log
-cam=$out/$dev-colours-cam.log
+log=$out/$dev-colors.log
+cam=$out/$dev-colors-cam.log
 grep -q '^EVAL "PICKED {\\"key\\":\\"2\\",\\"D\\":\\"rgb(11,79,179)\\"' "$log" || { echo "FAIL: Japanese picked, the bottom is not blue"; ok=0; }
-grep -q '^EVAL "INTRO .*red and yellow, then blue' "$log" || { echo "FAIL: the panel does not say the Japanese colours"; ok=0; }
+grep -q '^EVAL "INTRO .*red and yellow, then blue' "$log" || { echo "FAIL: the panel does not say the Japanese colors"; ok=0; }
 grep -q '^EVAL "KEPT {\\"key\\":\\"2\\"' "$log" || { echo "FAIL: Japanese not kept on a reload"; ok=0; }
-grep -qxF 'EVAL "CUBE {\"colours\":\"#f4f0e6 #c41230 #00a04e #0b4fb3 #ff6a13 #ffd31a\",\"look\":\"DB\",\"lookTurn\":\"true\"}"' "$log" || { echo "FAIL: Japanese picked, the 3D cube is not in them or did not turn to show them"; ok=0; }
-grep -qxF 'EVAL "CUBEKEPT {\"colours\":\"#f4f0e6 #c41230 #00a04e #0b4fb3 #ff6a13 #ffd31a\"}"' "$log" || { echo "FAIL: on a reload, the 3D cube is not in the kept colours (or turned)"; ok=0; }
-grep -q '^EVAL "HOWTO .*the bottom: blue' "$log" || { echo "FAIL: the moves explained do not say the Japanese colours"; ok=0; }
+grep -qxF 'EVAL "CUBE {\"colors\":\"#f4f0e6 #c41230 #00a04e #0b4fb3 #ff6a13 #ffd31a\",\"look\":\"DB\",\"lookTurn\":\"true\"}"' "$log" || { echo "FAIL: Japanese picked, the 3D cube is not in them or did not turn to show them"; ok=0; }
+grep -qxF 'EVAL "CUBEKEPT {\"colors\":\"#f4f0e6 #c41230 #00a04e #0b4fb3 #ff6a13 #ffd31a\"}"' "$log" || { echo "FAIL: on a reload, the 3D cube is not in the kept colors (or turned)"; ok=0; }
+grep -q '^EVAL "HOWTO .*the bottom: blue' "$log" || { echo "FAIL: the moves explained do not say the Japanese colors"; ok=0; }
 grep -q '^EVAL "OWN {\\"key\\":\\"064531\\"' "$log" || { echo "FAIL: the right face pink is not a scheme of one's own"; ok=0; }
-grep -q '^EVAL "FIT {\\"shown\\":true,\\"text\\":\\"Your cube looks like it has the Japanese colours' "$cam" || { echo "FAIL: four photos of a Japanese cube, no offer"; ok=0; }
+grep -q '^EVAL "SPEED {\\"key\\":\\"5\\",\\"D\\":\\"rgb(252,211,4)\\",\\"B\\":\\"rgb(10,145,212)\\"' "$log" || { echo "FAIL: Rubik's Speed picked, the page is not in its colors"; ok=0; }
+grep -qF 'EVAL "CUBESPEED {\"colors\":\"#edeef2 #f2505e #28cd46 #fcd304 #fd9150 #0a91d4\"' "$log" || { echo "FAIL: Rubik's Speed picked, the 3D cube is not in its colors"; ok=0; }
+grep -q '^EVAL "MOVED {\\"key\\":\\"2\\",\\"D\\":\\"rgb(11,79,179)\\".* true"$' "$log" || { echo "FAIL: a scheme kept under the old key (elcubo.colours) is not kept"; ok=0; }
+grep -q '^EVAL "FIT {\\"shown\\":true,\\"text\\":\\"Your cube looks like it has the Japanese colors' "$cam" || { echo "FAIL: four photos of a Japanese cube, no offer"; ok=0; }
 grep -q '^EVAL "AFTER {\\"key\\":\\"2\\"' "$cam" || { echo "FAIL: the offer taken, the page is not Japanese"; ok=0; }
-grep -q '^EVAL "HOLD 4 The white centre facing you, the yellow centre on top' "$cam" || { echo "FAIL: photo 5 not said in the Japanese colours"; ok=0; }
+grep -q '^EVAL "HOLD 4 The white centre facing you, the yellow centre on top' "$cam" || { echo "FAIL: photo 5 not said in the Japanese colors"; ok=0; }
 grep -q "^EVAL \"NET $cube\"" "$cam" || { echo "FAIL: the net is not the cube $cube"; ok=0; }
 grep -q '^EVAL "MSG Read from your six photos. Check' "$cam" || { echo "FAIL: no word that the photos were read"; ok=0; }
-keep=$out/$dev-colours-keep.log
-grep -q '^EVAL "FIT {\\"shown\\":true,\\"text\\":\\"Your cube looks like it has the Mirrored colours' "$keep" || { echo "FAIL: four photos of a mirrored cube, no offer"; ok=0; }
+keep=$out/$dev-colors-keep.log
+grep -q '^EVAL "FIT {\\"shown\\":true,\\"text\\":\\"Your cube looks like it has the Mirrored colors' "$keep" || { echo "FAIL: four photos of a mirrored cube, no offer"; ok=0; }
 grep -q '^EVAL "AFTER {\\"key\\":\\"0\\"' "$keep" || { echo "FAIL: the offer declined, the page is not Standard"; ok=0; }
 grep -q '^EVAL "HOLD 4 The white centre facing you, the blue centre on top' "$keep" || { echo "FAIL: declined, photo 5 not asked for"; ok=0; }
 grep -q "^EVAL \"NET $cube\"" "$keep" || { echo "FAIL: declined, the net is not the cube $cube"; ok=0; }

@@ -10,7 +10,7 @@ cores. Everything that thinks is Bend:
 
 - `Cube.bend`: the cube as a group element (Kociemba's cubie level), its moves,
   notation and stickers.
-- `Guard.bend`: a cube from its 54 stickers' colours, or plainly why a real
+- `Guard.bend`: a cube from its 54 stickers' colors, or plainly why a real
   cube cannot have them (counts, centres, pieces, each piece once, corner
   twist, edge flip, permutation parity). Every cube the device solves goes
   through it; LAWS.bend's read_* and refuse_* laws.
@@ -65,7 +65,7 @@ On the visitor's device:
   position in the fragment, never sent to a server) to open the same cube on
   a bigger one. "Enter your own cube" (`web/own.js`, a thin shim): paint the
   stickers on a flat net, or read them with the camera a face at a time
-  (Photo.bend gives each sticker the colour of the centre it looks most
+  (Photo.bend gives each sticker the color of the centre it looks most
   like) and fix them by painting; Guard.bend says plainly why the stickers
   cannot be a real cube, if they cannot; the cube is then shown as a
   `#m=` position (a short solution, undone) and solved as any other. The 3D

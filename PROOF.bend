@@ -1249,6 +1249,8 @@ def Laws.scheme_six(p):
       {==}
     case Sc.Pastel{}:
       {==}
+    case Sc.RubiksSpeed{}:
+      {==}
 
 def Laws.scheme_key(p):
   match p:
@@ -1261,6 +1263,8 @@ def Laws.scheme_key(p):
     case Sc.Mirrored{}:
       {==}
     case Sc.Pastel{}:
+      {==}
+    case Sc.RubiksSpeed{}:
       {==}
 
 def Laws.scheme_own():
@@ -1408,6 +1412,18 @@ def Laws.scheme_say_face(p, f):
     case Sc.Pastel{} G.FL{}:
       {==}
     case Sc.Pastel{} G.FB{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FU{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FR{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FF{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FD{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FL{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FB{}:
       {==}
 
 def Laws.scheme_pick_six(p, f, g):
@@ -1771,6 +1787,78 @@ def Laws.scheme_pick_six(p, f, g):
     case Sc.Pastel{} G.FB{} G.FL{}:
       {==}
     case Sc.Pastel{} G.FB{} G.FB{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FU{} G.FU{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FU{} G.FR{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FU{} G.FF{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FU{} G.FD{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FU{} G.FL{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FU{} G.FB{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FR{} G.FU{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FR{} G.FR{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FR{} G.FF{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FR{} G.FD{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FR{} G.FL{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FR{} G.FB{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FF{} G.FU{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FF{} G.FR{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FF{} G.FF{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FF{} G.FD{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FF{} G.FL{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FF{} G.FB{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FD{} G.FU{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FD{} G.FR{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FD{} G.FF{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FD{} G.FD{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FD{} G.FL{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FD{} G.FB{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FL{} G.FU{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FL{} G.FR{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FL{} G.FF{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FL{} G.FD{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FL{} G.FL{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FL{} G.FB{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FB{} G.FU{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FB{} G.FR{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FB{} G.FF{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FB{} G.FD{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FB{} G.FL{}:
+      {==}
+    case Sc.RubiksSpeed{} G.FB{} G.FB{}:
       {==}
 
 def Laws.scheme_pick_presets():

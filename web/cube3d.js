@@ -147,19 +147,19 @@ export function cube3d(el) {
     for (let i = 0; i < 54; i++) stickers[i].material = mats[facelets[i]] ?? mats.U;
   };
 
-  // the visitor's cube's colours (web/colours.js): a CSS colour for each face,
-  // U R F D L B; none, the standard ones. The faces whose colour changed are
+  // the visitor's cube's colors (web/colors.js): a CSS color for each face,
+  // U R F D L B; none, the standard ones. The faces whose color changed are
   // kept for show() to show (quiet: none to show, as when the page opens).
   const hex = () => Object.fromEntries([..."URFDLB"].map((f) => [f, mats[f].color.getHexString()]));
   let seen = hex();
-  const colours = (css, quiet) => {
+  const colors = (css, quiet) => {
     [..."URFDLB"].forEach((f, i) => mats[f].color.set(css?.[i] ?? COLOR[f]));
     const now = hex();
-    el.dataset.colours = [..."URFDLB"].map((f) => "#" + now[f]).join(" ");
+    el.dataset.colors = [..."URFDLB"].map((f) => "#" + now[f]).join(" ");
     if (quiet) seen = now;
   };
 
-  // A change of colours, shown: a cube in Japanese colours is the standard
+  // A change of colors, shown: a cube in Japanese colors is the standard
   // one with blue and yellow swapped, underneath and at the back, where the
   // cube hides them; so the cube turns to show the faces that changed, holds
   // a moment, and goes back to where it was. Of its 24 ways to stand, the one
@@ -334,5 +334,5 @@ export function cube3d(el) {
     if (document.hidden && anim) settle();
   });
 
-  return { paint, turn: turnMove, colours, show };
+  return { paint, turn: turnMove, colors, show };
 }

@@ -57,7 +57,7 @@
             ./web/solver.js
             ./web/solver-worker.js
             ./web/own.js
-            ./web/colours.js
+            ./web/colors.js
             ./Photo.bend
             ./Scheme.bend
             ./Opt.bend
@@ -217,7 +217,7 @@
             bend PROOF.bend --verdict 2>&1 | tee $out
             grep -q 'ALL PROOFS CHECK' $out
           '';
-          # the colour-scheme laws of the camera (FIT.bend): Bend's checker
+          # the color-scheme laws of the camera (FIT.bend): Bend's checker
           # only, as BendTT's kernel runs out of fuel on them
           fit = inSource pkgs "fit" [ ] ''
             bend FIT.bend --check-only 2>&1 | tee $out

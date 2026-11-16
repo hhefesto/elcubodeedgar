@@ -91,7 +91,7 @@ def msg.of(+t: F.Time, +tag: String, +v: String) -> Msg:
   Bool.pick(Msg, String.eq(tag, "start"), MStart{seed.of(t)},
   Bool.pick(Msg, String.eq(tag, "howto"), MHow{},
   Bool.pick(Msg, String.eq(tag, "own"), MOwn{},
-  Bool.pick(Msg, String.eq(tag, "colours"), MCol{},
+  Bool.pick(Msg, String.eq(tag, "colors"), MCol{},
   Bool.pick(Msg, String.eq(tag, "route"), MRoute{v},
   Bool.pick(Msg, String.eq(tag, "copy"), MCopy{},
   Bool.pick(Msg, String.eq(tag, "scramble"), MScramble{seed.of(t)},
@@ -608,7 +608,7 @@ def apply(+s: S, m: Msg) -> S & List<&2, W.Effect>:
     case MOwn{}:
       (s, [W.Host{"own:shown", "own", ""}])
     case MCol{}:
-      (s, [W.Host{"colours:shown", "colours", ""}])
+      (s, [W.Host{"colors:shown", "colors", ""}])
     case MScramble{seed}:
       on.scramble(s, seed)
     case MTurn{+t}:
@@ -768,22 +768,22 @@ def own.cta() -> W.Html:
      W.el("span", [W.cls("own-cta-text")],
        [W.el("span", [W.cls("own-cta-k")], [W.text("Got a real one?")]),
         W.el("span", [W.cls("own-cta-t")], [W.text("Enter your own cube")]),
-        W.el("span", [W.cls("own-cta-s")], [W.text("Paint its colours or use the camera, and get its shortest way back.")])]),
+        W.el("span", [W.cls("own-cta-s")], [W.text("Paint its colors or use the camera, and get its shortest way back.")])]),
      W.el("span", [W.cls("own-cta-go"), W.Prop{"aria-hidden", "true"}], [])])
 
-# "Your cube's colours": a row under it, for a cube whose colours are not the
-# page's (web/colours.js's picker; Scheme.bend's presets): the six centres
-# on a net, in the colours the page now has, and the scheme's name (index.html
+# "Your cube's colors": a row under it, for a cube whose colors are not the
+# page's (web/colors.js's picker; Scheme.bend's presets): the six centres
+# on a net, in the colors the page now has, and the scheme's name (index.html
 # puts it in, from --sch-name)
 def col.f(+f: String) -> W.Html:
   W.el("i", [W.Prop{"data-f", f}], [])
 
 def col.row() -> W.Html:
-  W.el("button", [W.Prop{"id", "colours"}, W.cls("sch-row"), W.Prop{"type", "button"}, W.On{"click", "colours"}],
+  W.el("button", [W.Prop{"id", "colors"}, W.cls("sch-row"), W.Prop{"type", "button"}, W.On{"click", "colors"}],
     [W.el("span", [W.cls("sch-net sch-live"), W.Prop{"aria-hidden", "true"}],
        [col.f("U"), col.f("R"), col.f("F"), col.f("D"), col.f("L"), col.f("B")]),
      W.el("span", [W.cls("sch-txt")],
-       [W.el("span", [W.cls("sch-k")], [W.text("Your cube's colours")]),
+       [W.el("span", [W.cls("sch-k")], [W.text("Your cube's colors")]),
         W.el("span", [W.cls("sch-name")], [])]),
      W.el("span", [W.cls("sch-go")], [W.text("Not these? Change")])])
 
