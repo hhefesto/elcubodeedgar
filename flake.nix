@@ -35,6 +35,7 @@
           ++ [
             ./Opt.bend
             ./Fast.bend
+            ./TwoPhase.bend
             ./Worker.bend
             ./Server.bend
             ./Group.bend
@@ -154,7 +155,7 @@
           # loops and shared arrays, @unsafe, so they are built, not checked:
           # packages.server, solver-bin, tables)
           modules = inSource pkgs "modules" [ ] ''
-            for f in Cube.bend Coord.bend Search.bend Par.bend Solve.bend Sym.bend Kc.bend Opt.bend Group.bend web/App.bend; do
+            for f in Cube.bend Coord.bend Search.bend Par.bend Solve.bend Sym.bend Kc.bend Opt.bend TwoPhase.bend Group.bend web/App.bend; do
               echo "== $f"
               bend $f --check-only 2>&1 | tee log
               grep -q 'ALL PROOFS CHECK' log

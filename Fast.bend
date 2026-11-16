@@ -9,13 +9,20 @@ import ./Opt.bend as O
 # the one array (handles to it: so @unsafe, and this file is built, not
 # checked; Opt.bend's search is checked).
 #
-# A solve: the cube's distance bound is the first bound; each bound below 9
-# is searched on one lane, from 9 on on eight (each with an eighth of the
-# canonical three-move prefixes), until a bound has a solution: a shortest
-# one (Opt.bend). Bounds stop at 20 (every cube is at most 20 moves from
-# solved: Rokicki, Kociemba, Davidson, Dethridge, 2010).
+# A solve: the cube's distance bound is the first bound; each bound below
+# fs.par() (15) is searched on one lane, from it on on eight (each with an
+# eighth of the canonical three-move prefixes), until a bound has a
+# solution: a shortest one (Opt.bend). Bounds stop at 20 (every cube is at
+# most 20 moves from solved: Rokicki, Kociemba, Davidson, Dethridge, 2010).
 #
 # Every def is prefixed `fs.`.
+
+# the first bound searched on eight lanes. Below it a bound takes a second
+# or less on one (the tables cut so much), less than making the 3,240
+# three-move prefixes the lanes share out (about 1.3 s): 11-15, a 10-move
+# cube took 1.3 s with 9 here, 4 ms for a 4-move one
+def fs.par() -> U32:
+  15
 
 def fs.join(x: Array<U32> & S.Res, y: Array<U32> & S.Res) -> Array<U32> & S.Res:
   (a, rx) = x
@@ -32,7 +39,7 @@ def fs.go(+t: Array<U32>, w: O.W, +b: U32) -> Array<U32> & S.Res:
       x y = fs.go(t, l, b) fs.go(t, r, b)
       fs.join(x, y)
 
-# bound b: on one lane below 9, on eight from 9
+# bound b: on one lane below fs.par(), on eight from it
 @unsafe
 def fs.round(t: Array<U32>, +b: U32, +n: O.Node, +ps: List<&2, O.Pre>, par: Bool) -> Array<U32> & S.Res:
   match par:
@@ -59,7 +66,7 @@ def fs.next(k: Nat, r: Array<U32> & S.Res, +b: U32, +tot: U32, +n: O.Node, +ps: 
               (t, V.Ans{Some{ms}, U32.add(tot, c), b})
             case None{}:
               +b1 = U32.add(b, 1)
-              fs.next(q, fs.round(t, b1, n, ps, U32.is_ge(b1, 9)), b1, U32.add(tot, c), n, ps)
+              fs.next(q, fs.round(t, b1, n, ps, U32.is_ge(b1, fs.par())), b1, U32.add(tot, c), n, ps)
 
 @unsafe
 def fs.start.go(zero: Bool, t: Array<U32>, +h: U32, +n: O.Node, +v: O.View) -> Array<U32> & V.Ans:
@@ -68,7 +75,7 @@ def fs.start.go(zero: Bool, t: Array<U32>, +h: U32, +n: O.Node, +v: O.View) -> A
       (t, V.Ans{Some{Nil{}}, 0, 0})
     case False{}:
       +ps = O.op.prefixes(3n, v)
-      fs.next(U32.to_nat(U32.sub(20, h)), fs.round(t, h, n, ps, U32.is_ge(h, 9)), h, 0, n, ps)
+      fs.next(U32.to_nat(U32.sub(20, h)), fs.round(t, h, n, ps, U32.is_ge(h, fs.par())), h, 0, n, ps)
 
 @unsafe
 def fs.start(r: Array<U32> & U32, +n: O.Node, +v: O.View) -> Array<U32> & V.Ans:
@@ -85,8 +92,8 @@ def fs.solve(t: Array<U32>, +ms: List<&2, U32>) -> Array<U32> & V.Ans:
 # A solve in steps, for a server
 # ------------------------------
 #
-# The same search, a step at a time: a bound below 9 in one step, one lane;
-# from 9, a chunk of fs.per(b) prefixes a step, on eight lanes. Between steps
+# The same search, a step at a time: a bound below fs.par() in one step, one
+# lane; from it, a chunk of fs.per(b) prefixes a step, on eight lanes. Between steps
 # the solve gives the event loop a turn (a 3 ms sleep), so the server answers
 # others, and looks at the clock: past the limit it stops and says so.
 
@@ -126,8 +133,8 @@ def fs.chunk.go(t: Array<U32>, r: List<&2, O.Pre> & List<&2, O.Pre>, +b: U32) ->
   (ch, rest) = r
   Step{fs.go(t, O.op.deal(2n, ch), b), rest}
 
-# bound b's next step: all of it (below 9), its next chunk (9 to 20), or
-# nothing (past 20)
+# bound b's next step: all of it (below fs.par()), its next chunk, or nothing
+# (from cap on: a solution of cap moves is known)
 @unsafe
 def fs.work.go(par: Bool, over: Bool, t: Array<U32>, +b: U32, +rest: List<&2, O.Pre>, +n: O.Node) -> Step:
   match par over:
@@ -139,8 +146,8 @@ def fs.work.go(par: Bool, over: Bool, t: Array<U32>, +b: U32, +rest: List<&2, O.
       fs.chunk.go(t, fs.take(fs.per(b), rest, Nil{}), b)
 
 @unsafe
-def fs.work(t: Array<U32>, +b: U32, +rest: List<&2, O.Pre>, +n: O.Node) -> Step:
-  fs.work.go(U32.is_ge(b, 9), U32.is_gt(b, 20), t, b, rest, n)
+def fs.work(t: Array<U32>, +b: U32, +rest: List<&2, O.Pre>, +n: O.Node, +cap: U32) -> Step:
+  fs.work.go(U32.is_ge(b, fs.par()), U32.is_ge(b, cap), t, b, rest, n)
 
 def fs.phase(+now: Nat, +t0: Nat, +limit: Nat, +b: U32) -> Ph:
   Bool.pick(Ph, U32.is_gt(b, 20), POver{}, Bool.pick(Ph, Nat.is_gt(Nat.sub(now, t0), limit), PLate{}, PGo{}))
@@ -176,7 +183,7 @@ def fs.io.go(k: Nat, ph: Ph, st: Step, +b: U32, +tot: U32, +n: O.Node, +ps: List
                 case None{}:
                   +done = fs.empty(rest)
                   +nb = Bool.pick(U32, done, U32.add(b, 1), b)
-                  st2 = fs.work(t, nb, Bool.pick(List<&2, O.Pre>, done, ps, rest), n)
+                  st2 = fs.work(t, nb, Bool.pick(List<&2, O.Pre>, done, ps, rest), n, 21)
                   do IO<Array<U32> & Out>:
                     IO.sleep(3)
                     +now : Nat <- IO.now()

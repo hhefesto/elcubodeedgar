@@ -1,0 +1,25 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>loading</title>
+<!-- Probe: web/worker.js and web/Local.bend in a browser: device.html?s=3.0.6,1.4.7
+     solves each cube in turn and writes what the worker says (probe/shot.mjs reads it) -->
+<pre id="out"></pre>
+<script type="module">
+const out = document.getElementById("out");
+const say = (s) => (out.textContent += s + "\n");
+const cubes = new URLSearchParams(location.search).get("s").split(",");
+const w = new Worker("./worker.js", { type: "module" });
+let i = 0;
+const next = () => (i < cubes.length ? w.postMessage({ id: i, s: cubes[i] }) : (document.title = "done"));
+w.onerror = (e) => say("worker error " + e.message);
+w.onmessage = ({ data }) => {
+  if (data.kind === "ready") { say("tables " + data.bytes + " bytes in " + data.ms + " ms"); next(); }
+  else if (data.kind === "bound") say("  bound " + data.bound + ": none, " + data.nodes + " nodes, " + data.ms + " ms");
+  else if (data.kind === "done") {
+    say(cubes[i] + " (" + cubes[i].split(".").length + ") -> " + data.word + " " + data.moves + " (" + (data.moves ? data.moves.split(".").length : 0) + " moves), " + data.nodes + " nodes, " + data.ms + " ms");
+    i++;
+    next();
+  } else say(JSON.stringify(data));
+};
+w.postMessage({ tables: "coord.bin" });
+</script>

@@ -158,6 +158,27 @@ kbd { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px 2px; border:
 button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .strip.rough .tile { border-style: dashed; }
 
+/* the explanation of the moves */
+.pad-help { margin: -14px 0 20px; }
+.howto { min-height: 44px; padding: 8px 2px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--B); background: none; border: none; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+#howto-dlg { width: min(560px, calc(100vw - 20px)); max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); padding: 0; border: 2px solid var(--ink); border-radius: 14px; background: var(--paper-3); color: var(--ink); box-shadow: 6px 6px 0 var(--ink); overflow: auto; overscroll-behavior: contain; }
+#howto-dlg::backdrop { background: rgba(27, 23, 18, 0.5); }
+.dlg { padding: 18px 18px 20px; font-size: 16px; line-height: 1.5; }
+.dlg h2 { margin: 0 0 8px; outline: none; font-size: 26px; font-weight: 420; font-style: italic; font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 1; }
+.dlg p { margin: 0 0 12px; color: var(--ink-2); }
+.turn-pics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 4px 0 14px; }
+.turn-pics figure { margin: 0; text-align: center; }
+.turn-pics svg { width: 100%; max-width: 88px; height: auto; display: block; margin: 0 auto 4px; }
+.turn-pics figcaption { font-size: 13px; line-height: 1.3; color: var(--ink-2); }
+.faces { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+.faces li { display: flex; align-items: center; gap: 10px; font-size: 15px; line-height: 1.25; }
+.chip { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--ink); border-radius: 7px; font-family: var(--mono); font-weight: 700; font-size: 16px; background: var(--U); color: var(--ink); }
+.chip[data-face="R"] { background: var(--R); color: var(--paper-3); } .chip[data-face="F"] { background: var(--F); color: var(--paper-3); }
+.chip[data-face="D"] { background: var(--D); } .chip[data-face="L"] { background: var(--L); } .chip[data-face="B"] { background: var(--B); color: var(--paper-3); }
+.keys-help { font-size: 14px; }
+.dlg .btn { margin-top: 4px; width: 100%; justify-content: center; }
+@media (max-width: 420px) { .faces { grid-template-columns: 1fr; } }
+
 /* the laws */
 .laws { margin-top: 44px; padding-top: 22px; border-top: 2px solid var(--ink); }
 .laws h2 { margin: 0 0 10px; font-size: 30px; font-weight: 420; font-style: italic; letter-spacing: -0.01em; font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 1; }
@@ -215,7 +236,7 @@ footer a { color: inherit; }
   <section class="stage-wrap">
     <div class="mast"><span><span class="dot"></span>No. 1 &middot; optimal</span><span>3 &times; 3 &times; 3</span></div>
     <div id="stage" role="img" aria-label="The cube in 3D. Drag to look around it."></div>
-    <p class="hint">drag to look around<span class="keys"> &middot; <kbd>s</kbd> scramble &middot; <kbd>u</kbd><kbd>r</kbd><kbd>f</kbd><kbd>d</kbd><kbd>l</kbd><kbd>b</kbd> turn (<kbd>shift</kbd> back) &middot; <kbd>enter</kbd> solve &middot; <kbd>space</kbd> next step &middot; <kbd>p</kbd> play</span></p>
+    <p class="hint">drag to look around<span class="keys"> &middot; <kbd>s</kbd> scramble &middot; <kbd>u</kbd><kbd>r</kbd><kbd>f</kbd><kbd>d</kbd><kbd>l</kbd><kbd>b</kbd> turn (<kbd>shift</kbd> back) &middot; <kbd>enter</kbd> solve &middot; <kbd>?</kbd> the moves explained &middot; <kbd>space</kbd> next step &middot; <kbd>p</kbd> play</span></p>
   </section>
   <section class="side">
     <h1 class="title"><span class="t1">El cubo de</span><span class="t2">Edgar</span></h1>
@@ -234,11 +255,45 @@ footer a { color: inherit; }
         <li><b>Famous orders.</b> <code>(R U R&#8242; U&#8242;)&#8310; = 1</code> and <code>(R U)&#185;&#8304;&#8309; = 1</code>.<span class="proof">proved</span></li>
         <li><b>Any first move.</b> The search may begin with every one of the 18 moves, and after a face it skips only that face and, for U, R and F, the face across.<span class="proof">proved</span></li>
       </ol>
-      <p class="fine">Why the first solution found is a shortest one: the search is Korf's (1997) IDA*. Each bound on the length is searched in full, and a branch is cut only when a table proves it cannot finish in time. The tables hold exact distances of parts of the cube: the corners (88 million positions) and, as in Kociemba's optimal solver, the edges' flips, the four middle-layer edges' places and the corners' twists (6.7 billion positions, kept as 3,044,504 classes under the cube's symmetries), looked up for the cube as it is and turned onto its two other axes. Every cube is at most 20 moves from solved. A search that does not finish in 75 s says so, and how far it got.</p>
+      <p class="fine">First a quicker search (Kociemba's two-phase algorithm) finds a short way back, about 21 moves, in under a second. Then the shortest is looked for, and only lengths below the short way's need searching: once they all have no solution, the short way is a shortest one. Why the first solution found is a shortest one: the search is Korf's (1997) IDA*. Each bound on the length is searched in full, and a branch is cut only when a table proves it cannot finish in time. The tables hold exact distances of parts of the cube: the corners (88 million positions) and, as in Kociemba's optimal solver, the edges' flips, the four middle-layer edges' places and the corners' twists (6.7 billion positions, kept as 3,044,504 classes under the cube's symmetries), looked up for the cube as it is and turned onto its two other axes. Every cube is at most 20 moves from solved. A search that does not finish in 75 s gives the short way, says it may not be the shortest, and how far the search got.</p>
     </section>
     <footer>written in <a href="https://github.com/HigherOrderCO/Bend">Bend</a> &middot; page by bend-frp &middot; 3D by three.js &middot; solved on delfos, 8 cores</footer>
   </section>
 </main>
+<dialog id="howto-dlg" aria-labelledby="howto-title">
+  <form method="dialog" class="dlg">
+    <h2 id="howto-title" tabindex="-1" autofocus>How the moves work</h2>
+    <p>Each button turns one face of the cube. Hold the cube so that you look straight at that face: the letter alone turns it a quarter turn <b>clockwise</b>.</p>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1b1712"/></marker></defs></svg>
+    <div class="turn-pics">
+      <figure>
+        <svg viewBox="0 0 64 64" role="img" aria-label="R: a quarter turn clockwise"><rect x="5" y="5" width="54" height="54" rx="6" fill="#c41230" stroke="#1b1712" stroke-width="2.5"/><path d="M23 5v54M41 5v54M5 23h54M5 41h54" stroke="#1b1712" stroke-width="1.5"/><path d="M32 13 A19 19 0 1 1 13 32" fill="none" stroke="#f6f0e3" stroke-width="7"/><path d="M32 13 A19 19 0 1 1 13 32" fill="none" stroke="#1b1712" stroke-width="3" marker-end="url(#ah)"/></svg>
+        <figcaption><code>R</code> a quarter turn clockwise</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 64 64" role="img" aria-label="R prime: a quarter turn counter-clockwise"><rect x="5" y="5" width="54" height="54" rx="6" fill="#c41230" stroke="#1b1712" stroke-width="2.5"/><path d="M23 5v54M41 5v54M5 23h54M5 41h54" stroke="#1b1712" stroke-width="1.5"/><path d="M32 13 A19 19 0 1 0 51 32" fill="none" stroke="#f6f0e3" stroke-width="7"/><path d="M32 13 A19 19 0 1 0 51 32" fill="none" stroke="#1b1712" stroke-width="3" marker-end="url(#ah)"/></svg>
+        <figcaption><code>R'</code> a quarter turn counter-clockwise</figcaption>
+      </figure>
+      <figure>
+        <svg viewBox="0 0 64 64" role="img" aria-label="R2: a half turn"><rect x="5" y="5" width="54" height="54" rx="6" fill="#c41230" stroke="#1b1712" stroke-width="2.5"/><path d="M23 5v54M41 5v54M5 23h54M5 41h54" stroke="#1b1712" stroke-width="1.5"/><path d="M32 13 A19 19 0 0 1 32 51" fill="none" stroke="#f6f0e3" stroke-width="7"/><path d="M32 13 A19 19 0 0 1 32 51" fill="none" stroke="#1b1712" stroke-width="3" marker-end="url(#ah)"/></svg>
+        <figcaption><code>R2</code> a half turn (either way: the same)</figcaption>
+      </figure>
+    </div>
+    <p>The six letters are the six faces, named after where they are as you hold the cube:</p>
+    <ul class="faces">
+      <li><span class="chip" data-face="U">U</span><span><b>Up</b>, the top: white</span></li>
+      <li><span class="chip" data-face="D">D</span><span><b>Down</b>, the bottom: yellow</span></li>
+      <li><span class="chip" data-face="F">F</span><span><b>Front</b>, toward you: green</span></li>
+      <li><span class="chip" data-face="B">B</span><span><b>Back</b>, away from you: blue</span></li>
+      <li><span class="chip" data-face="R">R</span><span><b>Right</b>: red</span></li>
+      <li><span class="chip" data-face="L">L</span><span><b>Left</b>: orange</span></li>
+    </ul>
+    <p>A face's colour is the colour of its centre square, which never moves. In the picture the cube shows its up face (white) on top, its front (green) at the left and its right face (red) at the right; drag it to look at the others. Clockwise is always as seen from that face's own side, so from the front, <code>B</code> looks counter-clockwise, and <code>D</code> turns the other way to <code>U</code>.</p>
+    <p>In a solution, the moves are done in order, left to right: <code>R U R'</code> is R, then U, then R'.</p>
+    <p class="keys-help">On a keyboard: <kbd>u</kbd> <kbd>r</kbd> <kbd>f</kbd> <kbd>d</kbd> <kbd>l</kbd> <kbd>b</kbd> turn a face clockwise; with <kbd>shift</kbd>, counter-clockwise.</p>
+    <button class="btn primary" value="close">Got it</button>
+  </form>
+</dialog>
 <script type="module">
 import App from "./App.bend";
 import { mount } from "../bend-frp/runtime.js";
@@ -251,6 +306,8 @@ globalThis.bendFrp = {
     const [name, ms, facelets] = arg.split(" ");
     view.turn(name, Number(ms), facelets, done);
   },
+  // the explanation of the moves (App.bend's "What do these buttons mean?")
+  howto: () => document.getElementById("howto-dlg").showModal(),
 };
 mount(App, document.getElementById("panel"));
 
@@ -261,6 +318,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "s" || e.key === "S") press("scramble");
   else if (e.key === " " || e.key === "ArrowRight" || e.key === "n") { e.preventDefault(); press("next"); }
   else if (e.key === "p" || e.key === "P") press("play");
+  else if (e.key === "?" || e.key === "h") press("howto");
   else if (e.key === "Enter" && !e.target.closest?.("button")) { e.preventDefault(); press("solve"); }
   else if ("urfdlb".includes(e.key.toLowerCase()) && e.key.length === 1) {
     // a face's letter turns it clockwise; with shift, back

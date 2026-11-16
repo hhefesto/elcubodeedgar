@@ -7,26 +7,28 @@ import ./Cube.bend as C
 #
 # answers on 127.0.0.1:<port>, each connection in a computation of its own,
 # closed after its answer:
-#   GET /api/solve?m=3.10.17   a shortest solution of the cube those moves
-#                              make from solved (moves numbered as Cube.bend's)
+#   GET /api/solve?m=3.10.17&v=V  a shortest solution of the cube those
+#                              moves make from solved (moves numbered as
+#                              Cube.bend's), for the page V
 #   GET /health                "ok"
 #   GET /<name>                the file <www>/<name> (/ is index.html)
 #
 # It solves nothing itself: the solver is a process of its own (Worker.bend,
 # cube-solver, on 127.0.0.1:8095, elcubodeedgar-solver.service), so the page
 # and its files answer at once whatever the solver is doing. A solve is
-# handed to it with the visitor's address (Cloudflare's CF-Connecting-IP),
-# so a visitor's new cube cancels their old one. The solver answers within
-# its own wait (wk.wait, 85 s); if it does not within hs.wait(), its event
-# loop is stuck, and this server kills it (systemd starts it again) and
-# says the solve ran out of time. While the solver is replaced, a standby
-# on 127.0.0.1:8096 answers: a cube goes to the main one, else the standby,
-# else the answer is "down" (and the page asks again in a few seconds).
+# handed to it with who asks (the page's own name for itself, else the
+# visitor's address), so a page's new cube cancels its old one, and the same
+# cube asked again joins its search. The solver answers within its own wait
+# (wk.wait, 20 s: the answer, or "working" with how far it got, or
+# "queued"; the page asks again); if it does not within hs.wait(), its event
+# loop is stuck, and this server kills it (systemd starts it again) and says
+# "down". While the solver is replaced, a standby on 127.0.0.1:8096 answers:
+# a cube goes to the main one, else the standby, else the answer is "down"
+# (and the page asks again in a few seconds). ELCUBO_SOLVER_PORT, if set, is
+# the main one's port (a test's).
 #
-# The solve's answer is the solver's: four lines (the moves, or one word:
-# late, busy, cancelled, none, or "down" while the solver is starting; the
-# nodes searched; the milliseconds; "ok" when the scramble then the solution
-# leaves the cube solved), and for a word, a fifth: the bound reached.
+# The solve's answer is the solver's (Worker.bend), or "down" while no solver
+# answers (one is starting: the page asks again).
 #
 # Every def is prefixed `hs.`.
 
@@ -163,10 +165,11 @@ def hs.count(ms: List<&2, U32>) -> U32:
 # The way to the solver
 # ---------------------
 
-# how long a solve may take, the queue's wait included, before the solver
-# counts as stuck (it answers within 85 s; Cloudflare cuts at 100 s)
+# how long the solver may take to answer an ask before it counts as stuck:
+# it answers within 20 s (wk.wait: the answer, "working" or "queued"), its
+# steps take a few seconds at most; Safari gives up on a request at 60 s
 def hs.wait() -> U32:
-  95000
+  45000
 
 def hs.solver.port() -> U32:
   8095
@@ -238,39 +241,52 @@ def hs.b.conn(c: Result<&1, &1, U32 & String, Socket>, +q: String) -> IO(String)
     case Fail{e}:
       IO.pure(String, hs.down())
 
-def hs.b.ask(+q: String) -> IO(String):
+def hs.b.ask(+p: U32, +q: String) -> IO(String):
   do IO<String>:
-    c : Result<&1, &1, U32 & String, Socket> <- TCP.connect("127.0.0.1", U32.add(hs.solver.port(), 1))
+    c : Result<&1, &1, U32 & String, Socket> <- TCP.connect("127.0.0.1", U32.add(p, 1))
     hs.b.conn(c, q)
 
-# The main solver (127.0.0.1:8095); if it is not there, or does not answer
-# whole, the standby
-def hs.a.check.go(whole: Bool, +b: String, +q: String) -> IO(String):
+# The main solver (127.0.0.1:p, 8095); if it is not there, or does not answer
+# whole, the standby (p + 1)
+def hs.a.check.go(whole: Bool, +b: String, +p: U32, +q: String) -> IO(String):
   match whole:
     case True{}:
       IO.pure(String, b)
     case False{}:
-      hs.b.ask(q)
+      hs.b.ask(p, q)
 
-def hs.a.check(+b: String, +q: String) -> IO(String):
-  hs.a.check.go(hs.whole(b), b, q)
+def hs.a.check(+b: String, +p: U32, +q: String) -> IO(String):
+  hs.a.check.go(hs.whole(b), b, p, q)
 
-def hs.a.conn(c: Result<&1, &1, U32 & String, Socket>, +q: String) -> IO(String):
+def hs.a.conn(c: Result<&1, &1, U32 & String, Socket>, +p: U32, +q: String) -> IO(String):
   match c:
     case Done{sock}:
       do IO<String>:
         m : Socket & Result<&1, &1, (U32 & String) & List<&2, U32>, Unit> <- TCP.send(sock, hs.request(q))
         +b : String <- hs.read(m)
-        hs.a.check(b, q)
+        hs.a.check(b, p, q)
     case Fail{e}:
-      hs.b.ask(q)
+      hs.b.ask(p, q)
+
+# the solver's port: ELCUBO_SOLVER_PORT (a test's), else hs.solver.port()
+def hs.port.of(r: Result<&1, &1, U32 & String, String>) -> U32:
+  match r:
+    case Done{+s}:
+      Maybe.default(&2, U32, U32.read(s), hs.solver.port())
+    case Fail{e}:
+      hs.solver.port()
+
+def hs.ask.at(+p: U32, +q: String) -> IO(String):
+  do IO<String>:
+    c : Result<&1, &1, U32 & String, Socket> <- TCP.connect("127.0.0.1", p)
+    hs.a.conn(c, p, q)
 
 # the solver's answer to the query q ("v=..&m=.."): the main one's, or the
 # standby's, or "down" if neither is there
 def hs.ask(+q: String) -> IO(String):
   do IO<String>:
-    c : Result<&1, &1, U32 & String, Socket> <- TCP.connect("127.0.0.1", hs.solver.port())
-    hs.a.conn(c, q)
+    e : Result<&1, &1, U32 & String, String> <- IO.get_env("ELCUBO_SOLVER_PORT")
+    hs.ask.at(hs.port.of(e), q)
 
 def hs.kill.done(r: Result<&1, &1, U32 & String, U32 & (String & String)>) -> IO(Unit):
   IO.pure(Unit, Unit{})
@@ -288,7 +304,7 @@ def hs.relay(s: Socket, m: Maybe<&1, String>) -> IO(Unit):
       hs.text(s, "200 OK", body)
     case None{}:
       do IO<Unit>:
-        hs.text(s, "200 OK", "late\n0\n" ++ U32.show(hs.wait()) ++ "\nok\n0\n")
+        hs.text(s, "200 OK", hs.down())
         hs.kill()
 
 # a header's value ("" if none), its name in lower case
@@ -300,9 +316,38 @@ def hs.header(ls: List<&2, String>, +k: String) -> String:
       Bool.pick(String, String.starts_with(String.to_lower(l), k ++ ":"),
         String.trim(String.drop(l, Nat.add(String.length(k), 1n))), hs.header(rest, k))
 
-# who asks: Cloudflare's word for the visitor's address, else none
-def hs.visitor(+req: String) -> String:
-  hs.header(String.split(req, '\n'), "cf-connecting-ip")
+# a name as the solver gets it: letters, digits, '.', ':' and '-' only (so
+# nothing can be slipped into its request), at most 64
+def hs.clean.c(+c: Char) -> Bool:
+  Bool.or(Bool.or(Char.is_alpha(c), Char.is_digit(c)), Bool.or(Bool.or(Char.is_eq(c, '.'), Char.is_eq(c, ':')), Char.is_eq(c, '-')))
+
+def hs.clean.go(s: String) -> String:
+  match s:
+    case SNil{}:
+      SNil{}
+    case SCon{+c, +t}:
+      Bool.pick(String, hs.clean.c(c), SCon{c, hs.clean.go(t)}, hs.clean.go(t))
+
+def hs.clean(+s: String) -> String:
+  String.take(hs.clean.go(s), 64n)
+
+# "k=V&..": the value of key k ("" if none)
+def hs.param.go(ps: List<&2, String>, +k: String) -> String:
+  match ps:
+    case Nil{}:
+      ""
+    case Con{+p, rest}:
+      Bool.pick(String, String.starts_with(p, k ++ "="), String.drop(p, Nat.add(String.length(k), 1n)), hs.param.go(rest, k))
+
+def hs.param(+q: String, +k: String) -> String:
+  hs.param.go(String.split(q, '&'), k)
+
+# who asks: the page's own name for itself (its v=, one per page opened, so
+# two people behind one address, or two tabs, do not cancel each other's
+# cubes), else Cloudflare's word for the visitor's address
+def hs.visitor(+req: String, +path: String) -> String:
+  +v = hs.clean(hs.param(String.drop(path, 11n), "v"))
+  Bool.pick(String, String.is_empty(v), "ip:" ++ hs.clean(hs.header(String.split(req, '\n'), "cf-connecting-ip")), "p:" ++ v)
 
 # what comes before the first '&'
 def hs.before.amp(s: String) -> String:
@@ -348,7 +393,7 @@ def hs.answer(rd: Socket & Poll<&1, &1, Result<&1, &1, U32 & String, Maybe<&1, S
   match p:
     case Ready{Done{Some{+req}}}:
       +path = hs.target(req)
-      hs.route.go(String.starts_with(path, "/api/solve?m="), String.eq(path, "/health"), s, www, path, hs.visitor(req))
+      hs.route.go(String.starts_with(path, "/api/solve?m="), String.eq(path, "/health"), s, www, path, hs.visitor(req, path))
     case _:
       Socket.close(s)
 

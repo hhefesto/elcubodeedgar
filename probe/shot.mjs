@@ -64,6 +64,8 @@ try {
   const dpr = Number(process.env.DPR || 1);
   const phone = Math.min(width, height) < 700;
   await send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: dpr, mobile: phone });
+  // THROTTLE=4 slows the CPU fourfold (a slower phone)
+  if (process.env.THROTTLE) await send("Emulation.setCPUThrottlingRate", { rate: Number(process.env.THROTTLE) });
   if (phone) {
     await send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
     await send("Emulation.setUserAgentOverride", { userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1" });
