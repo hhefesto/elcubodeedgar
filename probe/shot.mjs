@@ -4,18 +4,19 @@
 // console errors and exceptions are printed. DPR=3 sets the pixel ratio; a size
 // under 700 on its short side is a phone (touch, an iPhone's user agent).
 import { spawn } from "node:child_process";
-import { writeFileSync, mkdtempSync } from "node:fs";
+import { writeFileSync, mkdtempSync, rmSync } from "node:fs";
 
 const [url, size, ...steps] = process.argv.slice(2);
 const [width, height] = size.split("x").map(Number);
 const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
 const port = 9333;
+const profile = mkdtempSync("/tmp/cube-chrome-");
 const chrome = spawn(
   process.env.CHROME || "google-chrome-stable",
   [
     "--headless=new",
     `--remote-debugging-port=${port}`,
-    `--user-data-dir=${mkdtempSync("/tmp/cube-chrome-")}`,
+    `--user-data-dir=${profile}`,
     `--window-size=${width},${height}`,
     "--use-angle=swiftshader",
     "--enable-unsafe-swiftshader",
@@ -97,4 +98,7 @@ try {
   ws.close();
 } finally {
   chrome.kill();
+  // the fresh profile (a first visit each time) gone: it holds the tables
+  await new Promise((ok) => (chrome.exitCode !== null || chrome.signalCode !== null ? ok() : chrome.once("exit", ok)));
+  rmSync(profile, { recursive: true, force: true });
 }
