@@ -198,9 +198,12 @@ def show.fx(+c: C.Cube) -> W.Effect:
 # (who: the page's name, so the solver knows a page's asks from another's)
 # (the solver on this device, web/solver.js, which falls back on the site's: it
 # is told the cube's stickers, the moves that make it, and the page's name,
-# and tells each answer as the search goes, so it is asked once)
+# and tells each answer as the search goes, so it is asked once; and the
+# position's own moves undone, a way back already known: so an answer is never
+# longer, and the search proves the shortest once no shorter way is left)
 def ask.fx(+pos: List<&2, U32>, +g: U32, +who: String) -> W.Effect:
-  W.Host{"sol" ++ U32.show(g), "solve", C.cube.facelets(C.cube.apply(pos, C.cube.solved())) ++ " " ++ C.cube.nums(pos) ++ " " ++ who}
+  W.Host{"sol" ++ U32.show(g), "solve", C.cube.facelets(C.cube.apply(pos, C.cube.solved())) ++ " " ++ C.cube.nums(pos) ++ " " ++ who
+    ++ " " ++ C.cube.nums(C.cube.inv(pos))}
 
 # a second's tick while request g waits, and asking again after a "down"
 def tick.fx(+g: U32) -> W.Effect:

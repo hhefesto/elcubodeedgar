@@ -251,10 +251,13 @@ export function makeSolver(opts = {}) {
       );
   };
 
-  const start = (fl) => {
+  // the cube, and the way back already known (the position's moves undone,
+  // from the page): a short way like two-phase's, so no answer is longer
+  const start = (fl, inv) => {
     if (fl !== key || failed) return;
-    if (!prefixes.length) return setTimeout(() => start(fl), 50);
+    if (!prefixes.length) return setTimeout(() => start(fl, inv), 50);
     event(`start ${now()} ${cores} ${prefixes.length} ${fl}`);
+    if (inv) event(`two ${now()} ok ${inv} ${inv.split(".").length}`);
   };
 
   return {
@@ -262,19 +265,20 @@ export function makeSolver(opts = {}) {
     isolated,
     loads,
     failed: () => failed,
-    // arg: "FACELETS MOVES WHO" (the cube's stickers; the moves that make it,
-    // for the site's solver; the page's name). d: told each answer
+    // arg: "FACELETS MOVES WHO INVERSE" (the cube's stickers; the moves that
+    // make it, for the site's solver; the page's name; those moves undone).
+    // d: told each answer
     solve(arg, d) {
       lastAsk = arg;
       if (failed) return fallback(arg, d);
       boot();
-      const fl = arg.split(" ")[0];
+      const [fl, , , inv] = arg.split(" ");
       if (fl !== key) {
         key = fl;
         dones = [d];
       } else if (!dones.includes(d)) dones.push(d);
       if (!ticker) ticker = setInterval(() => event(`tick ${now()}`), 500);
-      start(fl);
+      start(fl, inv);
     },
   };
 }
