@@ -751,6 +751,22 @@ def handoff(+on: Bool, +pos: List<&2, U32>) -> W.Html:
           W.el("button", [W.Prop{"id", "copy"}, W.cls("btn"), W.On{"click", "copy"}], [W.text("Copy the link")])])]),
     W.el("div", [W.cls("handoff none")], []))
 
+# "Enter your own cube": a card of its own under the main buttons, where a
+# visitor with a real cube in hand sees it first (index.html's .own-cta): a
+# small scrambled face, what it does, and an arrow; it opens own.js's panel
+def own.st(+f: String) -> W.Html:
+  W.el("span", [W.cls("own-cta-st"), W.Prop{"data-face", f}], [])
+
+def own.cta() -> W.Html:
+  W.el("button", [W.Prop{"id", "own"}, W.cls("own-cta"), W.Prop{"type", "button"}, W.On{"click", "own"}],
+    [W.el("span", [W.cls("own-cta-cube"), W.Prop{"aria-hidden", "true"}],
+       [own.st("R"), own.st("D"), own.st("B"), own.st("U"), own.st("F"), own.st("L"), own.st("F"), own.st("R"), own.st("D")]),
+     W.el("span", [W.cls("own-cta-text")],
+       [W.el("span", [W.cls("own-cta-k")], [W.text("Got a real one?")]),
+        W.el("span", [W.cls("own-cta-t")], [W.text("Enter your own cube")]),
+        W.el("span", [W.cls("own-cta-s")], [W.text("Paint its colours or use the camera, and get its shortest way back.")])]),
+     W.el("span", [W.cls("own-cta-go"), W.Prop{"aria-hidden", "true"}], [])])
+
 def view.go(+s: S) -> W.Html:
   match s:
     case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
@@ -767,9 +783,9 @@ def view.go(+s: S) -> W.Html:
               [W.text("Solve")]),
             W.el("button", [W.Prop{"id", "reset"}, W.cls("btn ghost"), prop.on("disabled", Bool.or(busy, Bool.and(List.is_empty(&2, U32, now), Bool.not(asked)))), W.On{"click", "reset"}],
               [W.text("Reset")])]),
+         own.cta(),
          pad(True{}),
-         W.el("p", [W.cls("pad-help")], [W.el("button", [W.Prop{"id", "howto"}, W.cls("howto"), W.On{"click", "howto"}], [W.text("What do these buttons mean?")]), W.text(" "),
-            W.el("button", [W.Prop{"id", "own"}, W.cls("howto"), W.On{"click", "own"}], [W.text("Enter your own cube")])]),
+         W.el("p", [W.cls("pad-help")], [W.el("button", [W.Prop{"id", "howto"}, W.cls("howto"), W.On{"click", "howto"}], [W.text("What do these buttons mean?")])]),
          strip(sol, step, opt),
          handoff(off, pos),
          W.el("div", [W.cls("controls")],

@@ -22,6 +22,8 @@
   --mute: #776b59;
   --rule: #cdbfa3;
   --U: #f4f0e6; --R: #c41230; --F: #00a04e; --D: #ffd31a; --L: #ff6a13; --B: #0b4fb3;
+  /* the six colours in a band, white amid them */
+  --six: linear-gradient(90deg, var(--R) 0 16.67%, var(--F) 0 33.33%, var(--U) 0 50%, var(--D) 0 66.67%, var(--L) 0 83.33%, var(--B) 0);
   --serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
@@ -160,6 +162,57 @@ kbd { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px 2px; border:
 button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .strip.rough .tile { border-style: dashed; }
 
+/* "Enter your own cube" (App.bend's own.cta): a card under the main buttons,
+   the six colours along its top, a small scrambled face that gives a quarter
+   turn when pointed at, and an arrow */
+.own-cta {
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px;
+  width: 100%; margin: 0 0 26px; padding: 24px 20px 18px 18px; text-align: left;
+  font: inherit; color: var(--ink);
+  background: radial-gradient(140% 160% at 0% 100%, rgba(0, 160, 78, 0.10), transparent 55%), radial-gradient(90% 120% at 100% 0%, rgba(11, 79, 179, 0.08), transparent 60%), var(--paper-3);
+  border: 2px solid var(--ink); border-radius: 14px; overflow: hidden;
+  box-shadow: 5px 5px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.own-cta::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 9px; border-bottom: 2px solid var(--ink);
+  background: var(--six);
+}
+.own-cta:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--ink); }
+.own-cta:focus-visible { outline: 3px solid var(--B); outline-offset: 4px; }
+.own-cta-cube {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
+  width: 66px; height: 66px; padding: 4px;
+  background: var(--ink); border-radius: 11px;
+  box-shadow: 3px 3px 0 rgba(27, 23, 18, 0.22);
+  transform: rotate(-8deg);
+  transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.25, 1.25);
+}
+.own-cta-st { border-radius: 3px; background: var(--U); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.14); }
+.own-cta-st[data-face="R"] { background: var(--R); } .own-cta-st[data-face="F"] { background: var(--F); } .own-cta-st[data-face="D"] { background: var(--D); }
+.own-cta-st[data-face="L"] { background: var(--L); } .own-cta-st[data-face="B"] { background: var(--B); }
+.own-cta-text { display: flex; flex-direction: column; min-width: 0; }
+.own-cta-k { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--R); margin-bottom: 2px; }
+.own-cta-t { font-size: 28px; line-height: 1.05; font-style: italic; font-weight: 450; letter-spacing: -0.012em; font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 1; }
+.own-cta-s { margin-top: 6px; font-family: var(--mono); font-size: 12.5px; line-height: 1.45; color: var(--ink-2); }
+.own-cta-go {
+  display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
+  background: var(--ink); color: var(--paper-3); box-shadow: 3px 3px 0 var(--R);
+  font-family: var(--mono); font-size: 22px; font-weight: 600; line-height: 1;
+  transition: transform 0.2s ease;
+}
+.own-cta-go::before { content: "\2192"; }
+@media (hover: hover) {
+  .own-cta:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+  .own-cta:hover .own-cta-cube { transform: rotate(82deg); }
+  .own-cta:hover .own-cta-go { transform: translateX(4px); }
+  .own-cta:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--ink); }
+}
+/* once, a second after the page opens: the small face gives a nudge */
+.own-cta-cube { animation: own-hey 1.1s cubic-bezier(0.3, 0.7, 0.3, 1) 1.2s 1 backwards; }
+@keyframes own-hey { 0% { transform: rotate(-8deg); } 40% { transform: rotate(-24deg) scale(1.06); } 70% { transform: rotate(4deg); } 100% { transform: rotate(-8deg); } }
+
 /* the explanation of the moves */
 .pad-help { margin: -14px 0 20px; }
 .howto { min-height: 44px; padding: 8px 2px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--B); background: none; border: none; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -169,8 +222,10 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #own-dlg::backdrop { background: rgba(27, 23, 18, 0.5); }
 #own-dlg [data-face="U"] { background: var(--U); } #own-dlg [data-face="R"] { background: var(--R); } #own-dlg [data-face="F"] { background: var(--F); }
 #own-dlg [data-face="D"] { background: var(--D); } #own-dlg [data-face="L"] { background: var(--L); } #own-dlg [data-face="B"] { background: var(--B); }
-#own-pal { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 14px; }
-#own-pal button { width: 44px; height: 44px; border: 2px solid var(--ink); border-radius: 10px; cursor: pointer; padding: 0; }
+#own-dlg .dlg { position: relative; padding-top: 30px; }
+#own-dlg .dlg::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 9px; border-bottom: 2px solid var(--ink); background: var(--six); }
+#own-pal { display: grid; grid-template-columns: repeat(6, minmax(0, 52px)); gap: 10px; margin: 6px 0 14px; }
+#own-pal button { width: 100%; aspect-ratio: 1; min-height: 40px; border: 2px solid var(--ink); border-radius: 10px; cursor: pointer; padding: 0; }
 #own-pal button[aria-checked="true"] { box-shadow: 0 0 0 3px var(--paper-3), 0 0 0 6px var(--ink); }
 #own-net { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; margin: 0 0 12px; touch-action: manipulation; }
 .own-st { aspect-ratio: 1; min-width: 0; padding: 0; border: 1.5px solid var(--ink); border-radius: 5px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -246,6 +301,16 @@ footer a { color: inherit; }
   .btn { padding: 10px 13px; min-height: 44px; font-size: 13px; }
   .tile { width: 46px; height: 56px; }
   .tile-m { font-size: 17px; }
+  .own-cta { gap: 14px; margin-bottom: 20px; padding: 21px 14px 15px 14px; }
+  .own-cta-cube { width: 56px; height: 56px; gap: 2.5px; padding: 3.5px; border-radius: 10px; }
+  .own-cta-t { font-size: 24px; }
+  .own-cta-k { font-size: 10px; letter-spacing: 0.18em; }
+  .own-cta-s { font-size: 11.5px; margin-top: 4px; }
+  .own-cta-go { width: 40px; height: 40px; font-size: 19px; }
+}
+@media (max-width: 360px) {
+  .own-cta { grid-template-columns: auto minmax(0, 1fr); }
+  .own-cta-go { display: none; }
 }
 /* a phone on its side: the cube on the left, the rest beside it */
 @media (max-width: 920px) and (orientation: landscape) and (max-height: 520px) {
@@ -256,6 +321,7 @@ footer a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .tile { animation: none; }
   .searching .status::after { animation: none; }
+  .own-cta-cube { animation: none; transition: none; }
 }
 </style>
 </head>
