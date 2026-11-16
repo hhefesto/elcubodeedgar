@@ -8,6 +8,7 @@ import ./Kd.bend as D
 import ./Coord.bend as K
 import ./Photo.bend as Ph
 import ./Scheme.bend as Sc
+import ./Dev.bend as Dv
 
 # The group theory the solver stands on, as laws. PROOF.bend proves each one;
 # `bend PROOF.bend` prints ALL PROOFS CHECK only when every law holds.
@@ -89,6 +90,18 @@ law sexy_order:
 law ru_order:
   {C.cube.pow(G.gr.ru(), 105n) == C.cube.solved() : C.Cube}
 
+# The centre: the superflip (every edge flipped in place) commutes with every
+# move, so with every cube (the moves generate them all). With the solved
+# cube it is the group's whole centre: known, not proved here
+
+def superflip() -> C.Cube:
+  C.Cube{[0, 1, 2, 3, 4, 5, 6, 7], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
+
+law superflip_centre:
+  for f: G.Face
+  for t: G.Turn
+  {C.cube.mul(superflip(), G.gr.mv(f, t)) == C.cube.mul(G.gr.mv(f, t), superflip()) : C.Cube}
+
 # The search prunes by these
 # --------------------------
 
@@ -147,6 +160,13 @@ law read_hand23:
   {Gd.gd.check(Gd.gd.of(C.Cube{[3, 2, 4, 5, 0, 6, 7, 1], [1, 0, 1, 1, 2, 0, 0, 1], [4, 1, 9, 8, 5, 6, 0, 2, 3, 7, 11, 10], [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0]}))
      == Gd.Good{C.Cube{[3, 2, 4, 5, 0, 6, 7, 1], [1, 0, 1, 1, 2, 0, 0, 1], [4, 1, 9, 8, 5, 6, 0, 2, 3, 7, 11, 10], [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0]}} : Gd.Read}
 
+# and every move's facelet string ("UUUUUUUUURRR...": what the page sends
+# the solver) reads back as that move
+law read_facelets:
+  for f: G.Face
+  for t: G.Turn
+  {Gd.gd.read(C.cube.facelets(G.gr.mv(f, t))) == Gd.Good{G.gr.mv(f, t)} : Gd.Read}
+
 # a single corner twisted in place is refused, at every corner
 law refuse_twisted:
   for p: Gd.Cn
@@ -171,6 +191,47 @@ law refuse_edges_swapped:
 law refuse_painted:
   for f: G.Face
   {Gd.gd.ok(Gd.gd.check(Gd.gd.painted(f))) == False{} : Bool}
+
+# Moves as text, and your own cube (Cube.bend, Dev.bend)
+# ------------------------------------------------------
+
+# a position's link (#m=3.10.17) and the solver's answers carry moves as
+# numbers: any two read back as themselves, in order, and no moves as none
+law wire_round_trip:
+  for f: G.Face
+  for t: G.Turn
+  for g: G.Face
+  for u: G.Turn
+  {C.cube.read(C.cube.nums([G.gr.m(f, t), G.gr.m(g, u)])) == Some{[G.gr.m(f, t), G.gr.m(g, u)]} : Maybe<&2, List<&2, U32>>}
+
+law wire_empty:
+  {C.cube.read("") == Some{[]} : Maybe<&2, List<&2, U32>>}
+
+# the notation the page shows ("R U R' U'") reads back as the moves
+law notation_round_trip:
+  for f: G.Face
+  for t: G.Turn
+  {C.cube.parse(C.cube.show([G.gr.m(f, t)])) == Some{[G.gr.m(f, t)]} : Maybe<&2, List<&2, U32>>}
+
+law notation_hand23:
+  {C.cube.parse("L U' B2 U L F2 D' F2 R2 U B2 U' R F' R F' D L B' F2 R2 L' B")
+     == Some{[12, 2, 16, 0, 12, 7, 11, 7, 4, 0, 16, 2, 3, 8, 3, 8, 9, 12, 17, 7, 4, 14, 15]} : Maybe<&2, List<&2, U32>>}
+
+# "Enter your own cube": the device's solver finds a way back from the
+# visitor's cube, and the page shows the cube dv.undo makes from it (those
+# moves undone, last first). The way back solves that cube: for every move,
+# and for three in a row (the order matters: R U F'). FIT.bend has it for the
+# 23-move hand scramble too (the kernel runs out of fuel on that one)
+def undone(ms: List<&2, U32>) -> C.Cube:
+  C.cube.apply(Maybe.default(&2, List<&2, U32>, C.cube.read(Dv.dv.undo(C.cube.nums(ms))), [0]), C.cube.solved())
+
+law own_undo_move:
+  for f: G.Face
+  for t: G.Turn
+  {C.cube.apply([G.gr.m(f, t)], undone([G.gr.m(f, t)])) == C.cube.solved() : C.Cube}
+
+law own_undo_seq:
+  {C.cube.apply([3, 0, 8], undone([3, 0, 8])) == C.cube.solved() : C.Cube}
 
 # The shortest search's bound (Kd.bend)
 # -------------------------------------
@@ -346,3 +407,10 @@ law scheme_pick_six:
 # the Japanese one's bottom made yellow the standard one again
 law scheme_pick_presets:
   {[Sc.sc.pick("0", 3, 5), Sc.sc.pick("0", 1, 3), Sc.sc.pick("2", 3, 1)] == ["2", "3", "0"] : List<&2, String>}
+
+# the page's stylesheet paints the cube in the standard scheme's shades, with
+# its ink on each (index.html's --U .. --B and --U-ink ..), until a scheme is
+# picked: they are the ones Scheme.bend gives
+law scheme_standard_page:
+  {[Sc.sc.css.of("0"), Sc.sc.inks.of("0")]
+     == ["rgb(244,240,230) rgb(196,18,48) rgb(0,160,78) rgb(255,211,26) rgb(255,106,19) rgb(11,79,179)", "d l l d d l"] : List<&2, String>}

@@ -1775,3 +1775,824 @@ def Laws.scheme_pick_six(p, f, g):
 
 def Laws.scheme_pick_presets():
   {==}
+
+def Laws.superflip_centre(f, t):
+  match f t:
+    case G.FU{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{}:
+      {==}
+
+def Laws.wire_round_trip(f, t, g, u):
+  match f t g u:
+    case G.FU{} G.TQ{} G.FU{} G.TQ{}:
+      {==}
+    case G.FU{} G.TQ{} G.FU{} G.TH{}:
+      {==}
+    case G.FU{} G.TQ{} G.FU{} G.TI{}:
+      {==}
+    case G.FU{} G.TQ{} G.FR{} G.TQ{}:
+      {==}
+    case G.FU{} G.TQ{} G.FR{} G.TH{}:
+      {==}
+    case G.FU{} G.TQ{} G.FR{} G.TI{}:
+      {==}
+    case G.FU{} G.TQ{} G.FF{} G.TQ{}:
+      {==}
+    case G.FU{} G.TQ{} G.FF{} G.TH{}:
+      {==}
+    case G.FU{} G.TQ{} G.FF{} G.TI{}:
+      {==}
+    case G.FU{} G.TQ{} G.FD{} G.TQ{}:
+      {==}
+    case G.FU{} G.TQ{} G.FD{} G.TH{}:
+      {==}
+    case G.FU{} G.TQ{} G.FD{} G.TI{}:
+      {==}
+    case G.FU{} G.TQ{} G.FL{} G.TQ{}:
+      {==}
+    case G.FU{} G.TQ{} G.FL{} G.TH{}:
+      {==}
+    case G.FU{} G.TQ{} G.FL{} G.TI{}:
+      {==}
+    case G.FU{} G.TQ{} G.FB{} G.TQ{}:
+      {==}
+    case G.FU{} G.TQ{} G.FB{} G.TH{}:
+      {==}
+    case G.FU{} G.TQ{} G.FB{} G.TI{}:
+      {==}
+    case G.FU{} G.TH{} G.FU{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{} G.FU{} G.TH{}:
+      {==}
+    case G.FU{} G.TH{} G.FU{} G.TI{}:
+      {==}
+    case G.FU{} G.TH{} G.FR{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{} G.FR{} G.TH{}:
+      {==}
+    case G.FU{} G.TH{} G.FR{} G.TI{}:
+      {==}
+    case G.FU{} G.TH{} G.FF{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{} G.FF{} G.TH{}:
+      {==}
+    case G.FU{} G.TH{} G.FF{} G.TI{}:
+      {==}
+    case G.FU{} G.TH{} G.FD{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{} G.FD{} G.TH{}:
+      {==}
+    case G.FU{} G.TH{} G.FD{} G.TI{}:
+      {==}
+    case G.FU{} G.TH{} G.FL{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{} G.FL{} G.TH{}:
+      {==}
+    case G.FU{} G.TH{} G.FL{} G.TI{}:
+      {==}
+    case G.FU{} G.TH{} G.FB{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{} G.FB{} G.TH{}:
+      {==}
+    case G.FU{} G.TH{} G.FB{} G.TI{}:
+      {==}
+    case G.FU{} G.TI{} G.FU{} G.TQ{}:
+      {==}
+    case G.FU{} G.TI{} G.FU{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{} G.FU{} G.TI{}:
+      {==}
+    case G.FU{} G.TI{} G.FR{} G.TQ{}:
+      {==}
+    case G.FU{} G.TI{} G.FR{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{} G.FR{} G.TI{}:
+      {==}
+    case G.FU{} G.TI{} G.FF{} G.TQ{}:
+      {==}
+    case G.FU{} G.TI{} G.FF{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{} G.FF{} G.TI{}:
+      {==}
+    case G.FU{} G.TI{} G.FD{} G.TQ{}:
+      {==}
+    case G.FU{} G.TI{} G.FD{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{} G.FD{} G.TI{}:
+      {==}
+    case G.FU{} G.TI{} G.FL{} G.TQ{}:
+      {==}
+    case G.FU{} G.TI{} G.FL{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{} G.FL{} G.TI{}:
+      {==}
+    case G.FU{} G.TI{} G.FB{} G.TQ{}:
+      {==}
+    case G.FU{} G.TI{} G.FB{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{} G.FB{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{} G.FU{} G.TQ{}:
+      {==}
+    case G.FR{} G.TQ{} G.FU{} G.TH{}:
+      {==}
+    case G.FR{} G.TQ{} G.FU{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{} G.FR{} G.TQ{}:
+      {==}
+    case G.FR{} G.TQ{} G.FR{} G.TH{}:
+      {==}
+    case G.FR{} G.TQ{} G.FR{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{} G.FF{} G.TQ{}:
+      {==}
+    case G.FR{} G.TQ{} G.FF{} G.TH{}:
+      {==}
+    case G.FR{} G.TQ{} G.FF{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{} G.FD{} G.TQ{}:
+      {==}
+    case G.FR{} G.TQ{} G.FD{} G.TH{}:
+      {==}
+    case G.FR{} G.TQ{} G.FD{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{} G.FL{} G.TQ{}:
+      {==}
+    case G.FR{} G.TQ{} G.FL{} G.TH{}:
+      {==}
+    case G.FR{} G.TQ{} G.FL{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{} G.FB{} G.TQ{}:
+      {==}
+    case G.FR{} G.TQ{} G.FB{} G.TH{}:
+      {==}
+    case G.FR{} G.TQ{} G.FB{} G.TI{}:
+      {==}
+    case G.FR{} G.TH{} G.FU{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{} G.FU{} G.TH{}:
+      {==}
+    case G.FR{} G.TH{} G.FU{} G.TI{}:
+      {==}
+    case G.FR{} G.TH{} G.FR{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{} G.FR{} G.TH{}:
+      {==}
+    case G.FR{} G.TH{} G.FR{} G.TI{}:
+      {==}
+    case G.FR{} G.TH{} G.FF{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{} G.FF{} G.TH{}:
+      {==}
+    case G.FR{} G.TH{} G.FF{} G.TI{}:
+      {==}
+    case G.FR{} G.TH{} G.FD{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{} G.FD{} G.TH{}:
+      {==}
+    case G.FR{} G.TH{} G.FD{} G.TI{}:
+      {==}
+    case G.FR{} G.TH{} G.FL{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{} G.FL{} G.TH{}:
+      {==}
+    case G.FR{} G.TH{} G.FL{} G.TI{}:
+      {==}
+    case G.FR{} G.TH{} G.FB{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{} G.FB{} G.TH{}:
+      {==}
+    case G.FR{} G.TH{} G.FB{} G.TI{}:
+      {==}
+    case G.FR{} G.TI{} G.FU{} G.TQ{}:
+      {==}
+    case G.FR{} G.TI{} G.FU{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{} G.FU{} G.TI{}:
+      {==}
+    case G.FR{} G.TI{} G.FR{} G.TQ{}:
+      {==}
+    case G.FR{} G.TI{} G.FR{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{} G.FR{} G.TI{}:
+      {==}
+    case G.FR{} G.TI{} G.FF{} G.TQ{}:
+      {==}
+    case G.FR{} G.TI{} G.FF{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{} G.FF{} G.TI{}:
+      {==}
+    case G.FR{} G.TI{} G.FD{} G.TQ{}:
+      {==}
+    case G.FR{} G.TI{} G.FD{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{} G.FD{} G.TI{}:
+      {==}
+    case G.FR{} G.TI{} G.FL{} G.TQ{}:
+      {==}
+    case G.FR{} G.TI{} G.FL{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{} G.FL{} G.TI{}:
+      {==}
+    case G.FR{} G.TI{} G.FB{} G.TQ{}:
+      {==}
+    case G.FR{} G.TI{} G.FB{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{} G.FB{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{} G.FU{} G.TQ{}:
+      {==}
+    case G.FF{} G.TQ{} G.FU{} G.TH{}:
+      {==}
+    case G.FF{} G.TQ{} G.FU{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{} G.FR{} G.TQ{}:
+      {==}
+    case G.FF{} G.TQ{} G.FR{} G.TH{}:
+      {==}
+    case G.FF{} G.TQ{} G.FR{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{} G.FF{} G.TQ{}:
+      {==}
+    case G.FF{} G.TQ{} G.FF{} G.TH{}:
+      {==}
+    case G.FF{} G.TQ{} G.FF{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{} G.FD{} G.TQ{}:
+      {==}
+    case G.FF{} G.TQ{} G.FD{} G.TH{}:
+      {==}
+    case G.FF{} G.TQ{} G.FD{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{} G.FL{} G.TQ{}:
+      {==}
+    case G.FF{} G.TQ{} G.FL{} G.TH{}:
+      {==}
+    case G.FF{} G.TQ{} G.FL{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{} G.FB{} G.TQ{}:
+      {==}
+    case G.FF{} G.TQ{} G.FB{} G.TH{}:
+      {==}
+    case G.FF{} G.TQ{} G.FB{} G.TI{}:
+      {==}
+    case G.FF{} G.TH{} G.FU{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{} G.FU{} G.TH{}:
+      {==}
+    case G.FF{} G.TH{} G.FU{} G.TI{}:
+      {==}
+    case G.FF{} G.TH{} G.FR{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{} G.FR{} G.TH{}:
+      {==}
+    case G.FF{} G.TH{} G.FR{} G.TI{}:
+      {==}
+    case G.FF{} G.TH{} G.FF{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{} G.FF{} G.TH{}:
+      {==}
+    case G.FF{} G.TH{} G.FF{} G.TI{}:
+      {==}
+    case G.FF{} G.TH{} G.FD{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{} G.FD{} G.TH{}:
+      {==}
+    case G.FF{} G.TH{} G.FD{} G.TI{}:
+      {==}
+    case G.FF{} G.TH{} G.FL{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{} G.FL{} G.TH{}:
+      {==}
+    case G.FF{} G.TH{} G.FL{} G.TI{}:
+      {==}
+    case G.FF{} G.TH{} G.FB{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{} G.FB{} G.TH{}:
+      {==}
+    case G.FF{} G.TH{} G.FB{} G.TI{}:
+      {==}
+    case G.FF{} G.TI{} G.FU{} G.TQ{}:
+      {==}
+    case G.FF{} G.TI{} G.FU{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{} G.FU{} G.TI{}:
+      {==}
+    case G.FF{} G.TI{} G.FR{} G.TQ{}:
+      {==}
+    case G.FF{} G.TI{} G.FR{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{} G.FR{} G.TI{}:
+      {==}
+    case G.FF{} G.TI{} G.FF{} G.TQ{}:
+      {==}
+    case G.FF{} G.TI{} G.FF{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{} G.FF{} G.TI{}:
+      {==}
+    case G.FF{} G.TI{} G.FD{} G.TQ{}:
+      {==}
+    case G.FF{} G.TI{} G.FD{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{} G.FD{} G.TI{}:
+      {==}
+    case G.FF{} G.TI{} G.FL{} G.TQ{}:
+      {==}
+    case G.FF{} G.TI{} G.FL{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{} G.FL{} G.TI{}:
+      {==}
+    case G.FF{} G.TI{} G.FB{} G.TQ{}:
+      {==}
+    case G.FF{} G.TI{} G.FB{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{} G.FB{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{} G.FU{} G.TQ{}:
+      {==}
+    case G.FD{} G.TQ{} G.FU{} G.TH{}:
+      {==}
+    case G.FD{} G.TQ{} G.FU{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{} G.FR{} G.TQ{}:
+      {==}
+    case G.FD{} G.TQ{} G.FR{} G.TH{}:
+      {==}
+    case G.FD{} G.TQ{} G.FR{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{} G.FF{} G.TQ{}:
+      {==}
+    case G.FD{} G.TQ{} G.FF{} G.TH{}:
+      {==}
+    case G.FD{} G.TQ{} G.FF{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{} G.FD{} G.TQ{}:
+      {==}
+    case G.FD{} G.TQ{} G.FD{} G.TH{}:
+      {==}
+    case G.FD{} G.TQ{} G.FD{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{} G.FL{} G.TQ{}:
+      {==}
+    case G.FD{} G.TQ{} G.FL{} G.TH{}:
+      {==}
+    case G.FD{} G.TQ{} G.FL{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{} G.FB{} G.TQ{}:
+      {==}
+    case G.FD{} G.TQ{} G.FB{} G.TH{}:
+      {==}
+    case G.FD{} G.TQ{} G.FB{} G.TI{}:
+      {==}
+    case G.FD{} G.TH{} G.FU{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{} G.FU{} G.TH{}:
+      {==}
+    case G.FD{} G.TH{} G.FU{} G.TI{}:
+      {==}
+    case G.FD{} G.TH{} G.FR{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{} G.FR{} G.TH{}:
+      {==}
+    case G.FD{} G.TH{} G.FR{} G.TI{}:
+      {==}
+    case G.FD{} G.TH{} G.FF{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{} G.FF{} G.TH{}:
+      {==}
+    case G.FD{} G.TH{} G.FF{} G.TI{}:
+      {==}
+    case G.FD{} G.TH{} G.FD{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{} G.FD{} G.TH{}:
+      {==}
+    case G.FD{} G.TH{} G.FD{} G.TI{}:
+      {==}
+    case G.FD{} G.TH{} G.FL{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{} G.FL{} G.TH{}:
+      {==}
+    case G.FD{} G.TH{} G.FL{} G.TI{}:
+      {==}
+    case G.FD{} G.TH{} G.FB{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{} G.FB{} G.TH{}:
+      {==}
+    case G.FD{} G.TH{} G.FB{} G.TI{}:
+      {==}
+    case G.FD{} G.TI{} G.FU{} G.TQ{}:
+      {==}
+    case G.FD{} G.TI{} G.FU{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{} G.FU{} G.TI{}:
+      {==}
+    case G.FD{} G.TI{} G.FR{} G.TQ{}:
+      {==}
+    case G.FD{} G.TI{} G.FR{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{} G.FR{} G.TI{}:
+      {==}
+    case G.FD{} G.TI{} G.FF{} G.TQ{}:
+      {==}
+    case G.FD{} G.TI{} G.FF{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{} G.FF{} G.TI{}:
+      {==}
+    case G.FD{} G.TI{} G.FD{} G.TQ{}:
+      {==}
+    case G.FD{} G.TI{} G.FD{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{} G.FD{} G.TI{}:
+      {==}
+    case G.FD{} G.TI{} G.FL{} G.TQ{}:
+      {==}
+    case G.FD{} G.TI{} G.FL{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{} G.FL{} G.TI{}:
+      {==}
+    case G.FD{} G.TI{} G.FB{} G.TQ{}:
+      {==}
+    case G.FD{} G.TI{} G.FB{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{} G.FB{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{} G.FU{} G.TQ{}:
+      {==}
+    case G.FL{} G.TQ{} G.FU{} G.TH{}:
+      {==}
+    case G.FL{} G.TQ{} G.FU{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{} G.FR{} G.TQ{}:
+      {==}
+    case G.FL{} G.TQ{} G.FR{} G.TH{}:
+      {==}
+    case G.FL{} G.TQ{} G.FR{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{} G.FF{} G.TQ{}:
+      {==}
+    case G.FL{} G.TQ{} G.FF{} G.TH{}:
+      {==}
+    case G.FL{} G.TQ{} G.FF{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{} G.FD{} G.TQ{}:
+      {==}
+    case G.FL{} G.TQ{} G.FD{} G.TH{}:
+      {==}
+    case G.FL{} G.TQ{} G.FD{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{} G.FL{} G.TQ{}:
+      {==}
+    case G.FL{} G.TQ{} G.FL{} G.TH{}:
+      {==}
+    case G.FL{} G.TQ{} G.FL{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{} G.FB{} G.TQ{}:
+      {==}
+    case G.FL{} G.TQ{} G.FB{} G.TH{}:
+      {==}
+    case G.FL{} G.TQ{} G.FB{} G.TI{}:
+      {==}
+    case G.FL{} G.TH{} G.FU{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{} G.FU{} G.TH{}:
+      {==}
+    case G.FL{} G.TH{} G.FU{} G.TI{}:
+      {==}
+    case G.FL{} G.TH{} G.FR{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{} G.FR{} G.TH{}:
+      {==}
+    case G.FL{} G.TH{} G.FR{} G.TI{}:
+      {==}
+    case G.FL{} G.TH{} G.FF{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{} G.FF{} G.TH{}:
+      {==}
+    case G.FL{} G.TH{} G.FF{} G.TI{}:
+      {==}
+    case G.FL{} G.TH{} G.FD{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{} G.FD{} G.TH{}:
+      {==}
+    case G.FL{} G.TH{} G.FD{} G.TI{}:
+      {==}
+    case G.FL{} G.TH{} G.FL{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{} G.FL{} G.TH{}:
+      {==}
+    case G.FL{} G.TH{} G.FL{} G.TI{}:
+      {==}
+    case G.FL{} G.TH{} G.FB{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{} G.FB{} G.TH{}:
+      {==}
+    case G.FL{} G.TH{} G.FB{} G.TI{}:
+      {==}
+    case G.FL{} G.TI{} G.FU{} G.TQ{}:
+      {==}
+    case G.FL{} G.TI{} G.FU{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{} G.FU{} G.TI{}:
+      {==}
+    case G.FL{} G.TI{} G.FR{} G.TQ{}:
+      {==}
+    case G.FL{} G.TI{} G.FR{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{} G.FR{} G.TI{}:
+      {==}
+    case G.FL{} G.TI{} G.FF{} G.TQ{}:
+      {==}
+    case G.FL{} G.TI{} G.FF{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{} G.FF{} G.TI{}:
+      {==}
+    case G.FL{} G.TI{} G.FD{} G.TQ{}:
+      {==}
+    case G.FL{} G.TI{} G.FD{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{} G.FD{} G.TI{}:
+      {==}
+    case G.FL{} G.TI{} G.FL{} G.TQ{}:
+      {==}
+    case G.FL{} G.TI{} G.FL{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{} G.FL{} G.TI{}:
+      {==}
+    case G.FL{} G.TI{} G.FB{} G.TQ{}:
+      {==}
+    case G.FL{} G.TI{} G.FB{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{} G.FB{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{} G.FU{} G.TQ{}:
+      {==}
+    case G.FB{} G.TQ{} G.FU{} G.TH{}:
+      {==}
+    case G.FB{} G.TQ{} G.FU{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{} G.FR{} G.TQ{}:
+      {==}
+    case G.FB{} G.TQ{} G.FR{} G.TH{}:
+      {==}
+    case G.FB{} G.TQ{} G.FR{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{} G.FF{} G.TQ{}:
+      {==}
+    case G.FB{} G.TQ{} G.FF{} G.TH{}:
+      {==}
+    case G.FB{} G.TQ{} G.FF{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{} G.FD{} G.TQ{}:
+      {==}
+    case G.FB{} G.TQ{} G.FD{} G.TH{}:
+      {==}
+    case G.FB{} G.TQ{} G.FD{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{} G.FL{} G.TQ{}:
+      {==}
+    case G.FB{} G.TQ{} G.FL{} G.TH{}:
+      {==}
+    case G.FB{} G.TQ{} G.FL{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{} G.FB{} G.TQ{}:
+      {==}
+    case G.FB{} G.TQ{} G.FB{} G.TH{}:
+      {==}
+    case G.FB{} G.TQ{} G.FB{} G.TI{}:
+      {==}
+    case G.FB{} G.TH{} G.FU{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{} G.FU{} G.TH{}:
+      {==}
+    case G.FB{} G.TH{} G.FU{} G.TI{}:
+      {==}
+    case G.FB{} G.TH{} G.FR{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{} G.FR{} G.TH{}:
+      {==}
+    case G.FB{} G.TH{} G.FR{} G.TI{}:
+      {==}
+    case G.FB{} G.TH{} G.FF{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{} G.FF{} G.TH{}:
+      {==}
+    case G.FB{} G.TH{} G.FF{} G.TI{}:
+      {==}
+    case G.FB{} G.TH{} G.FD{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{} G.FD{} G.TH{}:
+      {==}
+    case G.FB{} G.TH{} G.FD{} G.TI{}:
+      {==}
+    case G.FB{} G.TH{} G.FL{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{} G.FL{} G.TH{}:
+      {==}
+    case G.FB{} G.TH{} G.FL{} G.TI{}:
+      {==}
+    case G.FB{} G.TH{} G.FB{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{} G.FB{} G.TH{}:
+      {==}
+    case G.FB{} G.TH{} G.FB{} G.TI{}:
+      {==}
+    case G.FB{} G.TI{} G.FU{} G.TQ{}:
+      {==}
+    case G.FB{} G.TI{} G.FU{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{} G.FU{} G.TI{}:
+      {==}
+    case G.FB{} G.TI{} G.FR{} G.TQ{}:
+      {==}
+    case G.FB{} G.TI{} G.FR{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{} G.FR{} G.TI{}:
+      {==}
+    case G.FB{} G.TI{} G.FF{} G.TQ{}:
+      {==}
+    case G.FB{} G.TI{} G.FF{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{} G.FF{} G.TI{}:
+      {==}
+    case G.FB{} G.TI{} G.FD{} G.TQ{}:
+      {==}
+    case G.FB{} G.TI{} G.FD{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{} G.FD{} G.TI{}:
+      {==}
+    case G.FB{} G.TI{} G.FL{} G.TQ{}:
+      {==}
+    case G.FB{} G.TI{} G.FL{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{} G.FL{} G.TI{}:
+      {==}
+    case G.FB{} G.TI{} G.FB{} G.TQ{}:
+      {==}
+    case G.FB{} G.TI{} G.FB{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{} G.FB{} G.TI{}:
+      {==}
+
+def Laws.wire_empty():
+  {==}
+
+def Laws.notation_round_trip(f, t):
+  match f t:
+    case G.FU{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{}:
+      {==}
+
+def Laws.notation_hand23():
+  {==}
+
+def Laws.read_facelets(f, t):
+  match f t:
+    case G.FU{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{}:
+      {==}
+
+def Laws.scheme_standard_page():
+  {==}
+
+# the hand scramble's moves (notation_hand23)
+def Laws.own_undo_move(f, t):
+  match f t:
+    case G.FU{} G.TQ{}:
+      {==}
+    case G.FU{} G.TH{}:
+      {==}
+    case G.FU{} G.TI{}:
+      {==}
+    case G.FR{} G.TQ{}:
+      {==}
+    case G.FR{} G.TH{}:
+      {==}
+    case G.FR{} G.TI{}:
+      {==}
+    case G.FF{} G.TQ{}:
+      {==}
+    case G.FF{} G.TH{}:
+      {==}
+    case G.FF{} G.TI{}:
+      {==}
+    case G.FD{} G.TQ{}:
+      {==}
+    case G.FD{} G.TH{}:
+      {==}
+    case G.FD{} G.TI{}:
+      {==}
+    case G.FL{} G.TQ{}:
+      {==}
+    case G.FL{} G.TH{}:
+      {==}
+    case G.FL{} G.TI{}:
+      {==}
+    case G.FB{} G.TQ{}:
+      {==}
+    case G.FB{} G.TH{}:
+      {==}
+    case G.FB{} G.TI{}:
+      {==}
+
+
+def Laws.own_undo_seq():
+  {==}
