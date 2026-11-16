@@ -33,7 +33,9 @@ On the visitor's device:
   and 1.5 MB) and gzip (40.9 MB and 2.3 MB), named by their contents, so a
   browser keeps them for good (Cache API).
 - `web/Sched.bend`: what the workers do for a cube and what the page is told:
-  two-phase on three axes first (a short way at once), then Korf's bounds,
+  two-phase on three axes first (a short way at once; the position's own
+  moves undone, from the page, are one too, so no answer is longer than
+  them), then Korf's bounds,
   from 11 on split into the 3,240 subtrees for any free worker; a solution is
   called shortest only when every shorter bound was searched in full (or once
   the bounds reach the short way's length). Past 120 s the page gets the
