@@ -148,9 +148,72 @@ export function cube3d(el) {
   };
 
   // the visitor's cube's colours (web/colours.js): a CSS colour for each face,
-  // U R F D L B; none, the standard ones
-  const colours = (css) => {
+  // U R F D L B; none, the standard ones. The faces whose colour changed are
+  // kept for show() to show (quiet: none to show, as when the page opens).
+  const hex = () => Object.fromEntries([..."URFDLB"].map((f) => [f, mats[f].color.getHexString()]));
+  let seen = hex();
+  const colours = (css, quiet) => {
     [..."URFDLB"].forEach((f, i) => mats[f].color.set(css?.[i] ?? COLOR[f]));
+    const now = hex();
+    el.dataset.colours = [..."URFDLB"].map((f) => "#" + now[f]).join(" ");
+    if (quiet) seen = now;
+  };
+
+  // A change of colours, shown: a cube in Japanese colours is the standard
+  // one with blue and yellow swapped, underneath and at the back, where the
+  // cube hides them; so the cube turns to show the faces that changed, holds
+  // a moment, and goes back to where it was. Of its 24 ways to stand, the one
+  // that shows the most of them, the nearest; no turn if it shows as many now
+  // (Mirrored: red is on the right, in view).
+  const NORMAL = { U: [0, 1, 0], R: [1, 0, 0], F: [0, 0, 1], D: [0, -1, 0], L: [-1, 0, 0], B: [0, 0, -1] };
+  const stands = [];
+  for (const y of Object.values(NORMAL))
+    for (const z of Object.values(NORMAL)) {
+      if (y.some((a, i) => a !== 0 && z[i] !== 0)) continue;
+      const Y = new THREE.Vector3(...y);
+      const Z = new THREE.Vector3(...z);
+      const X = new THREE.Vector3().crossVectors(Y, Z);
+      stands.push(start.clone().multiply(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(X, Y, Z))));
+    }
+  let look = null;
+  const nv = new THREE.Vector3();
+  const show = () => {
+    const now = hex();
+    const faces = [..."URFDLB"].filter((f) => now[f] !== seen[f]);
+    seen = now;
+    if (!faces.length) return "";
+    el.dataset.look = faces.join("");
+    // in view: facing the camera well, not edge on
+    const eye = camera.position.clone().normalize();
+    const shown = (q) => faces.filter((f) => nv.set(...NORMAL[f]).applyQuaternion(q).dot(eye) > 0.3).length;
+    const back = (look ? look.back : tilt.quaternion).clone();
+    let to = back;
+    let most = shown(back);
+    let near = Infinity;
+    for (const q of stands) {
+      const n = shown(q);
+      const a = q.angleTo(back);
+      if (n > most || (n === most && to !== back && a < near)) [to, most, near] = [q, n, a];
+    }
+    el.dataset.lookTurn = String(to !== back);
+    if (to === back) return el.dataset.look;
+    view.w = 0;
+    view.back = false;
+    look = { at: tilt.quaternion.clone(), to, back, t0: performance.now() };
+    return el.dataset.look;
+  };
+  const GO = 700;
+  const HOLD = 1600;
+  const looking = (now) => {
+    const t = now - look.t0;
+    if (view.drag || view.back) look = null;
+    else if (t < GO) tilt.quaternion.slerpQuaternions(look.at, look.to, easeInOut(t / GO));
+    else if (t < GO + HOLD) tilt.quaternion.copy(look.to);
+    else if (t < 2 * GO + HOLD) tilt.quaternion.slerpQuaternions(look.to, look.back, easeInOut((t - GO - HOLD) / GO));
+    else {
+      tilt.quaternion.copy(look.back);
+      look = null;
+    }
   };
 
   // Turns
@@ -243,6 +306,7 @@ export function cube3d(el) {
   fit();
 
   const frame = (now) => {
+    if (look) looking(now);
     if (!view.drag && view.w > 1e-4) {
       view.w *= 0.92;
       turnView(view.axis, view.w);
@@ -270,5 +334,5 @@ export function cube3d(el) {
     if (document.hidden && anim) settle();
   });
 
-  return { paint, turn: turnMove, colours };
+  return { paint, turn: turnMove, colours, show };
 }

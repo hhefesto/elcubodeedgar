@@ -191,3 +191,12 @@ if (cur.key !== "0")
     .then(() => use(cur.key))
     .then((why) => why && use("0"))
     .catch(() => {});
+// a scheme picked in another tab of the page is this one's too
+addEventListener("storage", (e) => {
+  if (e.key !== STORE) return;
+  const k = (kept() ?? STANDARD).key;
+  if (k !== cur.key)
+    use(k)
+      .then(() => dlg()?.open && draw())
+      .catch(() => {});
+});

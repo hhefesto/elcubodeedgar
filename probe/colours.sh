@@ -8,6 +8,10 @@
 # the page's colours and words are the Japanese ones (the panel's "then
 # yellow" is "then blue"), and kept on a reload; a face's colour picked of
 # one's own (the right face pink: a scheme of one's own).
+# The 3D cube: in the Japanese colours too (#stage's data-colours, U R F D L
+# B), and, the picker closed, turned to show the two faces that changed
+# (blue underneath, yellow at the back: data-look DB), then back; on a
+# reload, in them from the start, with no turn.
 # The camera: a cube with the Japanese colours, photographed while the page
 # shows the Standard ones, as the page asks (turning as the arrow shows); after
 # the fourth photo the page must offer the Japanese colours, and once they are
@@ -23,13 +27,14 @@ if [ "$dev" = desktop ]; then size=1280x800; env=; else size=390x844; env="DPR=3
 root="getComputedStyle(document.documentElement)"
 state="JSON.stringify({key:document.documentElement.dataset.scheme,D:$root.getPropertyValue('--D').trim(),B:$root.getPropertyValue('--B').trim(),name:$root.getPropertyValue('--sch-name').trim()})"
 intro="document.getElementById('own-intro').textContent"
+cube3="JSON.stringify(document.getElementById('stage').dataset)"
 
 steps=(wait:1500 shot:"$out/$dev-page.png" click:#colours wait:600 shot:"$out/$dev-picker.png"
   "click:#sch-list [data-k=\"2\"]" wait:400 "eval:'PICKED '+$state" shot:"$out/$dev-picker-jp.png"
-  "click:#sch-dlg button[value=close]" wait:400 shot:"$out/$dev-page-jp.png"
+  "click:#sch-dlg button[value=close]" wait:1000 "eval:'CUBE '+$cube3" shot:"$out/$dev-page-jp.png" wait:2600 shot:"$out/$dev-page-jp-back.png"
   click:#own wait:500 "eval:'INTRO '+$intro" shot:"$out/$dev-own-jp.png"
   "click:#own-dlg button[value=close]" wait:300
-  "eval:(location.reload(),'reload')" wait:2500 "eval:'KEPT '+$state" "eval:'HOWTO '+document.querySelector('.faces').textContent.replace(/\\s+/g,' ')"
+  "eval:(location.reload(),'reload')" wait:2500 "eval:'KEPT '+$state" "eval:'CUBEKEPT '+$cube3" "eval:'HOWTO '+document.querySelector('.faces').textContent.replace(/\\s+/g,' ')"
   click:#colours wait:500 "click:#sch-own summary" wait:300 "click:#sch-faces [data-f=\"1\"][data-c=\"6\"]" wait:400
   "eval:'OWN '+$state" shot:"$out/$dev-picker-own.png")
 env $env node probe/shot.mjs "$url/" $size "${steps[@]}" >"$out/$dev-colours.log" 2>&1 || true
@@ -94,6 +99,8 @@ cam=$out/$dev-colours-cam.log
 grep -q '^EVAL "PICKED {\\"key\\":\\"2\\",\\"D\\":\\"rgb(11,79,179)\\"' "$log" || { echo "FAIL: Japanese picked, the bottom is not blue"; ok=0; }
 grep -q '^EVAL "INTRO .*red and yellow, then blue' "$log" || { echo "FAIL: the panel does not say the Japanese colours"; ok=0; }
 grep -q '^EVAL "KEPT {\\"key\\":\\"2\\"' "$log" || { echo "FAIL: Japanese not kept on a reload"; ok=0; }
+grep -qxF 'EVAL "CUBE {\"colours\":\"#f4f0e6 #c41230 #00a04e #0b4fb3 #ff6a13 #ffd31a\",\"look\":\"DB\",\"lookTurn\":\"true\"}"' "$log" || { echo "FAIL: Japanese picked, the 3D cube is not in them or did not turn to show them"; ok=0; }
+grep -qxF 'EVAL "CUBEKEPT {\"colours\":\"#f4f0e6 #c41230 #00a04e #0b4fb3 #ff6a13 #ffd31a\"}"' "$log" || { echo "FAIL: on a reload, the 3D cube is not in the kept colours (or turned)"; ok=0; }
 grep -q '^EVAL "HOWTO .*the bottom: blue' "$log" || { echo "FAIL: the moves explained do not say the Japanese colours"; ok=0; }
 grep -q '^EVAL "OWN {\\"key\\":\\"064531\\"' "$log" || { echo "FAIL: the right face pink is not a scheme of one's own"; ok=0; }
 grep -q '^EVAL "FIT {\\"shown\\":true,\\"text\\":\\"Your cube looks like it has the Japanese colours' "$cam" || { echo "FAIL: four photos of a Japanese cube, no offer"; ok=0; }

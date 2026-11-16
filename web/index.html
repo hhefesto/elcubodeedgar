@@ -584,10 +584,29 @@ import { cube3d } from "./cube3d.js";
 import { ownCube } from "./own.js";
 import { colours } from "./colours.js";
 
-const view = cube3d(document.getElementById("stage"));
-// the 3D cube in the visitor's cube's colours (web/colours.js)
-view.colours(colours.now().css);
-colours.on((c) => view.colours(c.css));
+const stage = document.getElementById("stage");
+const view = cube3d(stage);
+// the 3D cube in the visitor's cube's colours (web/colours.js), and a change
+// of them shown on it (it turns to the faces that changed) once it can be
+// seen: no dialog over it, on screen, the tab in front
+view.colours(colours.now().css, true);
+let onScreen = true;
+const showColours = () => {
+  if (onScreen && !document.hidden && !document.querySelector("dialog[open]")) view.show();
+};
+colours.on((c) => {
+  view.colours(c.css);
+  showColours();
+});
+for (const d of document.querySelectorAll("dialog")) d.addEventListener("close", showColours);
+document.addEventListener("visibilitychange", showColours);
+new IntersectionObserver(
+  ([e]) => {
+    onScreen = e.intersectionRatio >= 0.5;
+    showColours();
+  },
+  { threshold: [0, 0.5, 1] },
+).observe(stage);
 let made = null;
 const solver = () => (made ??= makeSolver({ workers: Number(new URLSearchParams(location.search).get("workers")) || 0 }));
 // "Enter your own cube" (web/own.js): the cube it makes is shown as a link's
