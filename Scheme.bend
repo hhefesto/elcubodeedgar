@@ -19,7 +19,7 @@ import Base
 # gets back is plain text.
 #
 # The page's messages (Guard.bend's, Photo.bend's) name faces by the standard
-# scheme's colors ("the white centre on top"); sc.say puts the visitor's
+# scheme's colors ("the white center on top"); sc.say puts the visitor's
 # colors in their place (LAWS.bend: scheme_say_standard, scheme_say_face).
 #
 # Every def is prefixed `sc.`.

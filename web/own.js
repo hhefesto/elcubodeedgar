@@ -1,8 +1,8 @@
 // "Enter your own cube": the thin JS around it. The visitor paints the 54
-// stickers on a flat net (a color, then a sticker; the centres are fixed) or
+// stickers on a flat net (a color, then a sticker; the centers are fixed) or
 // reads them with the camera, a face at a time (each photo's 3 x 3 guide square
 // handed to Dev.bend's dv.photo, which gives each sticker the color of the
-// centre it looks most like), then fixes what is wrong by painting. Dev.bend
+// center it looks most like), then fixes what is wrong by painting. Dev.bend
 // decides everything: whether the stickers can be a real cube (dv.check,
 // Guard.bend: plainly why not, if not), how to hold the cube for each photo
 // (dv.hold, dv.pose), what the camera sees (dv.seen), a face taken twice
@@ -45,10 +45,10 @@ export function ownCube({ solver, go, colors }) {
     const i = k % 9;
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "own-st" + (i === 4 ? " centre" : "");
+    b.className = "own-st" + (i === 4 ? " center" : "");
     b.style.gridRow = String(AT[f][0] + Math.floor(i / 3) + 1);
     b.style.gridColumn = String(AT[f][1] + (i % 3) + 1);
-    b.setAttribute("aria-label", `${f} face, sticker ${i + 1}${i === 4 ? " (the centre, fixed)" : ""}`);
+    b.setAttribute("aria-label", `${f} face, sticker ${i + 1}${i === 4 ? " (the center, fixed)" : ""}`);
     if (i !== 4)
       b.addEventListener("click", () => {
         stickers[k] = brush;
@@ -121,7 +121,7 @@ export function ownCube({ solver, go, colors }) {
     dlg.classList.remove("cam");
   };
 
-  // the 3 x 3 square: a dot on each sticker, the centre's ringed in its color
+  // the 3 x 3 square: a dot on each sticker, the center's ringed in its color
   const dots = [];
   for (let i = 0; i < 9; i++) {
     const c = document.createElement("i");
@@ -150,7 +150,7 @@ export function ownCube({ solver, go, colors }) {
   }
 
   // the cube held for photo k, drawn: front (at the left), top, right; only
-  // the centres in color (a face is its centre's color), and the turn to it
+  // the centers in color (a face is its center's color), and the turn to it
   const SVGNS = "http://www.w3.org/2000/svg";
   const el = (tag, attrs) => {
     const e = document.createElementNS(SVGNS, tag);
@@ -307,7 +307,7 @@ export function ownCube({ solver, go, colors }) {
     }
     shots = Array(6).fill(null);
     seen = Array(6).fill(null);
-    // the centres stay fixed; the rest as the photos read
+    // the centers stay fixed; the rest as the photos read
     stickers = [...read].map((x, k) => (k % 9 === 4 ? FACES[Math.floor(k / 9)] : FACES.includes(x) ? x : "U"));
     draw();
     net.classList.remove("fresh");
@@ -417,7 +417,7 @@ export function ownCube({ solver, go, colors }) {
       const j = others[twin];
       held = s;
       keepBtn.hidden = false;
-      return say(`That looks like photo ${j + 1} again, the ${NAME[poses[j][0]]} face. Show the ${NAME[poses[at][0]]} centre (the drawing shows how), then take it again.`, true);
+      return say(`That looks like photo ${j + 1} again, the ${NAME[poses[j][0]]} face. Show the ${NAME[poses[at][0]]} center (the drawing shows how), then take it again.`, true);
     }
     keep(s);
   });

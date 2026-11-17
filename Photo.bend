@@ -19,8 +19,8 @@ import ./Scheme.bend as Sc
 # it out (U seen with B on top, D with F on top, the others with U on top):
 # a cell's place in the photo is the facelet's place in its face.
 #
-# Each sticker is then given the color of the centre it looks most like, of
-# the six centres in the same photos (so the light, the camera, and the cube's
+# Each sticker is then given the color of the center it looks most like, of
+# the six centers in the same photos (so the light, the camera, and the cube's
 # own shades matter little): the closest pairs first, and no color on more
 # than 9 stickers. What that gives goes through Guard.bend like any cube.
 #
@@ -44,12 +44,12 @@ def ph.shot.of(+f: U32) -> U32:
 # how to hold the cube for photo k
 def ph.hold(+k: U32) -> String:
   Maybe.default(&2, String, List.get(&2, String,
-    ["The green centre facing you, the white centre on top.",
-     "The red centre facing you, the white centre on top (turn the cube a quarter to the left).",
-     "The blue centre facing you, the white centre on top (another quarter to the left).",
-     "The orange centre facing you, the white centre on top (another quarter to the left).",
-     "The white centre facing you, the blue centre on top (green facing you again, then tip the top toward you).",
-     "The yellow centre facing you, the green centre on top (green facing you again, then tip the bottom toward you)."],
+    ["The green center facing you, the white center on top.",
+     "The red center facing you, the white center on top (turn the cube a quarter to the left).",
+     "The blue center facing you, the white center on top (another quarter to the left).",
+     "The orange center facing you, the white center on top (another quarter to the left).",
+     "The white center facing you, the blue center on top (green facing you again, then tip the top toward you).",
+     "The yellow center facing you, the green center on top (green facing you again, then tip the bottom toward you)."],
     U32.to_nat(k)), "")
 
 # The faces seen in photo k: in front, on top, at the right (U R F D L B are
@@ -195,15 +195,15 @@ def ph.dist(+p: Px, +q: Px) -> U32:
               U32.add(ph.sq(U32.div(U32.mul(b1, 1000), s1), U32.div(U32.mul(b2, 1000), s2)),
                       U32.div(ph.sq(U32.div(s1, 3), U32.div(s2, 3)), 4)))
 
-# the stickers at the centres (4, 13, .., 49)
-def ph.centres(ps: List<&2, Px>, +i: U32, +acc: List<&2, Px>) -> List<&2, Px>:
+# the stickers at the centers (4, 13, .., 49)
+def ph.centers(ps: List<&2, Px>, +i: U32, +acc: List<&2, Px>) -> List<&2, Px>:
   match ps:
     case Nil{}:
       List.reverse(&2, Px, acc)
     case Con{+p, t}:
-      ph.centres(t, U32.add(i, 1), Bool.pick(List<&2, Px>, U32.is_eq(U32.mod(i, 9), 4), p <> acc, acc))
+      ph.centers(t, U32.add(i, 1), Bool.pick(List<&2, Px>, U32.is_eq(U32.mod(i, 9), 4), p <> acc, acc))
 
-# sticker i's distance to each centre f, as one number: d * 512 + i * 8 + f
+# sticker i's distance to each center f, as one number: d * 512 + i * 8 + f
 # (so sorting them puts the closest pairs first)
 def ph.pairs.face(+p: Px, cs: List<&2, Px>, +i: U32, +f: U32, +acc: List<&2, U32>) -> List<&2, U32>:
   match cs:
@@ -221,7 +221,7 @@ def ph.pairs(ps: List<&2, Px>, +cs: List<&2, Px>, +i: U32, +acc: List<&2, U32>) 
       ph.pairs(t, cs, U32.add(i, 1),
         Bool.pick(List<&2, U32>, U32.is_eq(U32.mod(i, 9), 4), acc, ph.pairs.face(p, cs, i, 0, acc)))
 
-# no color yet (6), but each centre its face's
+# no color yet (6), but each center its face's
 def ph.blank(n: Nat, +i: U32, +acc: List<&2, U32>) -> List<&2, U32>:
   match n:
     case 0n:
@@ -246,7 +246,7 @@ def ph.assign(ks: List<&2, U32>, +cols: List<&2, U32>, +cnt: List<&2, U32>) -> L
 # colors as photographed (162 numbers: r, g, b of each, facelet order)
 def ph.classify(+meds: List<&2, U32>) -> List<&2, U32>:
   +ps = ph.pxs(meds)
-  ph.assign(List.sort(~U32, ~U32.is_le, ph.pairs(ps, ph.centres(ps, 0, Nil{}), 0, Nil{})),
+  ph.assign(List.sort(~U32, ~U32.is_le, ph.pairs(ps, ph.centers(ps, 0, Nil{}), 0, Nil{})),
     ph.blank(54n, 0, Nil{}), [1, 1, 1, 1, 1, 1])
 
 def ph.shot(+shots: List<&2, List<&2, U32>>, +f: U32) -> List<&2, U32>:
@@ -286,16 +286,16 @@ def ph.first(+ps: List<&2, Px>) -> Px:
     case Nil{}:
       Px{0, 0, 0}
 
-# a photo's centre sticker, as photographed
-def ph.centre(s: String) -> Px:
+# a photo's center sticker, as photographed
+def ph.center(s: String) -> Px:
   ph.first(ph.pxs(List.drop(&2, U32, ph.cells(s), 12n)))
 
-def ph.centres.of(photos: List<&2, String>) -> List<&2, Px>:
+def ph.centers.of(photos: List<&2, String>) -> List<&2, Px>:
   match photos:
     case Nil{}:
       Nil{}
     case Con{p, t}:
-      ph.centre(p) <> ph.centres.of(t)
+      ph.center(p) <> ph.centers.of(t)
 
 # the first of ps (from i) the color x is, or 6
 def ph.find(ps: List<&2, Px>, +x: Px, +i: U32) -> U32:
@@ -305,7 +305,7 @@ def ph.find(ps: List<&2, Px>, +x: Px, +i: U32) -> U32:
     case Con{+p, t}:
       Bool.pick(U32, ph.same(p, x), i, ph.find(t, x, U32.add(i, 1)))
 
-# Which of the photos before the last has a centre the color of the last
+# Which of the photos before the last has a center the color of the last
 # one's (the same face again: the cube was not turned), or 6 if none
 def ph.twin.of(cs: List<&2, Px>) -> U32:
   match cs:
@@ -315,7 +315,7 @@ def ph.twin.of(cs: List<&2, Px>) -> U32:
       ph.find(List.reverse(&2, Px, rest), last, 0)
 
 def ph.twin(photos: List<&2, String>) -> U32:
-  ph.twin.of(List.reverse(&2, Px, ph.centres.of(photos)))
+  ph.twin.of(List.reverse(&2, Px, ph.centers.of(photos)))
 
 # A photo's 9 stickers as photographed: 27 numbers, r g b of each (cells
 # row by row from the top left), for the page to show what the camera sees
@@ -333,14 +333,14 @@ def ph.seen.cells(s: String) -> String:
 # --------------------------
 #
 # Not every cube has the page's colors (Scheme.bend). Photo k shows face
-# ph.order[k]'s centre, and a scheme says what color that is. For each
-# scheme, the centres are evened out to its colors as a camera sees them
+# ph.order[k]'s center, and a scheme says what color that is. For each
+# scheme, the centers are evened out to its colors as a camera sees them
 # (sc.col.cam): each channel times the scheme's sum of it over the photos'
 # (so a lamp's yellow, or a shade's blue, is taken out as a whole), then each
 # is compared to its color (ph.dist). The scheme it adds up least for is the
 # one the cube looks like. Schemes of the same six colors on other faces
 # (Standard, Japanese, Mirrored) are told apart that way in any light: a
-# light moves all the centres alike. So the page asks only that, and only
+# light moves all the centers alike. So the page asks only that, and only
 # once four photos are in (the four sides: red and orange, a close pair, are
 # both seen then).
 
@@ -390,7 +390,7 @@ def ph.unlike.go(cs: List<&2, Px>, +rs: List<&2, Px>, +gr: U32, +gg: U32, +gb: U
     case Con{+c, t}:
       U32.add(ph.dist(ph.even(c, gr, gg, gb), ph.first(rs)), ph.unlike.go(t, List.drop(&2, Px, rs, 1n), gr, gg, gb))
 
-# how unlike centres cs (of photos ks) are to faces fs's colors
+# how unlike centers cs (of photos ks) are to faces fs's colors
 def ph.unlike(+fs: List<&2, U32>, +ks: List<&2, U32>, +cs: List<&2, Px>) -> U32:
   +rs = ph.refs(fs, ks)
   ph.unlike.go(cs, rs, ph.gain(rs, cs, 0), ph.gain(rs, cs, 1), ph.gain(rs, cs, 2))
@@ -409,7 +409,7 @@ def ph.preset.faces(+i: U32) -> List<&2, U32>:
   Sc.sc.faces(Sc.sc.preset(Sc.sc.at(i)))
 
 # of the presets (from i, n of them) with faces cur's colors moved round,
-# the one the centres look most like, as unlike * 8 + i; b the best so far
+# the one the centers look most like, as unlike * 8 + i; b the best so far
 def ph.fit.best(n: Nat, +i: U32, +cur: List<&2, U32>, +ks: List<&2, U32>, +cs: List<&2, Px>, +b: U32) -> U32:
   match n:
     case 0n:
@@ -430,7 +430,7 @@ def ph.fit.next(n: Nat, +i: U32, +cur: List<&2, U32>, +bf: List<&2, U32>, +ks: L
       +other = Bool.and(Sc.sc.moved(fs, cur), Bool.not(Sc.sc.same(fs, bf)))
       ph.fit.next(q, U32.add(i, 1), cur, bf, ks, cs, Bool.pick(U32, Bool.and(other, U32.is_lt(u, b)), u, b))
 
-# The preset the centres cs of photos ks look like, when the page's scheme
+# The preset the centers cs of photos ks look like, when the page's scheme
 # (faces cur) is another layout of the same colors: four photos or more, and
 # the page's and every other layout far more unlike. Sc.sc.count() if none
 def ph.fit.of(+cs: List<&2, Px>, +ks: List<&2, U32>, +cur: List<&2, U32>) -> U32:
@@ -447,7 +447,7 @@ def ph.fit.of(+cs: List<&2, Px>, +ks: List<&2, U32>, +cur: List<&2, U32>) -> U32
 
 # the same, of the photos ks themselves
 def ph.fit(+ks: List<&2, U32>, photos: List<&2, String>, +cur: List<&2, U32>) -> U32:
-  ph.fit.of(ph.centres.of(photos), ks, cur)
+  ph.fit.of(ph.centers.of(photos), ks, cur)
 
 # Photos made up, for the tests and the laws
 # ------------------------------------------
@@ -560,7 +560,7 @@ def ph.look(cols: List<&2, U32>, +pal: List<&2, U32>, +lt: List<&2, U32>) -> Lis
 def ph.seen(+pal: List<&2, U32>, +lt: List<&2, U32>, +k: U32) -> Px:
   ph.first(ph.pxs(ph.look([k], pal, lt)))
 
-# the centres of photos ks of a cube in preset p's colors, as a phone's
+# the centers of photos ks of a cube in preset p's colors, as a phone's
 # camera sees them in light l
 def ph.fit.seen.go(+pal: List<&2, U32>, +lt: List<&2, U32>, ks: List<&2, U32>) -> List<&2, Px>:
   match ks:

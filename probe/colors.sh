@@ -112,13 +112,13 @@ grep -qF 'EVAL "CUBESPEED {\"colors\":\"#edeef2 #f2505e #28cd46 #fcd304 #fd9150 
 grep -q '^EVAL "MOVED {\\"key\\":\\"2\\",\\"D\\":\\"rgb(11,79,179)\\".* true"$' "$log" || { echo "FAIL: a scheme kept under the old key (elcubo.colours) is not kept"; ok=0; }
 grep -q '^EVAL "FIT {\\"shown\\":true,\\"text\\":\\"Your cube looks like it has the Japanese colors' "$cam" || { echo "FAIL: four photos of a Japanese cube, no offer"; ok=0; }
 grep -q '^EVAL "AFTER {\\"key\\":\\"2\\"' "$cam" || { echo "FAIL: the offer taken, the page is not Japanese"; ok=0; }
-grep -q '^EVAL "HOLD 4 The white centre facing you, the yellow centre on top' "$cam" || { echo "FAIL: photo 5 not said in the Japanese colors"; ok=0; }
+grep -q '^EVAL "HOLD 4 The white center facing you, the yellow center on top' "$cam" || { echo "FAIL: photo 5 not said in the Japanese colors"; ok=0; }
 grep -q "^EVAL \"NET $cube\"" "$cam" || { echo "FAIL: the net is not the cube $cube"; ok=0; }
 grep -q '^EVAL "MSG Read from your six photos. Check' "$cam" || { echo "FAIL: no word that the photos were read"; ok=0; }
 keep=$out/$dev-colors-keep.log
 grep -q '^EVAL "FIT {\\"shown\\":true,\\"text\\":\\"Your cube looks like it has the Mirrored colors' "$keep" || { echo "FAIL: four photos of a mirrored cube, no offer"; ok=0; }
 grep -q '^EVAL "AFTER {\\"key\\":\\"0\\"' "$keep" || { echo "FAIL: the offer declined, the page is not Standard"; ok=0; }
-grep -q '^EVAL "HOLD 4 The white centre facing you, the blue centre on top' "$keep" || { echo "FAIL: declined, photo 5 not asked for"; ok=0; }
+grep -q '^EVAL "HOLD 4 The white center facing you, the blue center on top' "$keep" || { echo "FAIL: declined, photo 5 not asked for"; ok=0; }
 grep -q "^EVAL \"NET $cube\"" "$keep" || { echo "FAIL: declined, the net is not the cube $cube"; ok=0; }
 if grep -q -i 'exception\|uncaught' "$log" "$cam" "$keep"; then echo "FAIL: the page threw"; ok=0; fi
 [ $ok = 1 ] && echo PASS || echo FAIL

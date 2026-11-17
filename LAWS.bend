@@ -90,14 +90,14 @@ law sexy_order:
 law ru_order:
   {C.cube.pow(G.gr.ru(), 105n) == C.cube.solved() : C.Cube}
 
-# The centre: the superflip (every edge flipped in place) commutes with every
+# The center: the superflip (every edge flipped in place) commutes with every
 # move, so with every cube (the moves generate them all). With the solved
-# cube it is the group's whole centre: known, not proved here
+# cube it is the group's whole center: known, not proved here
 
 def superflip() -> C.Cube:
   C.Cube{[0, 1, 2, 3, 4, 5, 6, 7], [0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]}
 
-law superflip_centre:
+law superflip_center:
   for f: G.Face
   for t: G.Turn
   {C.cube.mul(superflip(), G.gr.mv(f, t)) == C.cube.mul(G.gr.mv(f, t), superflip()) : C.Cube}
@@ -390,8 +390,8 @@ law scheme_say_standard:
 law scheme_say_face:
   for p: Sc.Preset
   for f: G.Face
-  {Sc.sc.say.in(Sc.sc.preset(p), "the " ++ Gd.gd.name(G.gr.face(f)) ++ " centre")
-     == "the " ++ Sc.sc.col.name(Sc.sc.get(Sc.sc.faces(Sc.sc.preset(p)), G.gr.face(f))) ++ " centre" : String}
+  {Sc.sc.say.in(Sc.sc.preset(p), "the " ++ Gd.gd.name(G.gr.face(f)) ++ " center")
+     == "the " ++ Sc.sc.col.name(Sc.sc.get(Sc.sc.faces(Sc.sc.preset(p)), G.gr.face(f))) ++ " center" : String}
 
 # a face's color picked (the picker's "None of these?"): a color another
 # face has swaps with it, so from every preset, whichever face is given

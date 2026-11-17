@@ -1864,7 +1864,7 @@ def Laws.scheme_pick_six(p, f, g):
 def Laws.scheme_pick_presets():
   {==}
 
-def Laws.superflip_centre(f, t):
+def Laws.superflip_center(f, t):
   match f t:
     case G.FU{} G.TQ{}:
       {==}

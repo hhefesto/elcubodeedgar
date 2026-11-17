@@ -7,9 +7,9 @@ import ./Group.bend as G
 # paint, the server's c=).
 #
 # The stickers: 54 colors, each a face's number (0..5, U R F D L B: the
-# color of that face's centre), in Cube.bend's sticker order (Kociemba's
+# color of that face's center), in Cube.bend's sticker order (Kociemba's
 # facelets: U1..U9 R1..R9 F1..F9 D1..D9 L1..L9 B1..B9). A real cube has:
-#   9 stickers of each color, and each centre its face's color;
+#   9 stickers of each color, and each center its face's color;
 #   at each corner place, the three colors of one of the 8 corner pieces,
 #   at each edge place, the two of one of the 12 edges, each piece once;
 #   corner twists adding up to 0 (mod 3), edge flips to 0 (mod 2), and
@@ -253,13 +253,13 @@ def gd.off(n: Nat, +cols: List<&2, U32>, +k: U32) -> List<&2, String>:
       +rest = gd.off(q, cols, U32.add(k, 1))
       Bool.pick(List<&2, String>, U32.is_eq(c, 9), rest, (gd.name(k) ++ " " ++ U32.show(c)) <> rest)
 
-# the centres (from face k, n of them) not their face's color
-def gd.centres(n: Nat, +cols: List<&2, U32>, +k: U32) -> U32:
+# the centers (from face k, n of them) not their face's color
+def gd.centers(n: Nat, +cols: List<&2, U32>, +k: U32) -> U32:
   match n:
     case 0n:
       0
     case 1n+q:
-      U32.add(Bool.to_u32(U32.is_ne(gd.get(cols, U32.add(U32.mul(k, 9), 4)), k)), gd.centres(q, cols, U32.add(k, 1)))
+      U32.add(Bool.to_u32(U32.is_ne(gd.get(cols, U32.add(U32.mul(k, 9), 4)), k)), gd.centers(q, cols, U32.add(k, 1)))
 
 # the first piece (from j, n of them) on more than one place; n + j if none
 def gd.twice(n: Nat, +js: List<&2, U32>, +j: U32) -> U32:
@@ -323,8 +323,8 @@ def gd.c1(+cols: List<&2, U32>) -> Read:
 def gd.c0(+cols: List<&2, U32>, off: List<&2, String>) -> Read:
   match off:
     case Nil{}:
-      Bool.pick(Read, U32.is_zero(gd.centres(6n, cols, 0)), gd.c1(cols),
-        Bad{"A centre is not its own face's color: the centres must be white, red, green, yellow, orange, blue for up, right, front, down, left, back."})
+      Bool.pick(Read, U32.is_zero(gd.centers(6n, cols, 0)), gd.c1(cols),
+        Bad{"A center is not its own face's color: the centers must be white, red, green, yellow, orange, blue for up, right, front, down, left, back."})
     case Con{x, t}:
       Bad{"Each color must be on exactly 9 stickers, but: " ++ String.join(Con{x, t}, ", ") ++ "."}
 

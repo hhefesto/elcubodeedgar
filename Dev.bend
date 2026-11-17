@@ -189,7 +189,7 @@ def dv.subk(t: Array<U32>, +r: Root, +n: D.Nd, +p: String, +b: U32) -> Array<U32
 # ---------------------------------------------------------
 
 # "" if the stickers (facelet letters, U R F D L B nine each) can be a real
-# cube, else plainly why not (Guard.bend: the colors' counts, the centres,
+# cube, else plainly why not (Guard.bend: the colors' counts, the centers,
 # each piece real and there once, the corners' twist, the edges' flip, the
 # two permutations' parity)
 def dv.check(s: String) -> String:
@@ -220,7 +220,7 @@ def dv.pose(+k: U32) -> String:
   Gd.gd.letters(Ph.ph.pose(k))
 
 # photos, one a line: which before the last shows the last one's face again
-# (its centre's color), or 6 if none
+# (its center's color), or 6 if none
 def dv.twin(s: String) -> U32:
   Ph.ph.twin(Ph.ph.lines(s))
 

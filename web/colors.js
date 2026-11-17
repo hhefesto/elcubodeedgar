@@ -83,7 +83,7 @@ const use = async (key) => {
   return "";
 };
 
-// The picker: the presets, each as its six centres on a net, its name and
+// The picker: the presets, each as its six centers on a net, its name and
 // what it is; under them, a color for each face, for a cube of one's own
 const dlg = () => document.getElementById("sch-dlg");
 const net = (css) => {

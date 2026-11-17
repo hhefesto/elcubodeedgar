@@ -772,7 +772,7 @@ def own.cta() -> W.Html:
      W.el("span", [W.cls("own-cta-go"), W.Prop{"aria-hidden", "true"}], [])])
 
 # "Your cube's colors": a row under it, for a cube whose colors are not the
-# page's (web/colors.js's picker; Scheme.bend's presets): the six centres
+# page's (web/colors.js's picker; Scheme.bend's presets): the six centers
 # on a net, in the colors the page now has, and the scheme's name (index.html
 # puts it in, from --sch-name)
 def col.f(+f: String) -> W.Html:

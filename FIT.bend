@@ -17,7 +17,7 @@ import ./Dev.bend as Dv
 # The camera reads a cube: the stickers of a cube scrambled by hand (LAWS.bend's
 # read_hand23, every piece moved), as a phone sees them in each light (no
 # noise), are each given back their own color (ph.classify: the color of the
-# centre each looks most like, the closest pairs first)
+# center each looks most like, the closest pairs first)
 def Laws.h23() -> C.Cube:
   C.Cube{[3, 2, 4, 5, 0, 6, 7, 1], [1, 0, 1, 1, 2, 0, 0, 1], [4, 1, 9, 8, 5, 6, 0, 2, 3, 7, 11, 10], [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0]}
 
@@ -50,7 +50,7 @@ law Laws.own_undo_hand23:
 def Laws.own_undo_hand23():
   {==}
 
-# The photos tell layouts apart: the centres of a cube in preset p's colors,
+# The photos tell layouts apart: the centers of a cube in preset p's colors,
 # as a phone sees them in each light, while the page shows preset c's, of the
 # same colors moved round: the page is told p's layout exactly when c's is
 # another, after the six photos, and after the first four (the sides)

@@ -233,7 +233,7 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #own-pal button[aria-checked="true"] { box-shadow: 0 0 0 3px var(--paper-3), 0 0 0 6px var(--ink); }
 #own-net { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; margin: 0 0 12px; touch-action: manipulation; }
 .own-st { aspect-ratio: 1; min-width: 0; padding: 0; border: 1.5px solid var(--ink); border-radius: 5px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.own-st.centre { cursor: default; box-shadow: inset 0 0 0 3px rgba(27, 23, 18, 0.35); }
+.own-st.center { cursor: default; box-shadow: inset 0 0 0 3px rgba(27, 23, 18, 0.35); }
 #own-msg { min-height: 1.5em; margin: 6px 0; }
 #own-msg.bad { color: #a3001b; font-weight: 600; }
 .own-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
@@ -503,7 +503,7 @@ footer a { color: inherit; }
       <li><span class="chip" data-face="R">R</span><span><b>Right</b>: red</span></li>
       <li><span class="chip" data-face="L">L</span><span><b>Left</b>: orange</span></li>
     </ul>
-    <p data-say>A face's color is the color of its centre square, which never moves. In the picture the cube shows its up face (white) on top, its front (green) at the left and its right face (red) at the right; drag it to look at the others. Clockwise is always as seen from that face's own side, so from the front, <code>B</code> looks counter-clockwise, and <code>D</code> turns the other way to <code>U</code>.</p>
+    <p data-say>A face's color is the color of its center square, which never moves. In the picture the cube shows its up face (white) on top, its front (green) at the left and its right face (red) at the right; drag it to look at the others. Clockwise is always as seen from that face's own side, so from the front, <code>B</code> looks counter-clockwise, and <code>D</code> turns the other way to <code>U</code>.</p>
     <p>In a solution, the moves are done in order, left to right: <code>R U R'</code> is R, then U, then R'.</p>
     <p class="keys-help">On a keyboard: <kbd>u</kbd> <kbd>r</kbd> <kbd>f</kbd> <kbd>d</kbd> <kbd>l</kbd> <kbd>b</kbd> turn a face clockwise; with <kbd>shift</kbd>, counter-clockwise.</p>
     <button class="btn primary" value="close">Got it</button>
@@ -513,7 +513,7 @@ footer a { color: inherit; }
   <form method="dialog" class="dlg">
     <h2 id="own-title" tabindex="-1" autofocus>Enter your own cube</h2>
     <p class="own-sch"><span class="sch-net sch-live" aria-hidden="true"><i data-f="U"></i><i data-f="R"></i><i data-f="F"></i><i data-f="D"></i><i data-f="L"></i><i data-f="B"></i></span><span>Your cube's colors: <b></b></span><button type="button" class="sch-link" data-sch-open>Not yours? Change</button></p>
-    <p id="own-intro" data-say>Hold your cube with its <b>white</b> centre on top and its <b>green</b> centre facing you. Pick a color, then tap each sticker that has it (the centres are fixed): the net is your cube unfolded, white on top, then orange, green, red and blue, then yellow. Or let the camera read it: six photos, a face each, then fix what it got wrong here.</p>
+    <p id="own-intro" data-say>Hold your cube with its <b>white</b> center on top and its <b>green</b> center facing you. Pick a color, then tap each sticker that has it (the centers are fixed): the net is your cube unfolded, white on top, then orange, green, red and blue, then yellow. Or let the camera read it: six photos, a face each, then fix what it got wrong here.</p>
     <div id="own-pal" role="radiogroup" aria-label="the color to paint" data-say>
       <button type="button" role="radio" data-face="U" aria-checked="true" aria-label="white"></button>
       <button type="button" role="radio" data-face="R" aria-checked="false" aria-label="red"></button>
@@ -536,7 +536,7 @@ footer a { color: inherit; }
             <p class="own-k" id="own-k"></p>
             <p class="own-hold" id="own-hold" aria-live="polite"></p>
             <p class="own-turn" id="own-turn"></p>
-            <p class="own-tip">Fill the square with the face, one dot on each sticker; the ring in the middle is the centre's color.</p>
+            <p class="own-tip">Fill the square with the face, one dot on each sticker; the ring in the middle is the center's color.</p>
             <p class="own-tip">Not the color it says? Turn the cube as the arrow shows and take it anyway: after four photos the page works out your cube's colors.</p>
           </div>
         </div>
@@ -569,7 +569,7 @@ footer a { color: inherit; }
     <div id="sch-list" role="radiogroup" aria-label="color schemes"></div>
     <details id="sch-own">
       <summary>None of these? Pick each face's color</summary>
-      <p>Hold your cube any way, and pick the color of each centre. A color another face has swaps with it.</p>
+      <p>Hold your cube any way, and pick the color of each center. A color another face has swaps with it.</p>
       <div id="sch-faces"></div>
     </details>
     <p class="fine" style="margin: 0 0 12px">Now: <b id="sch-now">Standard</b>. Kept on this device.</p>
