@@ -32,9 +32,9 @@ import Base
 #
 # Every def is prefixed `sc.`.
 
-# the time a cube gets, in ms
+# the time a cube gets, in ms (the user, 11-16: 240 s, not 120)
 def sc.limit() -> Nat:
-  120000n
+  240000n
 
 # bounds from this one are split over the workers, a job a prefix
 def sc.split() -> U32:

@@ -501,9 +501,9 @@ def checks(m: Maybe<&2, List<&2, U32>>, +pos: List<&2, U32>) -> Bool:
     case None{}:
       False{}
 
-# the solver's time limit for one cube, in seconds (Worker.bend's wk.limit)
+# the solver's time limit for one cube, in seconds (web/Sched.bend's sc.limit)
 def lim() -> U32:
-  120
+  240
 
 def plural(+n: U32, +one: String, +many: String) -> String:
   U32.show(n) ++ " " ++ Bool.pick(String, U32.is_eq(n, 1), one, many)

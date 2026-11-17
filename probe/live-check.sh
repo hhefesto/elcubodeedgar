@@ -6,7 +6,7 @@
 # desktop (1280x800): a random scramble solved on the device, the tables'
 # download sizes; phone (390x844, DPR 3, touch, an iPhone's user agent): a
 # 7-move hand scramble solved, Play, How to, buttons under 44 px; with "long",
-# the superflip from a #m= link: its short way, then the hand-off after 120 s.
+# the superflip from a #m= link: its short way, then the hand-off after 240 s.
 # Each answer is checked by probe/Check.bend (CHECK, run/bt/check).
 # A thin shim: the page's own answers, Check.bend's checking.
 set -euo pipefail

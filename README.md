@@ -48,7 +48,7 @@ On the visitor's device:
   them), then the shortest search's bounds,
   from 11 on split into the 3,240 subtrees for any free worker; a solution is
   called shortest only when every shorter bound was searched in full (or once
-  the bounds reach the short way's length). Past 120 s the page gets the
+  the bounds reach the short way's length). Past 240 s the page gets the
   short way, marked as not proven the shortest, with what was ruled out.
 - `web/solver.js`, `web/solver-worker.js`: the thin JS around it: the
   workers, the tables in one SharedArrayBuffer they all read (so the page
