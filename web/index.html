@@ -92,6 +92,23 @@ kbd { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px 2px; border:
 .searching .status::after { content: ""; display: inline-block; width: 0.9em; height: 0.9em; margin-left: 10px; vertical-align: -0.1em; border-radius: 2px; background: var(--R); animation: think 1.2s steps(1) infinite; }
 @keyframes think { 0% { background: var(--R); } 16% { background: var(--F); } 33% { background: var(--B); } 50% { background: var(--D); } 66% { background: var(--L); } 83% { background: var(--U); box-shadow: inset 0 0 0 1px var(--rule); } }
 .bad .status { color: var(--red); font-style: italic; }
+/* "No time limit" (App.bend's lim.row): a switch, or once the search stopped at
+   its limit a button to go on; beside it, folded, why the limit */
+.lim { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px 18px; margin: -6px 0 20px; }
+.lim.off { display: none; }
+.lim-sw { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 2px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--ink); background: none; border: none; cursor: pointer; }
+.lim-knob { position: relative; flex: none; width: 38px; height: 22px; border: 2px solid var(--ink); border-radius: 999px; background: var(--paper-3); transition: background 0.15s; }
+.lim-knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--ink); transition: transform 0.15s; }
+.lim-sw[aria-checked="true"] .lim-knob { background: var(--green); }
+.lim-sw[aria-checked="true"] .lim-knob::after { transform: translateX(16px); background: var(--paper-3); }
+.lim-sw:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
+.btn.lim-go { min-height: 44px; padding: 8px 14px; font-size: 13.5px; box-shadow: 3px 3px 0 var(--green); }
+.lim-why { flex: 1 1 16em; max-width: 34em; font-size: 15px; color: var(--ink-2); }
+.lim-why summary { min-height: 44px; display: flex; align-items: center; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--blue); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; list-style: none; }
+.lim-why summary::-webkit-details-marker { display: none; }
+.lim-why p { margin: 4px 0 10px; line-height: 1.45; }
+.lim-why[open] { flex-basis: 100%; order: 2; }
+ (prefers-reduced-motion: reduce) { .lim-knob, .lim-knob::after { transition: none; } }
 
 .controls { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 26px; }
 .btn {
@@ -378,6 +395,15 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .law-list b { color: var(--ink); font-weight: 600; }
 code { font-family: var(--mono); font-size: 0.86em; background: var(--paper-3); border: 1px solid var(--rule); border-radius: 5px; padding: 0 5px; white-space: nowrap; color: var(--ink); }
 .proof { display: inline-block; margin-left: 6px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); border: 1px solid currentColor; border-radius: 4px; padding: 0 5px; vertical-align: 2px; }
+/* "Proved, not just tested": a law and its proof, and what is proved */
+.laws.verify + .laws { margin-top: 30px; }
+.lawsrc { max-width: 100%; contain: inline-size; margin: 0 0 18px; padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.5; color: var(--ink); background: var(--paper-3); border: 1.5px solid var(--ink); border-radius: 10px; box-shadow: 4px 4px 0 var(--green); }
+.lawsrc b { color: var(--blue); font-weight: 600; }
+.lawsrc .c { color: var(--mute); }
+@media (max-width: 560px) { .lawsrc { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; padding: 12px; } }
+.verify-list { margin: 0 0 18px; padding: 0 0 0 20px; color: var(--ink-2); }
+.verify-list li { margin: 0 0 10px; line-height: 1.45; }
+.verify-list b { color: var(--ink); font-weight: 600; }
 /* your cube's colors (web/colors.js; Scheme.bend decides): the row under
    "Enter your own cube" (App.bend), the line atop that panel, and the picker */
 .sch-row {
@@ -500,6 +526,34 @@ footer a { color: inherit; }
     <h1 class="title"><span class="t1">El cubo de</span><span class="t2">Edgar</span></h1>
     <p class="lede">Scramble it, or turn its faces yourself. The solver tries every sequence of moves, the short ones first, until one solves it: so the way back it shows you is <em>the shortest there is</em>. Then take it one turn at a time.</p>
     <div id="panel"></div>
+    <section class="laws verify">
+      <h2>Proved, not just tested</h2>
+      <p>A test runs a program on some examples and compares the answers. A proof shows that a claim holds in <em>every</em> case, and a proof checker, a program much smaller than the one it checks, goes through it step by step. So you need not take anyone's word for it: not the author's, and not the AI's that helped write this page. In Bend a claim is a type, a <em>law</em>, and its proof is a program of that type. Bend's checker accepts the program only if the proof is right, and BendTT's kernel, a second and smaller checker, checks it again.</p>
+      <p>A cube is finite, so many of these proofs work by computation: split the claim into its cases (each face, each turn), compute both sides, and see that they are the same cube. Here is the first law below, as the code states it (names shortened), and its whole proof:</p>
+<pre class="lawsrc"><span class="c"># a quarter turn four times is no turn</span>
+<b>law</b> quarter_turn_order:
+  <b>for</b> f: Face
+  {cube.pow(turn(f), 4) == cube.solved() : Cube}
+
+<span class="c"># its proof: for each face, both sides compute to one cube</span>
+<b>def</b> quarter_turn_order(f):
+  <b>match</b> f:
+    <b>case</b> U: {==}
+    <b>case</b> R: {==}
+    <span class="c">... and F, D, L, B the same</span></pre>
+      <p>What is proved, Bend's checker and BendTT's kernel agreeing (66 laws, in <code>LAWS.bend</code>, their proofs in <code>PROOF.bend</code>):</p>
+      <ul class="verify-list">
+        <li><b>The cube is a group</b>, with the laws below: four quarter turns are none, every move can be undone, opposite faces commute and others do not, what every move keeps.</li>
+        <li><b>The search skips only what it may.</b> It never turns the face it just turned and tries opposite faces in one order only, and these laws are why that loses no shortest solution. It may begin with any of the 18 moves (it once could not begin with <code>D</code>; the law now rules that out).</li>
+        <li><b>Reading a cube from its stickers.</b> The solved cube, every move, the superflip and a 23-move scramble read back as themselves; a cube no one could make (one corner twisted, one edge flipped, two pieces swapped, a color on 10 stickers) is refused, at every corner and every edge.</li>
+        <li><b>Moves as text.</b> A link's moves and the notation on screen read back as the same moves.</li>
+        <li><b>Your own cube.</b> The way back the solver finds solves the cube the page shows you, for every move and for three in a row.</li>
+        <li><b>The search's tables.</b> A distance kept modulo 3 still tells a neighbour's exact distance; each of the 4,096 sets of edge places gets its right rank.</li>
+        <li><b>Photos and colors.</b> The six photos come apart as they went in; each "how to hold it" picture shows a corner a real cube has; every color scheme gives the six faces six different colors, and stays so when you change one.</li>
+      </ul>
+      <p>Two more sets are checked by Bend's checker only, as the kernel runs out of fuel on them, a weaker warrant: <code>ALGS.bend</code> (each of the algorithms behind "Solve it your way", 57 OLL, 21 PLL and the shorter sets, reads as written and keeps what its step must keep) and <code>FIT.bend</code> (the camera reads a scrambled cube's colors in each light).</p>
+      <p>And what is not proved: that the search finds a shortest solution for every cube. It is Korf's IDA*, sound when its tables never overestimate how far a cube is from solved, and that is not proved here, nor is the JavaScript around it. So every answer is checked as it comes: the page plays its moves on the cube, with Cube.bend, the code these laws are about, and shows them only if they solve it.</p>
+    </section>
     <section class="laws">
       <h2>The group theory under it</h2>
       <p>The moves of a cube form a group: any two make a third, and each can be undone. The solver's shortcuts rest on these laws about it, written in Bend and proved in Bend: its checker accepts every proof, and so does BendTT's kernel (<code>bend PROOF.bend --verdict</code>).</p>
@@ -514,7 +568,7 @@ footer a { color: inherit; }
         <li><b>One scramble commutes with every move.</b> The superflip, every edge flipped in place: <code>X R = R X</code> for every move, so <code>X</code> commutes with every cube.<span class="proof">proved</span></li>
         <li><b>Any first move.</b> The search may begin with every one of the 18 moves, and after a face it skips only that face and, for U, R and F, the face across.<span class="proof">proved</span></li>
       </ol>
-      <p class="fine">The solving happens on your device, in Bend compiled to JavaScript, on one Web Worker for each of its cores. First a quick search (Kociemba's two-phase algorithm) finds a short way back, about 20 moves, in a second or two. Then the shortest is looked for, and only lengths below the short way's need searching: once they all have no solution, the short way is a shortest one. Why the first solution found is a shortest one: the search is Korf's (1997) IDA*. Each bound on the length is searched in full, its subtrees shared out among the workers, and a branch is cut only when a table proves it cannot finish in time: one table for the corners (88 million positions) and one each for two sets of six edges (43 million each), fetched once and kept by your browser. Every cube is at most 20 moves from solved. A phone or a laptop proves the shortest for cubes up to about 14 or 15 moves from solved in seconds; a fully random cube (17 or 18) takes it longer than the 240 s it gets, and then the page gives the short way, says it may not be the shortest, and how far the search got.</p>
+      <p class="fine">The solving happens on your device, in Bend compiled to JavaScript, on one Web Worker for each of its cores. First a quick search (Kociemba's two-phase algorithm) finds a short way back, about 20 moves, in a second or two. Then the shortest is looked for, and only lengths below the short way's need searching: once they all have no solution, the short way is a shortest one. Why the first solution found is a shortest one: the search is Korf's (1997) IDA*. Each bound on the length is searched in full, its subtrees shared out among the workers, and a branch is cut only when a table proves it cannot finish in time: one table for the corners (88 million positions) and one each for two sets of six edges (43 million each), fetched once and kept by your browser. Every cube is at most 20 moves from solved. A phone or a laptop proves the shortest for cubes up to about 14 or 15 moves from solved in seconds; a fully random cube (17 or 18) can take longer than the 240 s it gets, as each move more multiplies the search by about 13, and then the page gives the short way, says it may not be the shortest, and how far the search got. Turn on <b>No time limit</b> under the headline and it searches on until it proves the shortest.</p>
     </section>
     <footer>written in <a href="https://github.com/HigherOrderCO/Bend">Bend</a> &middot; page by bend-frp &middot; 3D by three.js &middot; solved on your device &middot; <a href="https://github.com/hhefesto/elcubodeedgar">source on GitHub</a></footer>
   </section>
@@ -699,6 +753,16 @@ globalThis.bendFrp = {
   solve: (arg, done) => solver().solve(arg, done),
   // the ways people solve it, on this device (web/ways-worker.js)
   ways,
+  // "No time limit" (App.bend), kept on this device: "get" asks, "on" or
+  // "off" sets; it answers the setting
+  limit: (v) => {
+    try {
+      if (v === "on" || v === "off") localStorage.setItem("edgar-no-limit", v === "on" ? "1" : "0");
+      return localStorage.getItem("edgar-no-limit") === "1" ? "on" : "off";
+    } catch {
+      return v === "on" ? "on" : "off";
+    }
+  },
   // the hand-off link, to the clipboard (or the phone's share sheet)
   copy: (path) => {
     const url = location.origin + path;

@@ -287,11 +287,12 @@ export function makeSolver(opts = {}) {
   };
 
   // the cube, and the way back already known (the position's moves undone,
-  // from the page): a short way like two-phase's, so no answer is longer
-  const start = (fl, inv) => {
+  // from the page): a short way like two-phase's, so no answer is longer;
+  // and its time limit, ms (0: none, the page's "No time limit"; Sched.bend)
+  const start = (fl, inv, lim) => {
     if (fl !== key || failed) return;
-    if (!prefixes.length) return setTimeout(() => start(fl, inv), 50);
-    event(`start ${now()} ${cores} ${prefixes.length} ${fl}`);
+    if (!prefixes.length) return setTimeout(() => start(fl, inv, lim), 50);
+    event(`start ${now()} ${cores} ${prefixes.length} ${fl} ${lim ?? ""}`);
     if (inv) event(`two ${now()} ok ${inv} ${inv.split(".").length}`);
   };
 
@@ -300,21 +301,28 @@ export function makeSolver(opts = {}) {
     isolated,
     loads,
     failed: () => failed,
-    // arg: "FACELETS MOVES WHO INVERSE" (the cube's stickers; the moves that
-    // make it, or "x" if none are known; the page's name; those moves
-    // undone, or nothing).
+    // arg: "FACELETS MOVES WHO INVERSE LIMIT" (the cube's stickers; the moves
+    // that make it, or "x" if none are known; the page's name; those moves
+    // undone, or nothing; the time limit in ms, 0 for none). Asked again
+    // with another limit, the search under way takes it, and one that
+    // stopped at its limit goes on with none.
     // d: told each answer
     solve(arg, d) {
       lastAsk = arg;
       if (failed) return fallback(arg, d);
       boot();
-      const [fl, , , inv] = arg.split(" ");
+      const [fl, , who, inv, lim] = arg.split(" ");
+      d.who = who;
       if (fl !== key) {
         key = fl;
         dones = [d];
-      } else if (!dones.includes(d)) dones.push(d);
+      } else if (!dones.includes(d)) {
+        // a page asking again (another limit) is told once, on its new ask
+        if (who) dones = dones.filter((x) => x.who !== who);
+        dones.push(d);
+      }
       if (!ticker) ticker = setInterval(() => event(`tick ${now()}`), 500);
-      start(fl, inv);
+      start(fl, inv, lim);
     },
   };
 }

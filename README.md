@@ -6,7 +6,8 @@ animated turn at a time.
 
 The site is static files (xty serves them); the visitor's own device does the
 solving, in Bend compiled to JavaScript, on a Web Worker for each of its
-cores. Everything that thinks is Bend:
+cores. Everything that thinks is Bend, and what it stands on is proved in
+Bend (see "What is proved", below):
 
 - `Cube.bend`: the cube as a group element (Kociemba's cubie level), its moves,
   notation and stickers.
@@ -49,7 +50,13 @@ On the visitor's device:
   from 11 on split into the 3,240 subtrees for any free worker; a solution is
   called shortest only when every shorter bound was searched in full (or once
   the bounds reach the short way's length). Past 240 s the page gets the
-  short way, marked as not proven the shortest, with what was ruled out.
+  short way, marked as not proven the shortest, with what was ruled out;
+  unless the visitor turns on "No time limit" (kept on the device), and then
+  it searches on until it proves the shortest (a search that stopped at the
+  limit goes on from the bound it stopped in). Why 240 s: each move more
+  multiplies the sequences to rule out by about 13, so a 17-move cube is
+  often proven within a minute, while an 18 (two cubes in three) needs every
+  17 ruled out first, about 13 times that.
 - `web/solver.js`, `web/solver-worker.js`: the thin JS around it: the
   workers, the tables in one SharedArrayBuffer they all read (so the page
   must be cross-origin isolated: xty sends COOP and COEP), jobs to free
@@ -130,3 +137,40 @@ asks the old server-side solver (not used by the site).
 A Bend program's `main` run as `bend File.bend` is interpreted, and slowly:
 a test of `Ways.bend`'s tables ran 24 minutes that way, built (`bend
 File.bend -o /tmp/x && /tmp/x`) 0.02 s. Probes that compute are built first.
+
+## What is proved
+
+A test checks examples; a proof covers every case, and a checker, a program
+much smaller than the one it checks, goes through it. In Bend a claim is a
+type (a `law`) and its proof a program of that type: `bend PROOF.bend`
+accepts it only if the proof is right, and `bend PROOF.bend --verdict` has
+BendTT's kernel check it again (the flake's check `proofs`). A cube is
+finite, so most proofs here are by computation: a case for each face (and
+turn) where both sides compute to the same cube, closed by `{==}`.
+
+- `LAWS.bend` (66 laws, proofs in `PROOF.bend`, checker and kernel): the
+  cube is a group (each face's turns a cyclic group of order 4, every move
+  undone by its inverse, two turns of a face merge, opposite faces commute,
+  others do not, `R U R' U'` six times and `R U` 105 times are no move, the
+  superflip commutes with every move, every move keeps corner twist, edge
+  flip and parity); the search skips only what may be skipped (the face it
+  just turned, the face across in one order, any first move); Guard.bend
+  reads back the solved cube, every move, the superflip and a 23-move
+  scramble from their stickers, and refuses a twisted corner, a flipped
+  edge, two swapped pieces and a wrong color count at every place; moves
+  read back from links and notation; "Enter your own cube"'s way back
+  solves its cube; Kd.bend's mod-3 distances and its 4,096 mask ranks;
+  Photo.bend's photo lines, hold pictures and colors; Scheme.bend's presets.
+- `ALGS.bend` (9 laws, the checker only: the kernel runs out of fuel): every
+  OLL, PLL, four-look and beginner's algorithm of "Solve it your way" reads
+  as written and keeps what its step must keep.
+- `FIT.bend` (5 laws, the checker only, as above): the camera's color-scheme
+  fit and its reading of a scrambled cube, and "Enter your own cube" on the
+  23-move scramble.
+
+Not proved: that IDA* finds a shortest solution for every cube (sound when
+its tables never overestimate a cube's distance, which is not proved here),
+and the JavaScript around the Bend. So the page checks every answer as it
+comes, playing its moves on the cube with `Cube.bend`, and shows only one
+that solves it. The page's "Proved, not just tested" says the same for
+visitors.
