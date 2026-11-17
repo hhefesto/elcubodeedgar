@@ -24,17 +24,35 @@ import ../Cube.bend as C
 # before it is shown. An answer that comes after the position changed is
 # dropped: each request is numbered (gen), and only the last one's counts.
 
+# The ways people solve a cube (Ways.bend, on this device: web/ways-worker.js),
+# beside the solver's fewest moves: way 0 is the solver's (sol), 1 CFOP (F2L
+# and the full last layer), 2 CFOP with a four-look last layer ("F2L,
+# simplified"), 3 the beginner's. ways is what came for request wg (so for
+# the position only while wg is gen); way the one picked, whose moves the
+# strip shows and Next step and Play make; pend a way picked while a turn was
+# under way (9: none), taken once it is over.
+
+# A step of a way: what it is called, the algorithms it used, its moves
+type St is Data:
+  St{+label: String, +note: String, +ms: List<&2, U32>}
+
+# A way: which, whether it solves the position (Ways.bend's word, and
+# checked here, by Cube.bend), its steps
+type Way is Data:
+  Way{+id: U32, +ok: Bool, +steps: List<&2, St>}
+
 type S is Data:
   S{+cube: C.Cube, +queue: List<&2, U32>, +busy: Bool, +auto: Bool, +pos: List<&2, U32>,
     +sol: Maybe<&2, List<&2, U32>>, +step: U32, +asked: Bool, +info: String, +bad: Bool,
-    +opt: Bool, +gen: U32, +wait: U32, +who: String}
+    +opt: Bool, +gen: U32, +wait: U32, +who: String,
+    +ways: List<&2, Way>, +wg: U32, +way: U32, +pend: U32}
 
 def init() -> S:
-  S{C.cube.solved(), [], False{}, False{}, [], None{}, 0, False{}, "", False{}, True{}, 0, 0, ""}
+  S{C.cube.solved(), [], False{}, False{}, [], None{}, 0, False{}, "", False{}, True{}, 0, 0, "", [], 0, 0, 9}
 
-# a fresh page, known to the solver as who
-def init.as(+who: String) -> S:
-  S{C.cube.solved(), [], False{}, False{}, [], None{}, 0, False{}, "", False{}, True{}, 0, 0, who}
+# a fresh page, known to the solver as who, the way picked kept
+def init.as(+who: String, +way: U32) -> S:
+  S{C.cube.solved(), [], False{}, False{}, [], None{}, 0, False{}, "", False{}, True{}, 0, 0, who, [], 0, way, 9}
 
 # What an input means
 type Msg is Data:
@@ -55,6 +73,8 @@ type Msg is Data:
   MFailed{+gen: U32}
   MTick{+gen: U32}
   MAgain{+gen: U32}
+  MWays{+gen: U32, +body: String}
+  MWay{+k: U32}
   MOther{}
 
 def line(+ls: List<&2, String>, +i: Nat) -> String:
@@ -103,8 +123,10 @@ def msg.of(+t: F.Time, +tag: String, +v: String) -> Msg:
   Bool.pick(Msg, String.starts_with(tag, "sol"), msg.sol(tag, v),
   Bool.pick(Msg, String.starts_with(tag, "tick"), MTick{num(String.drop(tag, 4n))},
   Bool.pick(Msg, String.starts_with(tag, "again"), MAgain{num(String.drop(tag, 5n))},
+  Bool.pick(Msg, String.starts_with(tag, "ways"), Bool.pick(Msg, String.ends_with(tag, ":failed"), MOther{}, MWays{num(String.drop(tag, 4n)), v}),
+  Bool.pick(Msg, String.starts_with(tag, "way"), MWay{num(String.drop(tag, 3n))},
   Bool.pick(Msg, Bool.and(String.starts_with(tag, "t"), msg.move(String.drop(tag, 1n))), MTurn{num(String.drop(tag, 1n))},
-    MOther{}))))))))))))))))
+    MOther{}))))))))))))))))))
 
 # Positions
 # ---------
@@ -183,10 +205,13 @@ def scr.gen(fuel: Nat, +n: Nat, +x: U32, +lf: U32, +acc: List<&2, U32>) -> List<
       scr.gen(f, Bool.pick(Nat, ok, q, 1n+q), x2, Bool.pick(U32, ok, U32.div(m, 3), lf),
         Bool.pick(List<&2, U32>, ok, m <> acc, acc))
 
-# 12 to 16 moves: the solver answers those in seconds
+# 25 moves, as a competition scramble has (the user, 11-16: "a scramble
+# should be 25 moves"; 12 to 16 before, which the solver proves in seconds:
+# 25 make a cube as far from solved as most, whose shortest way back a phone
+# may not prove within the time limit, so it shows a short way)
 def scr.of(+seed: U32) -> List<&2, U32>:
   +x = rand.next(rand.next(seed))
-  scr.gen(400n, U32.to_nat(U32.add(12, U32.mod(x, 5))), x, 6, [])
+  scr.gen(400n, 25n, x, 6, [])
 
 # Effects
 # -------
@@ -208,6 +233,87 @@ def show.fx(+c: C.Cube) -> W.Effect:
 def ask.fx(+pos: List<&2, U32>, +g: U32, +who: String) -> W.Effect:
   W.Host{"sol" ++ U32.show(g), "solve", C.cube.facelets(C.cube.apply(pos, C.cube.solved())) ++ " " ++ C.cube.nums(pos) ++ " " ++ who
     ++ " " ++ C.cube.nums(C.cube.inv(pos))}
+
+# ask this device for the ways people solve it (web/ways-worker.js runs
+# Ways.bend), as request g: its answer is "ways" ++ g
+def ways.fx(+pos: List<&2, U32>, +g: U32) -> W.Effect:
+  W.Host{"ways" ++ U32.show(g), "ways", C.cube.nums(pos)}
+
+# The ways
+# --------
+
+def st.label(+s: St) -> String:
+  match s:
+    case St{+label, +note, +ms}:
+      label
+
+def st.note(+s: St) -> String:
+  match s:
+    case St{+label, +note, +ms}:
+      note
+
+def st.ms(+s: St) -> List<&2, U32>:
+  match s:
+    case St{+label, +note, +ms}:
+      ms
+
+def way.id(+w: Way) -> U32:
+  match w:
+    case Way{+id, +ok, +steps}:
+      id
+
+def way.ok(+w: Way) -> Bool:
+  match w:
+    case Way{+id, +ok, +steps}:
+      ok
+
+def way.steps(+w: Way) -> List<&2, St>:
+  match w:
+    case Way{+id, +ok, +steps}:
+      steps
+
+# a way's moves: its steps', one after the other
+def way.ms(ss: List<&2, St>) -> List<&2, U32>:
+  match ss:
+    case Nil{}:
+      Nil{}
+    case Con{+s, t}:
+      List.append(&2, U32, st.ms(s), way.ms(t))
+
+def way.get(ws: List<&2, Way>, +k: U32) -> Maybe<&2, Way>:
+  match ws:
+    case Nil{}:
+      None{}
+    case Con{+w, t}:
+      +rest = way.get(t, k)
+      Bool.pick(Maybe<&2, Way>, U32.is_eq(way.id(w), k), Some{w}, rest)
+
+# a way's steps, if there is one
+def way.ss(m: Maybe<&2, Way>) -> List<&2, St>:
+  match m:
+    case Some{+w}:
+      way.steps(w)
+    case None{}:
+      Nil{}
+
+# a way's moves, if it solves the position
+def way.sol(m: Maybe<&2, Way>) -> Maybe<&2, List<&2, U32>>:
+  match m:
+    case Some{+w}:
+      Bool.pick(Maybe<&2, List<&2, U32>>, way.ok(w), Some{way.ms(way.steps(w))}, None{})
+    case None{}:
+      None{}
+
+# the moves the strip shows and Next step makes: the solver's (way 0), or the
+# way picked's, if it came for this position (fresh)
+def act.of(+sol: Maybe<&2, List<&2, U32>>, +ways: List<&2, Way>, +fresh: Bool, +way: U32) -> Maybe<&2, List<&2, U32>>:
+  Bool.pick(Maybe<&2, List<&2, U32>>, U32.is_zero(way), sol,
+    Bool.pick(Maybe<&2, List<&2, U32>>, fresh, way.sol(way.get(ways, way)), None{}))
+
+def act(+s: S) -> Maybe<&2, List<&2, U32>>:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      act.of(sol, ways, U32.is_eq(wg, gen), way)
 
 # a second's tick while request g waits, and asking again after a "down"
 def tick.fx(+g: U32) -> W.Effect:
@@ -236,17 +342,17 @@ def sol.len(sol: Maybe<&2, List<&2, U32>>) -> U32:
 
 def next.go(nm: Maybe<&2, U32>, free: Bool, +s: S, +auto: Bool) -> S & List<&2, W.Effect>:
   match nm free s:
-    case Some{+m} True{} S{cube, queue, busy, a, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case Some{+m} True{} S{cube, queue, busy, a, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       +c2 = C.cube.mul(cube, C.cube.move(m))
-      (S{c2, queue, True{}, auto, pos, sol, U32.add(step, 1), False{}, info, bad, opt, gen, wait, who}, [turn.fx(m, 520, c2)])
-    case _ _ S{cube, queue, busy, a, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, Bool.and(busy, Bool.or(a, auto)), pos, sol, step, asked, info, bad, opt, gen, wait, who}, [])
+      (S{c2, queue, True{}, auto, pos, sol, U32.add(step, 1), False{}, info, bad, opt, gen, wait, who, ways, wg, way, pend}, [turn.fx(m, 520, c2)])
+    case _ _ S{cube, queue, busy, a, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, Bool.and(busy, Bool.or(a, auto)), pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}, [])
 
 # Next step (auto: and the rest after it)
 def on.next(+s: S, +auto: Bool) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, a, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      next.go(sol.at(sol, step), Bool.not(busy), s, auto)
+    case S{cube, queue, busy, a, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      next.go(sol.at(act(s), step), Bool.not(busy), s, auto)
 
 # the turns are over: the solution's next if playing, else rest
 def turned.rest(auto: Bool, +s: S) -> S & List<&2, W.Effect>:
@@ -256,19 +362,49 @@ def turned.rest(auto: Bool, +s: S) -> S & List<&2, W.Effect>:
     case False{}:
       (s, [])
 
+# A way picked (k): its moves from the position, none played yet, the cube
+# shown at the position again if some of another's were; the same way picked
+# again is no change. While a turn of a way's is under way, it is taken once
+# the turn is over (pend), and playing stops; while a scramble's or a hand's
+# is (no way's move played), at once.
+def way.go(busy: Bool, +s: S, +k: U32) -> S & List<&2, W.Effect>:
+  match busy s:
+    case True{} S{cube, queue, b, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      Bool.pick(S & List<&2, W.Effect>, U32.is_zero(step),
+        (S{cube, queue, b, False{}, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, k, 9}, []),
+        (S{cube, queue, b, False{}, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, k}, []))
+    case False{} S{cube, queue, b, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      +c = C.cube.apply(pos, C.cube.solved())
+      Bool.pick(S & List<&2, W.Effect>, U32.is_eq(k, way), (S{cube, queue, b, False{}, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, 9}, []),
+        (S{c, queue, False{}, False{}, pos, sol, 0, asked, info, bad, opt, gen, wait, who, ways, wg, k, 9},
+         Bool.pick(List<&2, W.Effect>, U32.is_zero(step), [], [show.fx(c)])))
+
+def on.way(+s: S, +k: U32) -> S & List<&2, W.Effect>:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      way.go(busy, s, U32.min(k, 3))
+
+# the turns are over: a way picked meanwhile, or rest
+def turned.pend(p: Bool, +s: S, +k: U32, +auto: Bool) -> S & List<&2, W.Effect>:
+  match p:
+    case True{}:
+      way.go(False{}, s, k)
+    case False{}:
+      turned.rest(auto, s)
+
 # a turn is over: the next one waiting (a scramble's, or a hand's), or the
 # solution's if playing, or rest
 def turned.go(queue: List<&2, U32>, +s: S) -> S & List<&2, W.Effect>:
   match queue s:
-    case Con{+m, rest} S{cube, q, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case Con{+m, rest} S{cube, q, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       +c2 = C.cube.mul(cube, C.cube.move(m))
-      (S{c2, rest, True{}, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}, [turn.fx(m, 160, c2)])
-    case Nil{} S{cube, q, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      turned.rest(auto, S{cube, Nil{}, False{}, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who})
+      (S{c2, rest, True{}, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}, [turn.fx(m, 160, c2)])
+    case Nil{} S{cube, q, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      turned.pend(U32.is_lt(pend, 9), S{cube, Nil{}, False{}, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}, pend, auto)
 
 def on.turned(+s: S) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       turned.go(queue, s)
 
 # A hand's turn: the position is where the cube is, then m. The turn is
@@ -276,68 +412,68 @@ def on.turned(+s: S) -> S & List<&2, W.Effect>:
 # way no longer applies (a newer request number drops its answer).
 def hand.go(free: Bool, +s: S, +m: U32) -> S & List<&2, W.Effect>:
   match free s:
-    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       +c2 = C.cube.mul(cube, C.cube.move(m))
-      (S{c2, Nil{}, True{}, False{}, pos.simp(List.append(&2, U32, pos.now(pos, sol, step), [m])), None{}, 0, False{}, "", False{}, True{}, U32.add(gen, 1), 0, who},
+      (S{c2, Nil{}, True{}, False{}, pos.simp(List.append(&2, U32, pos.now(pos, act.of(sol, ways, U32.is_eq(wg, gen), way), step), [m])), None{}, 0, False{}, "", False{}, True{}, U32.add(gen, 1), 0, who, ways, wg, way, 9},
        [turn.fx(m, 200, c2)])
-    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, List.append(&2, U32, queue, [m]), True{}, False{}, pos.simp(List.append(&2, U32, pos.now(pos, sol, step), [m])), None{}, 0, False{}, "", False{}, True{}, U32.add(gen, 1), 0, who},
+    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, List.append(&2, U32, queue, [m]), True{}, False{}, pos.simp(List.append(&2, U32, pos.now(pos, act.of(sol, ways, U32.is_eq(wg, gen), way), step), [m])), None{}, 0, False{}, "", False{}, True{}, U32.add(gen, 1), 0, who, ways, wg, way, 9},
        [])
 
 def on.turn(+s: S, +m: U32) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       hand.go(Bool.not(busy), s, m)
 
 # Solve: the position the cube is in, asked about
 def solve.go(no: Bool, home: Bool, +s: S) -> S & List<&2, W.Effect>:
   match no home s:
-    case True{} _ S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case True{} _ S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (s, [])
-    case False{} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, Nil{}, None{}, 0, False{}, "It is solved already: nothing to do.", True{}, True{}, U32.add(gen, 1), 0, who}, [])
-    case False{} False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      +now = pos.now(pos, sol, step)
+    case False{} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, Nil{}, None{}, 0, False{}, "It is solved already: nothing to do.", True{}, True{}, U32.add(gen, 1), 0, who, ways, wg, way, pend}, [])
+    case False{} False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      +now = pos.now(pos, act.of(sol, ways, U32.is_eq(wg, gen), way), step)
       +g = U32.add(gen, 1)
-      (S{cube, queue, busy, False{}, now, None{}, 0, True{}, "", False{}, True{}, g, 0, who}, [ask.fx(now, g, who), tick.fx(g)])
+      (S{cube, queue, busy, False{}, now, None{}, 0, True{}, "", False{}, True{}, g, 0, who, ways, wg, way, 9}, [ask.fx(now, g, who), tick.fx(g), ways.fx(now, g)])
 
 def on.solve(+s: S) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      solve.go(asked, pos.solved(pos.now(pos, sol, step)), s)
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      solve.go(asked, pos.solved(pos.now(pos, act.of(sol, ways, U32.is_eq(wg, gen), way), step)), s)
 
-def scramble.kick(+ms: List<&2, U32>, +gen: U32, +who: String) -> S & List<&2, W.Effect>:
+def scramble.kick(+ms: List<&2, U32>, +gen: U32, +who: String, +way: U32) -> S & List<&2, W.Effect>:
   match ms:
     case Nil{}:
-      (init.as(who), [])
+      (init.as(who, way), [])
     case Con{+m, +rest}:
       +c1 = C.cube.move(m)
       +g = U32.add(gen, 1)
-      (S{c1, rest, True{}, False{}, ms, None{}, 0, True{}, "", False{}, True{}, g, 0, who},
-       [show.fx(C.cube.solved()), turn.fx(m, 130, c1), ask.fx(ms, g, who), tick.fx(g)])
+      (S{c1, rest, True{}, False{}, ms, None{}, 0, True{}, "", False{}, True{}, g, 0, who, [], 0, way, 9},
+       [show.fx(C.cube.solved()), turn.fx(m, 130, c1), ask.fx(ms, g, who), tick.fx(g), ways.fx(ms, g)])
 
 def scramble.go(no: Bool, +s: S, +seed: U32) -> S & List<&2, W.Effect>:
   match no s:
-    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (s, [])
-    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      scramble.kick(scr.of(seed), gen, who)
+    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      scramble.kick(scr.of(seed), gen, who, way)
 
 def on.scramble(+s: S, +seed: U32) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       scramble.go(busy, s, seed)
 
 def reset.go(no: Bool, +s: S) -> S & List<&2, W.Effect>:
   match no s:
-    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (s, [])
-    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{C.cube.solved(), Nil{}, False{}, False{}, Nil{}, None{}, 0, False{}, "", False{}, True{}, U32.add(gen, 1), 0, who}, [show.fx(C.cube.solved())])
+    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{C.cube.solved(), Nil{}, False{}, False{}, Nil{}, None{}, 0, False{}, "", False{}, True{}, U32.add(gen, 1), 0, who, ways, wg, way, pend}, [show.fx(C.cube.solved())])
 
 def on.reset(+s: S) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       reset.go(busy, s)
 
 # 1234567 as "1,234,567"
@@ -378,30 +514,30 @@ def ruled(+b: U32) -> String:
 
 def solved.go(m: Maybe<&2, List<&2, U32>>, good: Bool, +s: S, +say: String) -> S & List<&2, W.Effect>:
   match m good s:
-    case Some{+xs} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, Some{xs}, 0, False{}, say, False{}, True{}, gen, wait, who}, [])
-    case _ _ S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, "The solver's answer did not check out.", True{}, True{}, gen, wait, who}, [])
+    case Some{+xs} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, Some{xs}, 0, False{}, say, False{}, True{}, gen, wait, who, ways, wg, way, pend}, [])
+    case _ _ S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, "The solver's answer did not check out.", True{}, True{}, gen, wait, who, ways, wg, way, pend}, [])
 
 # no shortest solution in time: the position's own moves undone instead (a
 # way back, not the shortest; checked all the same), and how far the search
 # got: every way back shorter than b moves was ruled out
 def late.go(good: Bool, +s: S, +b: U32, +secs: String) -> S & List<&2, W.Effect>:
   match good s:
-    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (S{cube, queue, busy, auto, pos, Some{C.cube.inv(pos)}, 0, False{},
-         "It is your own moves undone. The search stopped after " ++ secs ++ ": " ++ ruled(b) ++ ".", False{}, False{}, gen, wait, who}, [])
-    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, "No answer in " ++ secs ++ ".", True{}, True{}, gen, wait, who}, [])
+         "It is your own moves undone. The search stopped after " ++ secs ++ ": " ++ ruled(b) ++ ".", False{}, False{}, gen, wait, who, ways, wg, way, pend}, [])
+    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, "No answer in " ++ secs ++ ".", True{}, True{}, gen, wait, who, ways, wg, way, pend}, [])
 
 # "down": no solver is there (one is starting: it reads its tables for about
 # a minute); the request stays open and is asked again in 4 s, for 150 s
 def down.go(more: Bool, +s: S) -> S & List<&2, W.Effect>:
   match more s:
-    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, None{}, 0, True{}, "warming", False{}, True{}, gen, wait, who}, [again.fx(gen, 4000)])
-    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, "The solver did not come back in time. Press Solve again in a few minutes.", True{}, True{}, gen, wait, who}, [])
+    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, None{}, 0, True{}, "warming", False{}, True{}, gen, wait, who, ways, wg, way, pend}, [again.fx(gen, 4000)])
+    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, "The solver did not come back in time. Press Solve again in a few minutes.", True{}, True{}, gen, wait, who, ways, wg, way, pend}, [])
 
 # What an answer is: a shortest solution (its moves); a short way back not
 # proven the shortest ("short": the search stopped at its time limit;
@@ -444,21 +580,21 @@ def so.far(+b: U32) -> String:
 # page asks again (and the server's search goes on, the same one)
 def rough.go(final: Bool, good: Bool, +s: S, +xs: List<&2, U32>, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
   match final good s:
-    case True{} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case True{} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (S{cube, queue, busy, auto, pos, Some{xs}, 0, False{},
          "The search stopped after " ++ took(num(line(ls, 2n))) ++ ", so it may not be the shortest: " ++ ruled(num(line(ls, 4n))) ++ ".",
-         False{}, False{}, gen, U32.div(num(line(ls, 2n)), 1000), who}, [])
-    case False{} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+         False{}, False{}, gen, U32.div(num(line(ls, 2n)), 1000), who, ways, wg, way, pend}, [])
+    case False{} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (S{cube, queue, busy, auto, pos, Some{xs}, 0, True{}, so.far(num(line(ls, 4n))),
-         False{}, False{}, gen, U32.div(num(line(ls, 2n)), 1000), who}, [])
-    case True{} False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+         False{}, False{}, gen, U32.div(num(line(ls, 2n)), 1000), who, ways, wg, way, pend}, [])
+    case True{} False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       late.go(checks(Some{C.cube.inv(pos)}, pos), s, num(line(ls, 4n)), took(num(line(ls, 2n))))
-    case False{} False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case False{} False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (s, [])
 
 def rough(+final: Bool, +s: S, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       +m = C.cube.read(line(ls, 5n))
       rough.go(final, Bool.and(String.eq(line(ls, 3n), "ok"), checks(m, pos)), s, Maybe.default(&2, List<&2, U32>, m, Nil{}), ls)
 
@@ -466,8 +602,8 @@ def rough(+final: Bool, +s: S, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
 # waits there up to 20 s)
 def queued.go(+s: S) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, sol, step, True{}, "queued", False{}, opt, gen, wait, who}, [])
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, sol, step, True{}, "queued", False{}, opt, gen, wait, who, ways, wg, way, pend}, [])
 
 # where an answer was found: the device's line
 def found.at(+w: String) -> String:
@@ -479,16 +615,16 @@ def found.at(+w: String) -> String:
 # here too, by Cube.bend; never called the shortest
 def quick.go(m: Maybe<&2, List<&2, U32>>, good: Bool, +s: S, +ms: U32) -> S & List<&2, W.Effect>:
   match m good s:
-    case Some{+xs} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case Some{+xs} True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (S{cube, queue, busy, auto, pos, Some{xs}, 0, False{},
          "A quick way, worked out on this device in " ++ took(ms) ++ ". It may not be the shortest: this browser cannot run the shortest search (it needs shared memory between its workers).",
-         False{}, False{}, gen, wait, who}, [])
-    case _ _ S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, "The quick way did not check out.", True{}, True{}, gen, wait, who}, [])
+         False{}, False{}, gen, wait, who, ways, wg, way, pend}, [])
+    case _ _ S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, "The quick way did not check out.", True{}, True{}, gen, wait, who, ways, wg, way, pend}, [])
 
 def answer.go(k: Ak, +s: S, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
   match k s:
-    case ABest{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case ABest{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       +m = C.cube.read(line(ls, 0n))
       +good = Bool.and(String.eq(line(ls, 3n), "ok"), checks(m, pos))
       solved.go(m, good, s, commas(num(line(ls, 1n))) ++ " positions searched in " ++ took(num(line(ls, 2n))) ++ ", " ++ found.at(line(ls, 4n)))
@@ -498,15 +634,15 @@ def answer.go(k: Ak, +s: S, +ls: List<&2, String>) -> S & List<&2, W.Effect>:
       rough(False{}, s, ls)
     case AQueued{} _:
       queued.go(s)
-    case ADown{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case ADown{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       down.go(U32.is_lt(wait, 150), s)
-    case ALate{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case ALate{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       late.go(checks(Some{C.cube.inv(pos)}, pos), s, num(line(ls, 4n)), took(num(line(ls, 2n))))
-    case AQuick{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case AQuick{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       +m = C.cube.read(line(ls, 5n))
       quick.go(m, Bool.and(String.eq(line(ls, 3n), "ok"), checks(m, pos)), s, num(line(ls, 2n)))
-    case AWord{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, word.say(line(ls, 0n)), True{}, True{}, gen, wait, who}, [])
+    case AWord{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, None{}, 0, False{}, word.say(line(ls, 0n)), True{}, True{}, gen, wait, who, ways, wg, way, pend}, [])
 
 def answer.if(fresh: Bool, +s: S, +body: String) -> S & List<&2, W.Effect>:
   match fresh:
@@ -519,52 +655,52 @@ def answer.if(fresh: Bool, +s: S, +body: String) -> S & List<&2, W.Effect>:
 # the solver's answer (Ak); only the last request's counts
 def on.solved(+s: S, +g: U32, +body: String) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       answer.if(Bool.and(asked, U32.is_eq(g, gen)), s, body)
 
 def failed.if(fresh: Bool, +s: S) -> S & List<&2, W.Effect>:
   match fresh s:
-    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (s, [])
-    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       down.go(U32.is_lt(wait, 150), s)
 
 def on.failed(+s: S, +g: U32) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       failed.if(Bool.and(asked, U32.is_eq(g, gen)), s)
 
 # a second more of waiting for request g, if it is still the one waited for
 def tick.if(fresh: Bool, +s: S) -> S & List<&2, W.Effect>:
   match fresh s:
-    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, U32.add(wait, 1), who}, [tick.fx(gen)])
-    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, U32.add(wait, 1), who, ways, wg, way, pend}, [tick.fx(gen)])
+    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (s, [])
 
 def on.tick(+s: S, +g: U32) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       tick.if(Bool.and(asked, U32.is_eq(g, gen)), s)
 
 # ask again for request g after a "down", if it is still the one waited for
 def again.if(fresh: Bool, +s: S) -> S & List<&2, W.Effect>:
   match fresh s:
-    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (s, [ask.fx(pos, gen, who)])
-    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case False{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (s, [])
 
 def on.again(+s: S, +g: U32) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       again.if(Bool.and(asked, U32.is_eq(g, gen)), s)
 
 # the page opened: its name for the solver, from the time it opened
 def on.start(+s: S, +seed: U32) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      (S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, "w" ++ U32.show(seed)}, [show.fx(C.cube.solved()), W.Route{"route"}])
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, "w" ++ U32.show(seed), ways, wg, way, pend}, [show.fx(C.cube.solved()), W.Route{"route"}])
 
 # A link from another device: "/#m=3.10.17" (the fragment, so it never reaches
 # a server) is that position; it is shown and solved at once
@@ -574,12 +710,12 @@ def route.moves(+v: String) -> Maybe<&2, List<&2, U32>>:
 
 def route.go(m: Maybe<&2, List<&2, U32>>, +s: S) -> S & List<&2, W.Effect>:
   match m s:
-    case Some{+ms} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case Some{+ms} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       +p = pos.simp(ms)
       +c = C.cube.apply(p, C.cube.solved())
       +g = U32.add(gen, 1)
       Bool.pick(S & List<&2, W.Effect>, pos.solved(p), (s, []),
-        (S{c, Nil{}, False{}, False{}, p, None{}, 0, True{}, "", False{}, True{}, g, 0, who}, [show.fx(c), ask.fx(p, g, who), tick.fx(g)]))
+        (S{c, Nil{}, False{}, False{}, p, None{}, 0, True{}, "", False{}, True{}, g, 0, who, ways, wg, way, 9}, [show.fx(c), ask.fx(p, g, who), tick.fx(g), ways.fx(p, g)]))
     case None{} _:
       (s, [])
 
@@ -589,11 +725,69 @@ def handoff.path(+pos: List<&2, U32>) -> String:
 
 def on.copy(+s: S) -> S & List<&2, W.Effect>:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       (s, [W.Host{"copied", "copy", handoff.path(pos)}])
 
 def on.route(+s: S, +v: String) -> S & List<&2, W.Effect>:
   route.go(route.moves(v), s)
+
+# The ways' answer: Ways.bend's lines, "W|id|ok" then each step's
+# "label|algorithms|moves"; each way checked here too, by Cube.bend
+def wp.st(+l: String) -> St:
+  +fs = String.split(l, '|')
+  St{line(fs, 0n), line(fs, 1n), Maybe.default(&2, List<&2, U32>, C.cube.read(line(fs, 2n)), [])}
+
+def wp.close(+acc: List<&2, Way>, +id: U32, +ok: Bool, +cur: List<&2, St>, +pos: List<&2, U32>) -> List<&2, Way>:
+  +steps = List.reverse(&2, St, cur)
+  Bool.pick(List<&2, Way>, U32.is_zero(id), acc, Way{id, Bool.and(ok, checks(Some{way.ms(steps)}, pos)), steps} <> acc)
+
+def wp.go(ls: List<&2, String>, +acc: List<&2, Way>, +id: U32, +ok: Bool, +cur: List<&2, St>, +pos: List<&2, U32>) -> List<&2, Way>:
+  match ls:
+    case Nil{}:
+      List.reverse(&2, Way, wp.close(acc, id, ok, cur, pos))
+    case Con{+l, t}:
+      +isw = String.starts_with(l, "W|")
+      +fs = String.split(l, '|')
+      wp.go(t, Bool.pick(List<&2, Way>, isw, wp.close(acc, id, ok, cur, pos), acc),
+        Bool.pick(U32, isw, num(line(fs, 1n)), id),
+        Bool.pick(Bool, isw, String.eq(line(fs, 2n), "ok"), ok),
+        Bool.pick(List<&2, St>, isw, [], Bool.pick(List<&2, St>, String.is_empty(l), cur, wp.st(l) <> cur)), pos)
+
+def wp(+body: String, +pos: List<&2, U32>) -> List<&2, Way>:
+  wp.go(String.split(body, '\n'), [], 0, False{}, [], pos)
+
+# only the last request's counts (the position may have changed since)
+def ways.if(fresh: Bool, +s: S, +g: U32, +body: String) -> S & List<&2, W.Effect>:
+  match fresh s:
+    case True{} S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, wp(body, pos), g, way, pend}, [])
+    case False{} _:
+      (s, [])
+
+def on.ways(+s: S, +g: U32, +body: String) -> S & List<&2, W.Effect>:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      ways.if(U32.is_eq(g, gen), s, g, body)
+
+# an answer of the solver's while another way is picked: that way's moves
+# played so far stay played (the answer would start the solver's again)
+def keep.set(+s: S, +st: U32, fx: List<&2, W.Effect>) -> S & List<&2, W.Effect>:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      (S{cube, queue, busy, auto, pos, sol, st, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}, fx)
+
+def keep.go(other: Bool, r: S & List<&2, W.Effect>, +st: U32) -> S & List<&2, W.Effect>:
+  match other:
+    case False{}:
+      r
+    case True{}:
+      (s2, fx) = r
+      keep.set(s2, st, fx)
+
+def keep(r: S & List<&2, W.Effect>, +old: S) -> S & List<&2, W.Effect>:
+  match old:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      keep.go(U32.is_ne(way, 0), r, step)
 
 def apply(+s: S, m: Msg) -> S & List<&2, W.Effect>:
   match m:
@@ -624,9 +818,13 @@ def apply(+s: S, m: Msg) -> S & List<&2, W.Effect>:
     case MTurned{}:
       on.turned(s)
     case MSolved{g, v}:
-      on.solved(s, g, v)
+      keep(on.solved(s, g, v), s)
     case MFailed{g}:
-      on.failed(s, g)
+      keep(on.failed(s, g), s)
+    case MWays{g, v}:
+      on.ways(s, g, v)
+    case MWay{k}:
+      on.way(s, k)
     case MTick{g}:
       on.tick(s, g)
     case MAgain{g}:
@@ -708,11 +906,11 @@ def status.asked(+busy: Bool, +warming: Bool, +queued: Bool, +wait: U32) -> Stri
     Bool.pick(String, busy, "Scrambling... and already searching.",
       "Searching every sequence, shortest first... " ++ U32.show(wait) ++ " s (" ++ U32.show(lim()) ++ " s at most)")))
 
-def status(+s: S) -> String:
+def status.ours(+s: S) -> String:
   match s:
-    case S{cube, queue, busy, auto, pos, Some{xs}, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, Some{xs}, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       status.solved(U32.from_nat(List.length(&2, U32, xs)), step, opt, asked, info, wait)
-    case S{cube, queue, busy, auto, pos, None{}, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, None{}, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       Bool.pick(String, bad, info,
         Bool.pick(String, asked, status.asked(busy, String.eq(info, "warming"), String.eq(info, "queued"), wait),
           status.idle(U32.from_nat(List.length(&2, U32, pos)))))
@@ -720,9 +918,9 @@ def status(+s: S) -> String:
 def fact(+k: String, +v: String) -> W.Html:
   W.el("div", [W.cls("fact")], [W.el("dt", [], [W.text(k)]), W.el("dd", [], [W.text(v)])])
 
-def facts(+s: S) -> W.Html:
+def facts.ours(+s: S) -> W.Html:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
       +n = sol.len(sol)
       +has = Maybe.is_some(&2, List<&2, U32>, sol)
       W.el("dl", [W.cls("facts")],
@@ -740,8 +938,163 @@ def next.name(m: Maybe<&2, U32>) -> String:
 
 def next.label(+s: S) -> String:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      next.name(sol.at(sol, step))
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      next.name(sol.at(act(s), step))
+
+# The ways, side by side
+# ----------------------
+
+def way.name(+k: U32) -> String:
+  Maybe.default(&2, String, List.get(&2, String, ["Fewest moves", "F2L (CFOP)", "F2L, simplified", "Beginner's"], U32.to_nat(k)), "")
+
+def way.sub(+k: U32) -> String:
+  Maybe.default(&2, String, List.get(&2, String,
+    ["the solver's search", "cross, F2L, OLL, PLL", "F2L, then the top in 4 looks", "layer by layer"], U32.to_nat(k)), "")
+
+def way.desc(+k: U32) -> String:
+  Maybe.default(&2, String, List.get(&2, String,
+    ["The shortest way there is, found by searching every sequence of moves, shortest first. Nobody solves a cube like this by hand: there are no steps, just moves.",
+     "How most speedcubers solve: a cross on the bottom, then the first two layers (F2L) one corner and edge pair at a time, then the top in two algorithms: OLL turns all its stickers up (57 cases), PLL puts its pieces in place (21). 78 algorithms to learn.",
+     "CFOP as people learn it first: the same cross and F2L, then the top in four looks, two algorithms to turn its stickers up and two to put its pieces in place. 16 algorithms to learn, for a few more moves.",
+     "Layer by layer, as Rubik's own guide teaches: a cross on the bottom one edge at a time, the bottom corners, the middle edges, then the top: its cross, its edges, its corners in place, then turned. 7 algorithms, and the most moves."],
+    U32.to_nat(k)), "")
+
+def way.len(m: Maybe<&2, List<&2, U32>>) -> U32:
+  match m:
+    case Some{xs}:
+      U32.from_nat(List.length(&2, U32, xs))
+    case None{}:
+      0
+
+# the moves of way k for the position, 0 if none yet
+def way.count(+k: U32, +sol: Maybe<&2, List<&2, U32>>, +ways: List<&2, Way>, +fresh: Bool) -> U32:
+  way.len(act.of(sol, ways, fresh, k))
+
+# how many times the fewest moves c is: "4.2x the fewest" (none for the
+# fewest themselves, or before both are known)
+def way.times(+k: U32, +c: U32, +c0: U32) -> String:
+  +t = U32.div(U32.add(U32.mul(c, 10), U32.shrn(c0, 1n)), Bool.pick(U32, U32.is_zero(c0), 1, c0))
+  Bool.pick(String, Bool.or(U32.is_zero(k), Bool.or(U32.is_zero(c), U32.is_zero(c0))), "",
+    U32.show(U32.div(t, 10)) ++ "." ++ U32.show(U32.mod(t, 10)) ++ "x the fewest")
+
+# a way to pick: its name, what it is, its moves, a bar as long as they are
+# (the longest way's full), and how many times the fewest they are
+def way.chip(+k: U32, +sel: Bool, +c: U32, +mx: U32, +wait: Bool, +c0: U32) -> W.Html:
+  +pct = Bool.pick(U32, U32.is_zero(mx), 0, U32.div(U32.mul(c, 100), mx))
+  +x = way.times(k, c, c0)
+  W.el("button", [W.Prop{"id", "way" ++ U32.show(k)}, W.cls(Bool.pick(String, sel, "way on", "way")), W.Prop{"type", "button"},
+                  W.Prop{"role", "radio"}, prop.on("aria-checked", sel), W.Prop{"data-way", U32.show(k)}, W.On{"click", "way" ++ U32.show(k)}],
+    [W.el("span", [W.cls("way-name")], [W.text(way.name(k))]),
+     W.el("span", [W.cls("way-sub")], [W.text(way.sub(k))]),
+     W.el("span", [W.cls("way-x")], [W.text(x)]),
+     W.el("span", [W.cls("way-n")], [W.text(Bool.pick(String, U32.is_zero(c), Bool.pick(String, wait, "...", "-"), U32.show(c))),
+       W.el("small", [], [W.text(Bool.pick(String, U32.is_zero(c), "", Bool.pick(String, U32.is_eq(c, 1), " move", " moves")))])]),
+     W.el("span", [W.cls("way-bar"), W.Prop{"aria-hidden", "true"}], [W.el("i", [W.Prop{"style", "width:" ++ U32.show(pct) ++ "%"}], [])])])
+
+# The four ways for the position, to compare and pick from: the strip, Next
+# step and Play follow the one picked
+def ways.panel(+s: S) -> W.Html:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      +fresh = U32.is_eq(wg, gen)
+      +c0 = way.count(0, sol, ways, fresh)
+      +c1 = way.count(1, sol, ways, fresh)
+      +c2 = way.count(2, sol, ways, fresh)
+      +c3 = way.count(3, sol, ways, fresh)
+      +mx = U32.max(U32.max(c0, c1), U32.max(c2, c3))
+      +asking = Bool.and(Bool.not(List.is_empty(&2, U32, pos)), Bool.or(asked, Maybe.is_some(&2, List<&2, U32>, sol)))
+      +sel = Bool.pick(U32, U32.is_lt(pend, 9), pend, way)
+      W.el("section", [W.cls("ways"), W.Prop{"aria-labelledby", "ways-h"}],
+        [W.el("h2", [W.Prop{"id", "ways-h"}, W.cls("ways-h")], [W.text("Solve it your way")]),
+         W.el("p", [W.cls("ways-lede")], [W.text("The ways people solve a cube, beside the fewest moves. Pick one: the moves below, Next step and Play follow it.")]),
+         W.el("div", [W.cls("way-list"), W.Prop{"role", "radiogroup"}, W.Prop{"aria-labelledby", "ways-h"}],
+           [way.chip(0, U32.is_eq(sel, 0), c0, mx, asked, c0),
+            way.chip(1, U32.is_eq(sel, 1), c1, mx, asking, c0),
+            way.chip(2, U32.is_eq(sel, 2), c2, mx, asking, c0),
+            way.chip(3, U32.is_eq(sel, 3), c3, mx, asking, c0)]),
+         W.el("p", [W.cls("way-desc")], [W.text(way.desc(sel))])])
+
+# where a way's move i is: "Step 3 of 7: F2L: the front right pair"
+def st.now(ss: List<&2, St>, +start: U32, +ord: U32, +i: U32, +k: U32) -> String:
+  match ss:
+    case Nil{}:
+      ""
+    case Con{+s, t}:
+      +end = U32.add(start, U32.from_nat(List.length(&2, U32, st.ms(s))))
+      +note = st.note(s)
+      +rest = st.now(t, end, U32.add(ord, 1), i, k)
+      Bool.pick(String, U32.is_lt(i, end),
+        "Step " ++ U32.show(ord) ++ " of " ++ U32.show(k) ++ ": " ++ st.label(s) ++ Bool.pick(String, String.is_empty(note), ".", ", " ++ note ++ "."), rest)
+
+# the headline when a way other than the fewest moves is picked
+def status.way(+s: S) -> String:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      +name = way.name(way)
+      +m = way.get(ways, way)
+      +ss = way.ss(m)
+      +n = way.count(way, sol, ways, U32.is_eq(wg, gen))
+      +k = U32.from_nat(List.length(&2, St, ss))
+      +best = Bool.pick(String, Bool.and(opt, Maybe.is_some(&2, List<&2, U32>, sol)), " The fewest moves: " ++ U32.show(sol.len(sol)) ++ ".", "")
+      Bool.pick(String, Bool.not(U32.is_eq(wg, gen)),
+        Bool.pick(String, Bool.and(Bool.not(List.is_empty(&2, U32, pos)), Bool.or(asked, Maybe.is_some(&2, List<&2, U32>, sol))),
+          "Working out the " ++ name ++ " way, on this device...",
+          status.idle(U32.from_nat(List.length(&2, U32, pos)))),
+      Bool.pick(String, U32.is_zero(n), Bool.pick(String, List.is_empty(&2, U32, pos), "That position was solved already.", "The " ++ name ++ " way did not check out. Please say so."),
+      Bool.pick(String, U32.is_ge(step, n), "Solved the " ++ name ++ " way, in " ++ plural(n, "move", "moves") ++ "." ++ best,
+      Bool.pick(String, U32.is_zero(step), name ++ ": " ++ plural(n, "move", "moves") ++ ", in " ++ plural(k, "step", "steps") ++ "." ++ best,
+        st.now(ss, 0, 1, step, k)))))
+
+def status(+s: S) -> String:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      Bool.pick(String, U32.is_zero(way), status.ours(s), status.way(s))
+
+def facts.way(+s: S) -> W.Html:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      +n = way.count(way, sol, ways, U32.is_eq(wg, gen))
+      +m = way.get(ways, way)
+      +k = U32.from_nat(List.length(&2, St, way.ss(m)))
+      +c0 = sol.len(sol)
+      W.el("dl", [W.cls("facts")],
+        [fact("position", plural(U32.from_nat(List.length(&2, U32, pos)), "move", "moves")),
+         fact("the " ++ way.name(way) ++ " way", Bool.pick(String, U32.is_zero(n), "-", plural(n, "move", "moves") ++ ", " ++ plural(k, "step", "steps"))),
+         fact("done", U32.show(Bool.pick(U32, U32.is_lt(step, n), step, n)) ++ " / " ++ U32.show(n)),
+         fact("fewest moves", Bool.pick(String, U32.is_zero(c0), "-", Bool.pick(String, opt, plural(c0, "move", "moves"), plural(c0, "move", "moves") ++ " so far")))])
+
+def facts(+s: S) -> W.Html:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      Bool.pick(W.Html, U32.is_zero(way), facts.ours(s), facts.way(s))
+
+# a way's moves, step by step: each step's name, its algorithms and its
+# moves above them
+def st.tiles(ss: List<&2, St>, +i: U32, +step: U32) -> List<&2, W.Html>:
+  match ss:
+    case Nil{}:
+      Nil{}
+    case Con{+s, t}:
+      +ms = st.ms(s)
+      +n = U32.from_nat(List.length(&2, U32, ms))
+      +end = U32.add(i, n)
+      +note = st.note(s)
+      +kind = Bool.pick(String, U32.is_ge(step, end), "step-h done", Bool.pick(String, U32.is_ge(step, i), "step-h now", "step-h"))
+      W.keyed("li", "h" ++ U32.show(i) ++ ":" ++ st.label(s), [W.cls(kind)],
+        [W.el("span", [W.cls("step-l")], [W.text(st.label(s))]),
+         W.el("span", [W.cls("step-a")], [W.text(Bool.pick(String, U32.is_zero(n), "nothing to do", note))]),
+         W.el("span", [W.cls("step-n")], [W.text(plural(n, "move", "moves"))])])
+      <> List.append(&2, W.Html, tiles(ms, i, step), st.tiles(t, end, step))
+
+def strip.of(+s: S) -> W.Html:
+  match s:
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      +m = Bool.pick(Maybe<&2, Way>, U32.is_eq(wg, gen), way.get(ways, way), None{})
+      +ss = way.ss(m)
+      Bool.pick(W.Html, U32.is_zero(way), strip(sol, step, opt),
+        Bool.pick(W.Html, Bool.and(Maybe.is_some(&2, List<&2, U32>, act(s)), Bool.not(List.is_empty(&2, St, ss))),
+          W.el("ol", [W.cls("strip ways-strip"), W.Prop{"aria-label", "the " ++ way.name(way) ++ " way, step by step"}], st.tiles(ss, 0, step)),
+          W.el("ol", [W.cls("strip empty")], [])))
 
 # when this device could not prove a shortest way (time up, or it cannot run
 # the solver): a link to the same position for a bigger one (a laptop, an iPad)
@@ -789,11 +1142,12 @@ def col.row() -> W.Html:
 
 def view.go(+s: S) -> W.Html:
   match s:
-    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who}:
-      +can = Bool.and(Bool.not(busy), Maybe.is_some(&2, U32, sol.at(sol, step)))
-      +now = pos.now(pos, sol, step)
+    case S{cube, queue, busy, auto, pos, sol, step, asked, info, bad, opt, gen, wait, who, ways, wg, way, pend}:
+      +moves = act.of(sol, ways, U32.is_eq(wg, gen), way)
+      +can = Bool.and(Bool.not(busy), Maybe.is_some(&2, U32, sol.at(moves, step)))
+      +now = pos.now(pos, moves, step)
       +rough = Bool.and(Maybe.is_some(&2, List<&2, U32>, sol), Bool.not(opt))
-      +off = Bool.and(Bool.and(Bool.not(asked), Bool.not(List.is_empty(&2, U32, pos))), Bool.or(rough, String.starts_with(info, "This browser cannot")))
+      +off = Bool.and(U32.is_zero(way), Bool.and(Bool.and(Bool.not(asked), Bool.not(List.is_empty(&2, U32, pos))), Bool.or(rough, String.starts_with(info, "This browser cannot"))))
       W.el("div", [W.cls("app" ++ Bool.pick(String, bad, " bad", "") ++ Bool.pick(String, asked, " searching", "") ++ Bool.pick(String, busy, " busy", ""))],
         [W.el("p", [W.cls("status"), W.Prop{"aria-live", "polite"}], [W.text(status(s))]),
          W.el("div", [W.cls("controls")],
@@ -807,7 +1161,8 @@ def view.go(+s: S) -> W.Html:
          col.row(),
          pad(True{}),
          W.el("p", [W.cls("pad-help")], [W.el("button", [W.Prop{"id", "howto"}, W.cls("howto"), W.On{"click", "howto"}], [W.text("What do these buttons mean?")])]),
-         strip(sol, step, opt),
+         ways.panel(s),
+         strip.of(s),
          handoff(off, pos),
          W.el("div", [W.cls("controls")],
            [W.el("button", [W.Prop{"id", "next"}, W.cls("btn"), prop.on("disabled", Bool.not(can)), W.On{"click", "next"}],

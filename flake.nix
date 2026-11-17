@@ -56,6 +56,8 @@
             ./web/Sched.bend
             ./web/solver.js
             ./web/solver-worker.js
+            ./web/ways-worker.js
+            ./Ways.bend
             ./web/own.js
             ./web/colors.js
             ./Photo.bend
@@ -69,6 +71,7 @@
             ./LAWS.bend
             ./PROOF.bend
             ./FIT.bend
+            ./ALGS.bend
             ./web/App.bend
             ./web/index.html
             ./web/cube3d.js
@@ -166,7 +169,8 @@
             bend web/index.html -o $out
             bend Dev.bend -o $out/dev.mjs
             bend Scheme.bend -o $out/scheme.mjs
-            cp web/solver-worker.js web/solver.js web/own.js web/sched.mjs $out/
+            bend Ways.bend -o $out/ways.mjs
+            cp web/solver-worker.js web/solver.js web/own.js web/sched.mjs web/ways-worker.js $out/
             cp -r ${dev-tables}/t ${dev-tables}/tables.json $out/
           '';
           # `elcubodeedgar [PORT]` serves the page on 127.0.0.1:PORT (8093)
@@ -223,11 +227,17 @@
             bend FIT.bend --check-only 2>&1 | tee $out
             grep -q 'ALL PROOFS CHECK' $out
           '';
+          # the laws of "Solve it your way" (ALGS.bend): Bend's checker only,
+          # as BendTT's kernel runs out of fuel on them too
+          algs = inSource pkgs "algs" [ ] ''
+            bend ALGS.bend --check-only 2>&1 | tee $out
+            grep -q 'ALL PROOFS CHECK' $out
+          '';
           # the modules check (the servers and the table builder lean on IO
           # loops and shared arrays, @unsafe, so they are built, not checked:
           # packages.server, solver-bin, tables)
           modules = inSource pkgs "modules" [ ] ''
-            for f in Cube.bend Coord.bend Search.bend Par.bend Solve.bend Sym.bend Kc.bend Opt.bend TwoPhase.bend Group.bend Guard.bend Lite.bend Kd.bend Scheme.bend Photo.bend Dev.bend web/Sched.bend web/App.bend; do
+            for f in Cube.bend Coord.bend Search.bend Par.bend Solve.bend Sym.bend Kc.bend Opt.bend TwoPhase.bend Group.bend Guard.bend Lite.bend Kd.bend Scheme.bend Photo.bend Dev.bend Ways.bend web/Sched.bend web/App.bend; do
               echo "== $f"
               bend $f --check-only 2>&1 | tee log
               grep -q 'ALL PROOFS CHECK' log

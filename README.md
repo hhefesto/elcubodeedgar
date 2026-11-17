@@ -58,7 +58,7 @@ On the visitor's device:
   the shortest. Nothing is ever asked of a server: the site only serves files.
 - `web/App.bend`: the page, a bend-frp app; it holds the cube and tells the 3D
   view (`web/cube3d.js`, three.js) which turn to animate and what the stickers
-  are after it. Random scrambles (12 to 16 moves), turns by hand (the 18
+  are after it. Random scrambles (25 moves), turns by hand (the 18
   buttons, or the keys u r f d l b, shift for back), Solve, Next step, Play,
   "What do these buttons mean?" (the moves explained, `web/index.html`), and,
   when a device cannot prove the shortest in time, a link (`/#m=3.10.17`, the
@@ -71,6 +71,25 @@ On the visitor's device:
   `#m=` position (a short solution, undone) and solved as any other. The 3D
   view turns freely (a quaternion trackball: drag any way, any face to the
   front; a double tap brings it back).
+- "Solve it your way" (`Ways.bend`, in a worker of its own:
+  `web/ways-worker.js`): beside the fewest moves, the ways people solve a
+  cube, for the same position, each card with its moves and how many times
+  the fewest they are; the one picked (or the keys 1 to 4) is what the
+  strip shows, step by step, and what Next step and Play make. F2L (CFOP):
+  the cross on the bottom and each F2L pair in the fewest moves (IDA* over
+  the pieces it follows, bounded by breadth-first tables of three pieces),
+  then one of J Perm's 57 OLL and one of his 21 PLL algorithms; F2L,
+  simplified: the same, then the top in four looks (2-look OLL and PLL, 16
+  algorithms); the beginner's: layer by layer, as Rubik's own guide
+  teaches. An algorithm is tried from each side (a turn of the whole cube
+  costs no move); its notation (wide turns, slices, rotations) is read into
+  the face turns of a cube whose centers stay put. Each way's moves are
+  checked by Cube.bend, there and again on the page. The tables take about
+  0.3 s, a position about 0.1 s (JavaScript, a laptop); `probe/WaysT.bend`
+  solves 200 random scrambles each way (600 of 600; CFOP 52.3 moves on
+  average, four-look 66.0, beginner's 134.1), `probe/ways.sh` drives the
+  page, and `ALGS.bend` has the algorithms' laws (each keeps what its step
+  keeps; Bend's checker, as BendTT's kernel runs out of fuel on them).
 
 Not used by the site (it asks no server; the user, 11-16: "I don't want
 Edgar's site to use delfos at all"): the first, server-side solver, kept as
@@ -94,7 +113,7 @@ code:
 nix build .#www           # the site: the page, dev.mjs, the workers' JS, t/ (the tables), tables.json
 nix build                 # delfos's page server: result/bin/elcubodeedgar [PORT]
 nix build .#solver        # delfos's solver and its tables: elcubodeedgar-solver [PORT]
-nix flake check           # the proofs (and BendTT's verdict), every module, the 3D turns
+nix flake check           # the proofs (and BendTT's verdict), the camera's and the ways' laws, every module, the 3D turns
 ```
 
 It used to run on delfos as systemd user units (copies in `deploy/`); they
@@ -107,3 +126,7 @@ headless Chrome with 1, 2, 4, 8 workers, each answer checked by
 probe/shot.mjs URL 390x844 ...` for a phone); `probe/turns.mjs` checks that the
 3D view's turns move the stickers as `Cube.bend` does; `probe/solve-tests.sh`
 asks the old server-side solver (not used by the site).
+
+A Bend program's `main` run as `bend File.bend` is interpreted, and slowly:
+a test of `Ways.bend`'s tables ran 24 minutes that way, built (`bend
+File.bend -o /tmp/x && /tmp/x`) 0.02 s. Probes that compute are built first.

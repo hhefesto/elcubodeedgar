@@ -166,6 +166,51 @@ kbd { font-family: var(--mono); font-size: 10.5px; padding: 1px 6px 2px; border:
 button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .strip.rough .tile { border-style: dashed; }
 
+/* "Solve it your way" (App.bend's ways.panel): the four ways side by side,
+   each a card with its moves and a bar as long as they are (the longest
+   way's full), the one picked inked; then a way's moves step by step, a
+   heading over each step's tiles */
+.ways { margin: 0 0 22px; }
+.ways-h { margin: 0 0 2px; font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--red); }
+.ways-lede { margin: 0 0 12px; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
+.way-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.way {
+  --a: var(--green);
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; align-items: start;
+  min-width: 0; padding: 12px 12px 12px 16px; text-align: left; font: inherit; color: var(--ink);
+  background: var(--paper-3); border: 2px solid var(--ink); border-radius: 12px; box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer; transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s, color 0.15s;
+}
+.way[data-way="1"] { --a: var(--blue); } .way[data-way="2"] { --a: #d9730d; } .way[data-way="3"] { --a: var(--red); }
+.way::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 5px; border-radius: 0 3px 3px 0; background: var(--a); }
+.way-name { grid-column: 1; font-size: 19px; line-height: 1.1; font-style: italic; font-weight: 480; font-variation-settings: "opsz" 48, "SOFT" 100; }
+.way-sub { grid-column: 1; margin-top: 4px; font-family: var(--mono); font-size: 11px; line-height: 1.35; color: var(--mute); }
+.way-n { grid-column: 2; grid-row: 1 / 4; font-family: var(--mono); font-size: 24px; font-weight: 600; line-height: 1; text-align: right; font-variant-numeric: tabular-nums; }
+.way-x { grid-column: 1; margin-top: 2px; font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--a); }
+.way-x:empty { display: none; }
+.way.on .way-x { color: var(--paper-3); }
+.way-n small { display: block; margin-top: 4px; font-size: 9.5px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+.way-bar { grid-column: 1 / -1; margin-top: 10px; height: 6px; border-radius: 3px; background: var(--paper-2); overflow: hidden; }
+.way-bar i { display: block; height: 100%; border-radius: 3px; background: var(--a); transition: width 0.6s cubic-bezier(0.2, 0.9, 0.25, 1); }
+.way.on { background: var(--ink); color: var(--paper-3); box-shadow: 3px 3px 0 var(--a); }
+.way.on .way-sub, .way.on .way-n small { color: var(--rule); }
+.way.on .way-bar { background: rgba(246, 240, 227, 0.16); }
+.way:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+.way:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+@media (hover: hover) { .way:hover:not(.on) { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); } }
+.way-desc { margin: 12px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-2); max-width: 40em; }
+.step-h { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 10px; margin: 10px 0 -2px; padding-bottom: 3px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 11px; color: var(--mute); transition: color 0.2s, opacity 0.3s; }
+.step-h:first-child { margin-top: 0; }
+.step-l { font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+.step-a { color: var(--ink-2); }
+.step-n { margin-left: auto; white-space: nowrap; }
+.step-h.now { color: var(--ink); border-bottom: 2px solid var(--ink); }
+.step-h.done { opacity: 0.5; }
+.ways-strip .tile { width: 44px; height: 54px; animation-delay: calc(min(var(--i), 24) * 30ms); }
+.ways-strip .tile-m { font-size: 17px; }
+@media (max-width: 560px) { .way-name { font-size: 17px; } .way-n { font-size: 20px; } .way { padding: 10px 10px 10px 14px; } }
+@media (max-width: 340px) { .way-list { grid-template-columns: 1fr; } }
+
 /* "Enter your own cube" (App.bend's own.cta): a card under the main buttons,
    the six colors along its top, a small scrambled face that gives a quarter
    turn when pointed at, and an arrow */
@@ -449,7 +494,7 @@ footer a { color: inherit; }
   <section class="stage-wrap">
     <div class="mast"><span><span class="dot"></span>No. 1 &middot; optimal</span><span>3 &times; 3 &times; 3</span></div>
     <div id="stage" role="img" aria-label="The cube in 3D. Drag to look around it."></div>
-    <p class="hint">drag to look around<span class="keys"> &middot; <kbd>s</kbd> scramble &middot; <kbd>u</kbd><kbd>r</kbd><kbd>f</kbd><kbd>d</kbd><kbd>l</kbd><kbd>b</kbd> turn (<kbd>shift</kbd> back) &middot; <kbd>enter</kbd> solve &middot; <kbd>?</kbd> the moves explained &middot; <kbd>space</kbd> next step &middot; <kbd>p</kbd> play</span></p>
+    <p class="hint">drag to look around<span class="keys"> &middot; <kbd>s</kbd> scramble &middot; <kbd>u</kbd><kbd>r</kbd><kbd>f</kbd><kbd>d</kbd><kbd>l</kbd><kbd>b</kbd> turn (<kbd>shift</kbd> back) &middot; <kbd>enter</kbd> solve &middot; <kbd>?</kbd> the moves explained &middot; <kbd>space</kbd> next step &middot; <kbd>p</kbd> play &middot; <kbd>1</kbd>-<kbd>4</kbd> a way to solve it</span></p>
   </section>
   <section class="side">
     <h1 class="title"><span class="t1">El cubo de</span><span class="t2">Edgar</span></h1>
@@ -609,6 +654,24 @@ new IntersectionObserver(
 ).observe(stage);
 let made = null;
 const solver = () => (made ??= makeSolver({ workers: Number(new URLSearchParams(location.search).get("workers")) || 0 }));
+// the ways people solve it (App.bend's "Solve it your way"): Ways.bend in a
+// worker of its own (web/ways-worker.js), made at the first ask
+let waysW = null;
+let waysN = 0;
+const waysDone = new Map();
+const ways = (arg, done) => {
+  if (!waysW) {
+    waysW = new Worker(new URL("ways-worker.js", document.baseURI), { type: "module" });
+    waysW.onmessage = ({ data }) => {
+      const f = waysDone.get(data.id);
+      waysDone.delete(data.id);
+      f?.(data.out);
+    };
+  }
+  const id = ++waysN;
+  waysDone.set(id, done);
+  waysW.postMessage({ id, s: arg });
+};
 // "Enter your own cube" (web/own.js): the cube it makes is shown as a link's
 // position (#m=, App.bend's route) and solved as any other
 const own = ownCube({
@@ -634,6 +697,8 @@ globalThis.bendFrp = {
   colors: () => colors.open(),
   // the solver, on this device's cores (web/solver.js; ?workers=N for fewer)
   solve: (arg, done) => solver().solve(arg, done),
+  // the ways people solve it, on this device (web/ways-worker.js)
+  ways,
   // the hand-off link, to the clipboard (or the phone's share sheet)
   copy: (path) => {
     const url = location.origin + path;
@@ -657,6 +722,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "s" || e.key === "S") press("scramble");
   else if (e.key === " " || e.key === "ArrowRight" || e.key === "n") { e.preventDefault(); press("next"); }
   else if (e.key === "p" || e.key === "P") press("play");
+  else if ("1234".includes(e.key) && e.key.length === 1) press("way" + (Number(e.key) - 1));
   else if (e.key === "?" || e.key === "h") press("howto");
   else if (e.key === "Enter" && !e.target.closest?.("button")) { e.preventDefault(); press("solve"); }
   else if ("urfdlb".includes(e.key.toLowerCase()) && e.key.length === 1) {
