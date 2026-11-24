@@ -6,11 +6,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1794681142,
-        "narHash": "sha256-TbgQx0KX75+ypHNb644Zc4CkWYhPBPcNA5oUTiPE3xs=",
+        "lastModified": 1795486861,
+        "narHash": "sha256-z946NlLs1KS60woAJjlusbN1zOFZxBThkWEA5Yo0XU0=",
         "owner": "hhefesto",
         "repo": "bend-frp",
-        "rev": "23b8b4043b2ae3451bf07c4d250321d4efe8e8e4",
+        "rev": "78e6dd69da3b07419e4518e5a9a01551ce7e11af",
         "type": "github"
       },
       "original": {
